@@ -4,43 +4,18 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
     zones, micro_idx, macro_idx, focus_idx, normal_idx)
  
     global HL
-
-    % noise level
-    noise = 0.5;
-
-    % parameters for proportion of extracellular potassium.
-    tau_K = 200;    % time-constant (/s).
-    k_decay = 0.1;  % decay rate (/s).
-    kD = 1;         % diffusion coefficient (cm^2/s).
-    KtoVe = 10;     % impact on excitatory population resting voltage.
-    KtoVi = 10;     % impact on inhibitory population resting voltage.
-    KtoD  = -50;    % impact on inhibitory gap junction strength.
-    kR    = 0.15;   % scale reaction term. 
-
-    tau_dD  = 200;  % inhibitory gap junction time-constant (/s).
-    tau_dVe = 250;  % excitatory population resting voltage time-constant (/s).
-    tau_dVi = 250;  % inhibitory population resting voltage time-constant (/s).
-
+    
     % set no. of sampling points (must be even!) along each axis of cortical grid
     N = size(laplacian, 1);
     
-    % define synaptic strengths
-    rho_e = HL.ge;
-    rho_i = HL.gi;
-
     % initialize random number generator (from input argument)
     rand_state = sum(100*clock);
     rng(rand_state); % randn('state', rand_state);
 
+    % noise factors
+    noise = 0.5;
     noise_sf = 0.2*20*noise;    % noise scale-factor
     noise_sc = 0.2;             % subcortical noise
-
-    HL.v = 280;                 % axonal conduction velocity (cm/s), [original = 140 cm/s]
-    HL.Lambda = 4.0;			% inverse-length scale for connectivity (/cm)
-    HL.gamma_e = 170;           % EPSP decay rate (/s)
-    HL.gamma_i = 50;            % IPSP decay rate (/s)
-    HL.tau_e = 0.02;			% excit neuron time-constant (/s) [original = 0.04 s]
-    HL.tau_i = 0.02;			% inhib neuron time-constant (/s) [original = 0.04 s]
 
     % set time resolution
     dt = 0.2 * 1e-3;
@@ -130,16 +105,16 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         
         % 1. update wave equations
         phi2_ee_1 = phi2_ee + dt * (-2 * HL.v * HL.Lambda * phi2_ee ...
-                    - (HL.v * HL.Lambda)^2 * phi_ee ...
-                    + (HL.v * HL.Lambda)^2 * Qe_grid)...
-                    + dt * (HL.v / avg_D)^2 * (laplacian * phi_ee);
-        phi_ee_1 = phi_ee + dt * phi2_ee;
+                            - (HL.v * HL.Lambda)^2 * phi_ee ...
+                            + (HL.v * HL.Lambda)^2 * Qe_grid)...
+                            + dt * (HL.v / avg_D)^2 * (laplacian * phi_ee);
+        phi_ee_1  = phi_ee + dt * phi2_ee;
 
         phi2_ei_1 = phi2_ei + dt * (-2 * HL.v * HL.Lambda * phi2_ei ...
-                    - (HL.v * HL.Lambda)^2 * phi_ei ...
-                    + (HL.v * HL.Lambda)^2 * Qe_grid) ...
-                    + dt * (HL.v / avg_D)^2 * (laplacian * phi_ei);
-        phi_ei_1 = phi_ei + dt * phi2_ei;
+                            - (HL.v * HL.Lambda)^2 * phi_ei ...
+                            + (HL.v * HL.Lambda)^2 * Qe_grid) ...
+                            + dt * (HL.v / avg_D)^2 * (laplacian * phi_ei);
+        phi_ei_1  = phi_ei + dt * phi2_ei;
 
         % 2. update the 4 synaptic flux equations (include sc noise)
 
@@ -172,31 +147,30 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         % 3. update the soma voltages
 
         Ve_grid_1 = Ve_grid + dt/HL.tau_e * ((HL.Ve_rest - Ve_grid) + del_VeRest ...
-              + rho_e * Psi_ee(Ve_grid) .* Phi_ee ...      %E-to-E
-              + rho_i * Psi_ie(Ve_grid) .* Phi_ie ...      %I-to-E
-              + D11 .* (laplacian * Ve_grid));
+                            + HL.ge * Psi_ee(Ve_grid) .* Phi_ee ...      %E-to-E
+                            + HL.gi * Psi_ie(Ve_grid) .* Phi_ie ...      %I-to-E
+                            + D11 .* (laplacian * Ve_grid));
 
         Vi_grid_1 = Vi_grid + dt/HL.tau_i * ((HL.Vi_rest - Vi_grid) + del_ViRest ...
-              + rho_e * Psi_ei(Vi_grid) .* Phi_ei ...      %E-to-I
-              + rho_i * Psi_ii(Vi_grid) .* Phi_ii ...      %I-to-I
-              + D22 .* (laplacian * Vi_grid));
+                            + HL.ge * Psi_ei(Vi_grid) .* Phi_ei ...      %E-to-I
+                            + HL.gi * Psi_ii(Vi_grid) .* Phi_ii ...      %I-to-I
+                            + D22 .* (laplacian * Vi_grid));
 
         % 4. update the firing rates
-        Qe_grid = HL.Qe_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_e) .* (Ve_grid - HL.theta_e)))) ...     %The E voltage must be big enough,
-                - HL.Qe_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_e) .* (Ve_grid - (HL.theta_e+30)))));   %... but not too big.
-        Qi_grid = HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid - HL.theta_i)))) ...     %The I voltage must be big enough,
-                - HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid - (HL.theta_i+30)))));   %... but not too big.
+        Qe_grid = HL.Qe_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_e) .* (Ve_grid - HL.theta_e)))) ...     % The E voltage must be big enough,
+                  - HL.Qe_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_e) .* (Ve_grid - (HL.theta_e+30)))));     % ... but not too big.
+        Qi_grid = HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid - HL.theta_i)))) ...     % The I voltage must be big enough,
+                  - HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid - (HL.theta_i+30)))));     % ... but not too big.
 
         % 5. update extracellular ion
-        % K_1 = K;
-        K_1 = K + dt/tau_K * (-k_decay*K ...   % decay term.                  
-                + kR * (Qe_grid + Qi_grid)./(1+exp(-((Qe_grid + Qi_grid)-15))) ... % reaction term.
-                + kD * (laplacian * K));       % diffusion term.
+        K_1 = K + dt/HL.tau_K * (-HL.k_decay*K ...   % decay term.                  
+                + HL.kR * (Qe_grid + Qi_grid)./(1+exp(-((Qe_grid + Qi_grid)-15))) ... % reaction term.
+                + HL.kD * (laplacian * K));          % diffusion term.
 
         % 6. update inhibitory gap junction strength, and resting voltages
-        D22_1         = D22        + dt/tau_dD  * (KtoD*K);
-        del_VeRest_1  = del_VeRest + dt/tau_dVe * (KtoVe*K);
-        del_ViRest_1  = del_ViRest + dt/tau_dVi * (KtoVi*K);
+        D22_1         = D22        + dt/HL.tau_dD  * (HL.KtoD*K);
+        del_VeRest_1  = del_VeRest + dt/HL.tau_dVe * (HL.KtoVe*K);
+        del_ViRest_1  = del_ViRest + dt/HL.tau_dVi * (HL.KtoVi*K);
 
         % 7. update dynamic variables
         phi2_ee = phi2_ee_1;
@@ -220,7 +194,6 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         D11 = D22 / 100;                              % see definition in [Steyn-Ross et al PRX 2013, Table I].
         
         del_VeRest = min(del_VeRest_1, 1.5);          % the excitatory population resting voltage cannot pass above a maximum value of 1.5.    
-        
         if ~isnan(source_del_VeRest)
             del_VeRest(map == 1) = source_del_VeRest; % set the "source" locations' excitatory population resting voltage
         end

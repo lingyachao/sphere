@@ -66,6 +66,12 @@ zones.normal_zone = ~lessihb_idx;
 global HL
 HL = SCM_init_globs;
 
+HL.kR = 0;
+
+% increase excitability
+HL.ge = HL.ge * 0.8;
+HL.phi_ee_sc = HL.phi_ee_sc * 20;
+
 % increase inhibitory strength in all locations other than a patch
 HL.Nie_b = HL.Nie_b * ones(N, 1);
 HL.Nii_b = HL.Nii_b * ones(N, 1);
