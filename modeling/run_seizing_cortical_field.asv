@@ -8,8 +8,7 @@ if strcmp(type, 'sphere') % load sphere grid
     load('./computed_sphere_grid/N42_R10.mat');
     pos_hemi = locs(:,3) >= 0;
     neg_hemi = locs(:,3) < 0;
-elseif strcmp(type, 'brain')
-    % load brain grid
+elseif strcmp(type, 'brain') % load brain grid
     load('./computed_brain_grid/N40962.mat');
     load('unitsphere.mat', 'coord');
 else
@@ -32,15 +31,15 @@ end
 
 % initialize parameters, initial state and map
 k = 0;
-K = 200;
+K = 10;
 T0 = 0.1;
 visualize = true;
 map = make_map(laplacian);
 last = make_IC(N);
 
-last.dVe = zeros(N, 1); %ones(N, 1) * 2;
+last.dVe = zeros(N, 1);
 last.dVi = zeros(N, 1);
-last.Ve = -60 * ones(N, 1);
+% last.Ve = -60 * ones(N, 1);
 
 % define nodes that have less inhibition
 % lessihb_idx = lessihb_area;
@@ -48,7 +47,7 @@ last.Ve = -60 * ones(N, 1);
 % lessihb_idx = coord(1,:)' > 0.5;
 lessihb_idx = false(N, 1);
 
-% set plotting window
+%% set plotting window
 f = figure;
 set(f, 'Position', [200 300 900 400]);
 if strcmp(type, 'brain')
@@ -57,6 +56,36 @@ if strcmp(type, 'brain')
     surf.faces = tri;
 end
     
+%% initialize constants and make modifications
+global HL
+HL = SCM_init_globs;
+
+% increase inhibitory strength in all locations other than a patch
+HL.Nie_b = HL.Nie_b * ones(N, 1);
+HL.Nii_b = HL.Nii_b * ones(N, 1);
+HL.Vi_rest = HL.Vi_rest * ones(N, 1);
+
+% Nie_b(locs(:,3) < -9 & map ~= 1) = 1.2 * HL.Nie_b;
+% Nii_b(locs(:,3) < -9 & map ~= 1) = 1.2 * HL.Nii_b;
+% 
+% if ~isnan(lessihb_idx)        
+%     Nie_b(normal_zone) = 1.2 * HL.Nie_b;
+%     Nii_b(normal_zone) = 1.2 * HL.Nii_b;
+%     Nie_b(focus_zone) = 0.95 * HL.Nie_b;
+%     Nii_b(focus_zone) = 0.95 * HL.Nii_b;
+%     Nie_b(lessihb_zone) = 0.95 * HL.Nie_b;
+%     Nii_b(lessihb_zone) = 0.95 * HL.Nii_b;
+% end
+    
+% Vi_rest(normal_zone) = Vi_rest(normal_zone) + 3;
+
+% [HL.Nee_a, HL.Nei_a] = deal(5000, 5000);
+% lam = 1;
+% HL.gamma_i = HL.gamma_i / lam;
+% HL.gi = HL.gi * lam;
+
+
+%% run simulation
 for k = 1:K
     
     if k <= 30 / T0 % k == 20 / T0
@@ -67,7 +96,7 @@ for k = 1:K
         source_drive = NaN; % 3;
     end
 
-    fprintf(['Running simulation , ' num2str(k) ' ... \n']);
+    fprintf(['Running simulation , ' num2str(k) ' ... ']);
     tic; % start timer
 
     [samp_time,last,fine] = seizing_cortical_field(...
@@ -76,7 +105,7 @@ for k = 1:K
         micro_idx, macro_idx, focus_idx, normal_idx, ...
         lessihb_idx);
     
-    fprintf(['Run time ' num2str(toc) '\n']);
+    fprintf(['RT ' num2str(toc) '\n']);
 
     if visualize
         

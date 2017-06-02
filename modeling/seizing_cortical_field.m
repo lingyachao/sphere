@@ -1,8 +1,7 @@
 function [samp_time,last,fine] = seizing_cortical_field( ...
     source_del_VeRest, map, time_end, IC, ...
     ~, laplacian, avg_D, ...
-    micro_idx, macro_idx, focus_idx, normal_idx, ...
-    lessihb_idx)
+    zones, micro_idx, macro_idx, focus_idx, normal_idx)
  
     global HL
 
@@ -103,30 +102,6 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
     % noise-amplitude coefficients for subcortical flux (note 1/sqrt(dt) factor)
     B_ee = noise_sf * sqrt(noise_sc * HL.phi_ee_sc / dt);
     B_ei = noise_sf * sqrt(noise_sc * HL.phi_ei_sc / dt);
-
-    % define zones
-    focus_zone = map == 1;
-    lessihb_zone = lessihb_idx & map ~= 1;
-    normal_zone = ~lessihb_idx;
-    
-    % increase inhibitory strength in all locations other than a patch
-    Nie_b = HL.Nie_b * ones(N, 1);
-    Nii_b = HL.Nii_b * ones(N, 1);
-    
-    % Nie_b(locs(:,3) < -9 & map ~= 1) = 1.2 * HL.Nie_b;
-    % Nii_b(locs(:,3) < -9 & map ~= 1) = 1.2 * HL.Nii_b;
-
-%     if ~isnan(lessihb_idx)        
-%         Nie_b(normal_zone) = 1.2 * HL.Nie_b;
-%         Nii_b(normal_zone) = 1.2 * HL.Nii_b;
-%         Nie_b(focus_zone) = 0.95 * HL.Nie_b;
-%         Nii_b(focus_zone) = 0.95 * HL.Nii_b;
-%         Nie_b(lessihb_zone) = 0.95 * HL.Nie_b;
-%         Nii_b(lessihb_zone) = 0.95 * HL.Nii_b;
-%     end
-    
-    Vi_rest = HL.Vi_rest * ones(N, 1);
-    % Vi_rest(normal_zone) = Vi_rest(normal_zone) + 3;
     
     for i = 0:Nsteps-1
 
@@ -139,18 +114,18 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
             fine.Qe_focus(idx,:) = Qe_grid(focus_idx);
             fine.Qe_normal(idx,:) = Qe_grid(normal_idx);
 
-            fine.Qe_focus_avg(idx,:) = mean(Qe_grid(focus_zone));
-            fine.Qe_lessihb_avg(idx,:) = mean(Qe_grid(lessihb_zone));
-            fine.Qe_normal_avg(idx,:) = mean(Qe_grid(normal_zone));
+            fine.Qe_focus_avg(idx,:) = mean(Qe_grid(zones.focus_zone));
+            fine.Qe_lessihb_avg(idx,:) = mean(Qe_grid(zones.lessihb_zone));
+            fine.Qe_normal_avg(idx,:) = mean(Qe_grid(zones.normal_zone));
 
             fine.Ve_micro(idx,:) = Ve_grid(micro_idx);
             fine.Ve_macro(idx,:) = Ve_grid(macro_idx);
             fine.Ve_focus(idx,:) = Ve_grid(focus_idx);
             fine.Ve_normal(idx,:) = Ve_grid(normal_idx);
 
-            fine.Ve_focus_avg(idx,:) = mean(Ve_grid(focus_zone));
-            fine.Ve_lessihb_avg(idx,:) = mean(Ve_grid(lessihb_zone));
-            fine.Ve_normal_avg(idx,:) = mean(Ve_grid(normal_zone));
+            fine.Ve_focus_avg(idx,:) = mean(Ve_grid(zones.focus_zone));
+            fine.Ve_lessihb_avg(idx,:) = mean(Ve_grid(zones.lessihb_zone));
+            fine.Ve_normal_avg(idx,:) = mean(Ve_grid(zones.normal_zone));
         end
         
         % 1. update wave equations
@@ -186,12 +161,12 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
 
         %%%% I-to-E %%%%
         F_ie_1   = F_ie + dt * HL.gamma_i^2 * (-2/HL.gamma_i*F_ie - Phi_ie ...
-                        + Nie_b .* Qi_grid);            % short range
+                        + HL.Nie_b .* Qi_grid);            % short range
         Phi_ie_1 = Phi_ie + dt*F_ie;
 
         %%%% I-to-I %%%%
         F_ii_1   = F_ii + dt * HL.gamma_i^2 * (-2/HL.gamma_i*F_ii - Phi_ii ...
-                        + Nii_b .* Qi_grid);            % short range
+                        + HL.Nii_b .* Qi_grid);            % short range
         Phi_ii_1 = Phi_ii + dt*F_ii;
 
         % 3. update the soma voltages
@@ -201,9 +176,9 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
               + rho_i * Psi_ie(Ve_grid) .* Phi_ie ...      %I-to-E
               + D11 .* (laplacian * Ve_grid));
 
-        Vi_grid_1 = Vi_grid + dt/HL.tau_i * ((Vi_rest - Vi_grid) + del_ViRest ...
-              + rho_e * Psi_ei(Vi_grid, Vi_rest) .* Phi_ei ...      %E-to-I
-              + rho_i * Psi_ii(Vi_grid, Vi_rest) .* Phi_ii ...      %I-to-I
+        Vi_grid_1 = Vi_grid + dt/HL.tau_i * ((HL.Vi_rest - Vi_grid) + del_ViRest ...
+              + rho_e * Psi_ei(Vi_grid) .* Phi_ei ...      %E-to-I
+              + rho_i * Psi_ii(Vi_grid) .* Phi_ii ...      %I-to-I
               + D22 .* (laplacian * Vi_grid));
 
         % 4. update the firing rates
@@ -216,7 +191,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         % K_1 = K;
         K_1 = K + dt/tau_K * (-k_decay*K ...   % decay term.                  
                 + kR * (Qe_grid + Qi_grid)./(1+exp(-((Qe_grid + Qi_grid)-15))) ... % reaction term.
-                + kD * (laplacian * K));     % diffusion term.
+                + kD * (laplacian * K));       % diffusion term.
 
         % 6. update inhibitory gap junction strength, and resting voltages
         D22_1         = D22        + dt/tau_dD  * (KtoD*K);
@@ -246,8 +221,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         
         del_VeRest = min(del_VeRest_1, 1.5);          % the excitatory population resting voltage cannot pass above a maximum value of 1.5.    
         
-        if ~isnan(source_del_VeRest) 
-            % del_VeRest(1) = source_del_VeRest;
+        if ~isnan(source_del_VeRest)
             del_VeRest(map == 1) = source_del_VeRest; % set the "source" locations' excitatory population resting voltage
         end
   
@@ -297,11 +271,11 @@ function weight = Psi_ee(V)
 end
 
 %------------------------------------------------------------------------
-function weight = Psi_ei(V, Vi_rest)
+function weight = Psi_ei(V)
     % e-to-i reversal-potential weighting function
 
     global HL
-    weight = (HL.Ve_rev - V)./(HL.Ve_rev - Vi_rest);
+    weight = (HL.Ve_rev - V)./(HL.Ve_rev - HL.Vi_rest);
 end
 
 %------------------------------------------------------------------------
@@ -313,9 +287,9 @@ function weight = Psi_ie(V)
 end
 
 %------------------------------------------------------------------------
-function weight = Psi_ii(V, Vi_rest)
+function weight = Psi_ii(V)
     % i-to-i reversal potential weighting function
 
     global HL
-    weight = (HL.Vi_rev - V)./(HL.Vi_rev - Vi_rest);
+    weight = (HL.Vi_rev - V)./(HL.Vi_rev - HL.Vi_rest);
 end
