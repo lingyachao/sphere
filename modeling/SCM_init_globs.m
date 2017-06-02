@@ -1,19 +1,4 @@
 function H = SCM_init_globs
-% function H = SCM_init_globs
-% Initialize global constants that define the locations of the steady
-% states.  These values are stored in the struct H
-
-% 10-Feb-2009 Only initialize constants that determine the steady states;
-%		don't initialize those that only alter stability (tau, gamma, v)
-%
-% Copyright (c) 2009-2012 Alistair Steyn-Ross: asr(at)waikato.ac.nz
-%   School of Engineering, Waikato University, NZ 
-% This code forms part of the SOinC (slow oscillations in cortex) project
-%
-% Feb 2009; modified July 2012
-%
-% Modified by M. A. Kramer for the Seizing Cortical Model (SCM)
-% May 2016.
 
     % time constants
     H.v = 280;                                      % axonal conduction velocity (cm/s), [original = 140 cm/s]
@@ -23,6 +8,11 @@ function H = SCM_init_globs
     H.tau_e = 0.02;                                 % excit neuron time-constant (/s) [original = 0.04 s]
     H.tau_i = 0.02;                                 % inhib neuron time-constant (/s) [original = 0.04 s]
 
+    % noise factors
+    H.noise = 0.5;
+    H.noise_sf = 0.2*20*H.noise;                    % noise scale-factor
+    H.noise_sc = 0.2;                               % subcortical noise
+    
     % sigmoid characteristics
     [H.Qe_max,  H.Qi_max]  = deal(30,    60);       % sigmoid maximum (s^-1)
     [H.theta_e, H.theta_i] = deal(-58.5, -58.5);	% sigmoid threshold (mV)

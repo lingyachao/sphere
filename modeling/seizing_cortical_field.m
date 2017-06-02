@@ -12,11 +12,6 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
     rand_state = sum(100*clock);
     rng(rand_state); % randn('state', rand_state);
 
-    % noise factors
-    noise = 0.5;
-    noise_sf = 0.2*20*noise;    % noise scale-factor
-    noise_sc = 0.2;             % subcortical noise
-
     % set time resolution
     dt = 0.2 * 1e-3;
 
@@ -75,8 +70,8 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
     fine.Ve_normal_avg = zeros(N_samp, 1);
     
     % noise-amplitude coefficients for subcortical flux (note 1/sqrt(dt) factor)
-    B_ee = noise_sf * sqrt(noise_sc * HL.phi_ee_sc / dt);
-    B_ei = noise_sf * sqrt(noise_sc * HL.phi_ei_sc / dt);
+    B_ee = HL.noise_sf * sqrt(HL.noise_sc * HL.phi_ee_sc / dt);
+    B_ei = HL.noise_sf * sqrt(HL.noise_sc * HL.phi_ei_sc / dt);
     
     for i = 0:Nsteps-1
 
@@ -120,18 +115,18 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
 
         %%%% E-to-E %%%%
         F_ee_1   = F_ee + dt * HL.gamma_e^2 * (-2/HL.gamma_e*F_ee - Phi_ee ...
-                        + HL.Nee_a * phi_ee ...         % long range
-                        + HL.Nee_b * Qe_grid ...        % short range
-                        + noise_sc * HL.phi_ee_sc ...   % subcortical (tonic)
-                        + B_ee * randn(N, 1));          % subcortical (random)
+                        + HL.Nee_a * phi_ee ...             % long range
+                        + HL.Nee_b * Qe_grid ...            % short range
+                        + HL.noise_sc * HL.phi_ee_sc ...    % subcortical (tonic)
+                        + B_ee .* randn(N, 1));              % subcortical (random)
         Phi_ee_1 = Phi_ee + dt*F_ee;
 
         %%%% E-to-I %%%%
         F_ei_1   = F_ei + dt * HL.gamma_e^2 * (-2/HL.gamma_e*F_ei - Phi_ei ...
-                        + HL.Nei_a * phi_ei ...         % long range
-                        + HL.Nei_b * Qe_grid ...        % short range
-                        + noise_sc * HL.phi_ei_sc ...   % subcortical (tonic)
-                        + B_ei * randn(N, 1));          % subcortical (random)
+                        + HL.Nei_a * phi_ei ...             % long range
+                        + HL.Nei_b * Qe_grid ...            % short range
+                        + HL.noise_sc * HL.phi_ei_sc ...    % subcortical (tonic)
+                        + B_ei * randn(N, 1));              % subcortical (random)
         Phi_ei_1 = Phi_ei + dt*F_ei;
 
         %%%% I-to-E %%%%
@@ -147,12 +142,12 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         % 3. update the soma voltages
 
         Ve_grid_1 = Ve_grid + dt/HL.tau_e * ((HL.Ve_rest - Ve_grid) + del_VeRest ...
-                            + HL.ge * Psi_ee(Ve_grid) .* Phi_ee ...      %E-to-E
+                            + HL.ge .* Psi_ee(Ve_grid) .* Phi_ee ...      %E-to-E
                             + HL.gi * Psi_ie(Ve_grid) .* Phi_ie ...      %I-to-E
                             + D11 .* (laplacian * Ve_grid));
 
         Vi_grid_1 = Vi_grid + dt/HL.tau_i * ((HL.Vi_rest - Vi_grid) + del_ViRest ...
-                            + HL.ge * Psi_ei(Vi_grid) .* Phi_ei ...      %E-to-I
+                            + HL.ge .* Psi_ei(Vi_grid) .* Phi_ei ...      %E-to-I
                             + HL.gi * Psi_ii(Vi_grid) .* Phi_ii ...      %I-to-I
                             + D22 .* (laplacian * Vi_grid));
 
