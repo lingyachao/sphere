@@ -2,14 +2,15 @@ clear; close all;
 
 %% specify run type
 type = 'sphere';
-note = 'no_stimuli_noK';
+note = 'bifur';
 save_output = false;
 visualize = true;
+print_count = true;
 
 %% load grid
 if strcmp(type, 'sphere')
-    load('./computed_sphere_grid/N10242_R10_wideNodes.mat');
-    % load('./computed_sphere_grid/N42_R10.mat');
+    load('./computed_sphere_grid/N10242_R10_wideNodes.mat'); 
+    % load('./computed_sphere_grid/N42_R10.mat'); avg_D = 0.3;
     pos_hemi = locs(:,3) >= 0;
     neg_hemi = locs(:,3) < 0;
 elseif strcmp(type, 'brain')
@@ -44,47 +45,68 @@ end
 
 %% initialize parameters and map
 k = 0;
-K = 30;
+K = 2000;
 T0 = 0.1;
 map = make_map(laplacian);
 
 %% initialize initial state
 last = make_IC(N);
-last.dVe = zeros(N, 1);
-last.dVi = zeros(N, 1);
+% last.dVe = zeros(N, 1);
+% last.dVi = zeros(N, 1);
 % last.Ve = -60 * ones(N, 1);
 
 %% define zones
 % lessihb_idx = lessihb_area;
 lessihb_idx = locs(:,3) < -6;
 % lessihb_idx = coord(1,:)' > 0.5;
-% lessihb_idx = false(N, 1);
+% lessihb_idx = true(N, 1);
+
 zones.focus_zone = map == 1;
 zones.lessihb_zone = lessihb_idx & map ~= 1;
 zones.normal_zone = ~lessihb_idx;
     
 %% initialize constants and make modifications
 global HL
-HL = SCM_init_globs;
+HL = SCM_init_globs(N);
 
 % no potassium
-HL.kR = 0;
+% HL.kR = HL.kR * ones(N, 1);
+% HL.kR(zones.normal_zone) = 0;
+% HL.kR = 0;
+
+% HL.kS = HL.kS * ones(N, 1);
+% HL.kS(zones.normal_zone) = 0;
+
+HL.k_decay = HL.k_decay * ones(N, 1);
+HL.k_decay(zones.normal_zone) = 1000;
 
 % inhomogeneous excitability
-avg_D = 1;
-HL.ge = HL.ge * ones(N, 1);
-HL.ge(1:7) = 0.75 * HL.ge(1:7);
-HL.phi_ee_sc = HL.phi_ee_sc * ones(N, 1);
-HL.phi_ee_sc(1:7) = 20 * HL.phi_ee_sc(1:7);
-% ge_steps = HL.ge * 0.2 / (K + 10);
-% HL.ge = HL.ge * 0.8;
-% HL.phi_ee_sc = HL.phi_ee_sc * 20;
+
+% ge_steps = 0.4 * HL.ge(1) / (K+10);
+
+% HL.ge = 0.8 * HL.ge;
+
+last.dVe(zones.normal_zone) = -1;
+last.dVi(zones.normal_zone) = 0.1;
+last.dVe(lessihb_idx) = -1;
+last.dVi(lessihb_idx) = 0.1;
+
+% last.D22(lessihb_idx) = 5;
+last.D22(:) = 5;
+last.D11 = last.D22 / 100;
+
+% HL.ge(zones.lessihb_zone) = 0.8 * HL.ge(zones.lessihb_zone);
+% HL.ge(zones.focus_zone) = 0.8 * HL.ge(zones.focus_zone);
+% HL.phi_ee_sc(zones.focus_zone) = 20 * HL.phi_ee_sc(zones.focus_zone);
+
+% gauss_width = 1;
+% [lat,long] = GridSphere(N);
+% arc_dist = 10 * (lat+90) * (pi/180);
+% HL.phi_ee_sc = HL.phi_ee_sc(1) * (1 + 20 * exp(-arc_dist.^2 / gauss_width.^2));
+% HL.ge = HL.ge(1) * (1 - 0.3 * exp(-arc_dist.^2 / gauss_width.^2));
 
 % increase inhibitory strength in all locations other than a patch
-HL.Nie_b = HL.Nie_b * ones(N, 1);
-HL.Nii_b = HL.Nii_b * ones(N, 1);
-HL.Vi_rest = HL.Vi_rest * ones(N, 1);
-HL.Vi_rest(zones.normal_zone) = HL.Vi_rest(zones.normal_zone) + 3;
+% HL.Vi_rest(zones.normal_zone) = HL.Vi_rest(zones.normal_zone) + 3;
 
 %% 
 % Nie_b(normal_zone) = 1.2 * HL.Nie_b;
@@ -106,14 +128,9 @@ N_samp = 0;
 %% run simulation
 for k = 1:K
     
-    % HL.ge = HL.ge + ge_steps;
+    % HL.ge(focus_indices) = HL.ge(focus_indices) - ge_steps;
     
-    % if k == 3 / T0
-        
-    % end
-    
-    
-    if k <= 30 / T0
+    if k == 10 / T0
         source_drive = NaN;
     elseif k > 150 / T0
         source_drive = NaN;
@@ -121,7 +138,9 @@ for k = 1:K
         source_drive = NaN;
     end
 
-    fprintf(['Running simulation , ' num2str(k) ' ... ']);
+    if print_count
+        fprintf(['Running simulation , ' num2str(k) ' ... ']);
+    end
     tic; % start timer
 
     [samp_time,last,fine] = seizing_cortical_field(...
@@ -129,17 +148,19 @@ for k = 1:K
         locs, laplacian, avg_D, ...
         zones, micro_idx, macro_idx, focus_idx, normal_idx);
     
-    fprintf(['RT ' num2str(toc) '\n']);
-
     if visualize
         if strcmp(type, 'sphere')
             subplot(1, 2, 1);
-            scatter(locs(pos_hemi,1), locs(pos_hemi,2), 15, last.Qe(pos_hemi), 'filled');
-            caxis([0,30]);
+            scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, last.K(neg_hemi), 'filled');
+            % scatter(locs(pos_hemi,1), locs(pos_hemi,2), 15, last.Ve(pos_hemi), 'filled');
+            % caxis([-65,-50])
+            % caxis([0,30]);
+            colorbar;
 
             subplot(1, 2, 2);    
-            scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, last.Qe(neg_hemi), 'filled');
-            caxis([0,30]);
+            scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, last.Ve(neg_hemi), 'filled');
+            caxis([-65,-50]);
+            % caxis([0,30]);
         elseif strcmp(type, 'brain')
             clf(f);
             figure_wire(surf, last.Qe, false);
@@ -153,13 +174,20 @@ for k = 1:K
             'samp_time', 'last', 'fine');
     end
     
+    % for plotting focal voltage traces
     if k == 1
         N_samp = length(fine.Ve_focus(:,1));
         Ve_samp = NaN(K * N_samp,1);
     end
     Ve_samp((k-1)*N_samp+1 : k*N_samp) = fine.Ve_focus(:,1);
     
-    fprintf(['mean ' num2str(mean(last.Ve)) ' sd ' num2str(std(last.Ve)) '\n']);
+    if print_count
+        fprintf(['RT ' num2str(toc) '\n']);
+        % fprintf(['mean ' num2str(mean(last.Ve)) ' sd ' num2str(std(last.Ve)) '\n']);
+        fprintf(['K normal ' num2str(mean(last.K(zones.normal_zone))) ' K abnormal ' num2str(mean(last.K(lessihb_idx))) '\n']);
+        fprintf(['D2 ' num2str(mean(last.D22(lessihb_idx))) ' dVe ' num2str(mean(last.dVe(lessihb_idx))) '\n']);
+        fprintf(['Ve focus ' num2str(last.Ve(1)) '\n']);
+    end
 end
 
 figure;

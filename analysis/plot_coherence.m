@@ -1,5 +1,5 @@
 %% if drawing one period, draw this
-central_t = 5:5:195;
+central_t = 5:10:195;
 period_idx = find(central_t == 115);
 
 %% coherence between two farthest electrodes from 110-120s

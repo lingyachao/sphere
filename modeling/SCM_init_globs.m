@@ -1,4 +1,4 @@
-function H = SCM_init_globs
+function H = SCM_init_globs(N)
 
     % time constants
     H.v = 280;                                      % axonal conduction velocity (cm/s), [original = 140 cm/s]
@@ -34,9 +34,12 @@ function H = SCM_init_globs
     % parameters for proportion of extracellular potassium.
     H.tau_K = 200;                                  % time-constant (/s).
     H.k_decay = 0.1;                                % decay rate (/s).
-    H.kR    = 0.15;                                 % scale reaction term. 
+    H.kS = 1;                                       % spontaneous term.
+    H.kR = 0.15;                                    % scale reaction term. 
     H.kD = 1;                                       % diffusion coefficient (cm^2/s).
     
+    % H.KtoVe = 0;
+    % H.KtoVi = 0;
     H.KtoVe = 10;                                   % impact on excitatory population resting voltage.
     H.KtoVi = 10;                                   % impact on inhibitory population resting voltage.
     H.KtoD  = -50;                                  % impact on inhibitory gap junction strength.
@@ -59,6 +62,13 @@ function H = SCM_init_globs
     H.d_psi_ie = -1/(H.Vi_rev - H.Ve_rest);
     H.d_psi_ii = -1/(H.Vi_rev - H.Vi_rest);
 
+    % non-homogenous parameters
+    H.Nie_b = H.Nie_b * ones(N, 1);
+    H.Nii_b = H.Nii_b * ones(N, 1);
+    H.Vi_rest = H.Vi_rest * ones(N, 1);
+    H.ge = H.ge * ones(N, 1);
+    H.phi_ee_sc = H.phi_ee_sc * ones(N, 1);
+    
     return
 end
 %------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 clear; close all; 
 
 % data directory to plot
-id = '05082047';
+id = '06041833';
 
 folder_list = dir('./data');
 for i = 1 : length(folder_list)
@@ -26,8 +26,8 @@ VIDEO_FILE = [DATA_DIR 'movie_sparse_sphere.mp4'];
 addpath(genpath('./analysis'));
 
 % total number of files; number of time points in each file; duration per file
-% K = 2000; T = 50; T0 = 0.1;
-K = 200; T = 500; T0 = 1;
+K = 2000; T = 50; T0 = 0.1;
+% K = 200; T = 500; T0 = 1;
 
 % for coherence split the entire course into P periods
 % P = 39; % each period is 10s, overlapping 5s with the previous period
@@ -45,7 +45,7 @@ end
 
 % load or compute coherence data
 if exist(COHERENCE_FILE, 'file') == 2
-   s load(COHERENCE_FILE);
+    load(COHERENCE_FILE);
 else
     prepare_coherence;
     % error('script should be run in the root folder');
