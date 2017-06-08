@@ -131,6 +131,7 @@ for k = 1:K
     % HL.ge(focus_indices) = HL.ge(focus_indices) - ge_steps;
     
     if k == 10 / T0
+        last.K(1:7) = 10;
         source_drive = NaN;
     elseif k > 150 / T0
         source_drive = NaN;

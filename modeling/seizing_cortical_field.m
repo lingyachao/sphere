@@ -141,7 +141,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
 
         % 3. update the soma voltages
 
-        Ve_grid_1 = Ve_grid + dt/HL.tau_e * ((HL.Ve_rest - Ve_grid) + del_VeRest ...
+        Ve_grid_1 = Ve_grid + dt/HL.tau_e * ((HL.Ve_rest - Ve_grid) + del_VeRest + K ...
                             + HL.ge .* Psi_ee(Ve_grid) .* Phi_ee ...      %E-to-E
                             + HL.gi * Psi_ie(Ve_grid) .* Phi_ie ...      %I-to-E
                             + D11 .* (laplacian * Ve_grid));
@@ -159,7 +159,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
 
         % 5. update extracellular ion
         K_1 = K + dt/HL.tau_K * (-HL.k_decay .* K ...   % decay term.
-                % + HL.kS ...                          % spontaneous term.
+                + HL.kS ...                          % spontaneous term.
                 + HL.kR .* (Qe_grid + Qi_grid)./(1+exp(-((Qe_grid + Qi_grid)-15))) ... % reaction term.
                 + HL.kD * (laplacian * K));          % diffusion term.
 
@@ -195,7 +195,8 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         end
   
         del_ViRest = min(del_ViRest_1,0.8);           % the inhibitory population resting voltage cannot pass above a maximum value of 0.8.
-        K = min(K_1,1);                               % the extracellular ion cannot pass above a maximum value of 1.0.
+        K = K_1;
+        % K = min(K_1,1);                               % the extracellular ion cannot pass above a maximum value of 1.0.
 
         % sanity check!
         if any(any(isnan(Qe_grid)))
