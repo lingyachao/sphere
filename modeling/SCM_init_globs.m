@@ -32,17 +32,17 @@ function H = SCM_init_globs(N)
     [H.Nee_sc,H.Nei_sc]= deal(50, 50);              % subcortical
 
     % parameters for proportion of extracellular potassium.
-    H.tau_K = 200;                                    % time-constant (/s).
+    H.tau_K = 20;                                    % time-constant (/s).
     H.k_decay = 0.5;                                  % decay rate (/s).
-    H.kS = 0;                                       % spontaneous term.
-    H.kR = 0.15;                                      % scale reaction term. 
-    H.kD = 1;                                     % diffusion coefficient (cm^2/s).
+    H.kS = 0;                                         % spontaneous term.
+    H.kR = 1.5;                                      % scale reaction term. 
+    H.kD = 3;                                         % diffusion coefficient (cm^2/s).
     
     H.KtoVe = 0;
     H.KtoVi = 0;
     % H.KtoVe = 10;                                 % impact on excitatory population resting voltage.
     % H.KtoVi = 10;                                 % impact on inhibitory population resting voltage.
-    H.KtoD  = -5;                                  % impact on inhibitory gap junction strength.
+    H.KtoD  = -50;                                  % impact on inhibitory gap junction strength.
 
     H.tau_dVe = 250;                                % excitatory population resting voltage time-constant (/s).
     H.tau_dVi = 250;                                % inhibitory population resting voltage time-constant (/s).

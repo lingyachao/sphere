@@ -160,11 +160,11 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         % 5. update extracellular ion
         K_1 = K + dt/HL.tau_K * (-HL.k_decay .* K ...   % decay term.
                 + HL.kS ...                          % spontaneous term.
-                + HL.kR .* (Qe_grid + Qi_grid) ... %./(1+exp(-((Qe_grid + Qi_grid)-15))) ... % reaction term.
+                + HL.kR .* (Qe_grid + Qi_grid) ... % ./ (1+exp(-((Qe_grid + Qi_grid)-15))) ... % reaction term.
                 + HL.kD * (laplacian * K));          % diffusion term.
 
         % 6. update inhibitory gap junction strength, and resting voltages
-        % D22_1         = D22        + dt/HL.tau_dD  * (HL.KtoD*K);
+        D22_1         = D22        + dt/HL.tau_dD  * (HL.KtoD*K);
         % del_VeRest_1  = del_VeRest + dt/HL.tau_dVe * (HL.KtoVe*K);
         % del_ViRest_1  = del_ViRest + dt/HL.tau_dVi * (HL.KtoVi*K);
 
@@ -187,8 +187,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         Ve_grid = Ve_grid_1;
         Vi_grid = Vi_grid_1;
         
-        D22 = 15 * exp(-K/2);
-        % D22 = max(D22_1,0.1);                         % the inhibitory gap junctions cannot pass below a minimum value of 0.1.
+        D22 = max(D22_1,0.1);                         % the inhibitory gap junctions cannot pass below a minimum value of 0.1.
         D11 = D22 / 100;                              % see definition in [Steyn-Ross et al PRX 2013, Table I].
         
         % del_VeRest = min(del_VeRest_1, 1.5);          % the excitatory population resting voltage cannot pass above a maximum value of 1.5.    

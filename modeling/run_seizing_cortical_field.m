@@ -70,15 +70,22 @@ HL = SCM_init_globs(N);
 % HL.kR = 0;
 
 HL.k_decay = HL.k_decay * ones(N, 1);
-HL.k_decay(zones.normal_zone) = 100;
+% HL.k_decay(zones.normal_zone) = 100;
+
+% HL.Vi_rest = -74;
 
 last.dVe(zones.normal_zone) = -1;
 % last.dVi(zones.normal_zone) = 0;
 last.dVe(lessihb_idx) = -1;
 % last.dVi(lessihb_idx) = 0;
 
-% last.D22(:) = 5;
+last.D22(:) = 3;
 % last.D11 = last.D22 / 100;
+
+gauss_width = 0.5;
+[lat,long] = GridSphere(N);
+arc_dist = 10 * (lat+90) * (pi/180);
+last.K = 10 * exp(-arc_dist.^2 / gauss_width.^2);
 
 %% bifurcation stuff
 
@@ -120,7 +127,7 @@ for k = 1:K
         % HL.Vi_rest(zones.focus_zone) = HL.Vi_rest(zones.focus_zone) + 10;
     end
 
-    if k > 0
+    if k < 0
         source_drive = 3;
     else
         source_drive = NaN;
