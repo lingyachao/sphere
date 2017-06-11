@@ -35,7 +35,7 @@ end
 %% set plotting window
 if visualize
     f = figure;
-    set(f, 'Position', [200 300 900 400]);
+    set(f, 'Position', [200 300 1300 400]);
     if strcmp(type, 'brain')
         load('autism.surface.mat', 'tri');
         surf.vertices = locs;
@@ -51,9 +51,6 @@ map = make_map(laplacian);
 
 %% initialize initial state
 last = make_IC(N);
-% last.dVe = zeros(N, 1);
-% last.dVi = zeros(N, 1);
-% last.Ve = -60 * ones(N, 1);
 
 %% define zones
 % lessihb_idx = lessihb_area;
@@ -70,30 +67,20 @@ global HL
 HL = SCM_init_globs(N);
 
 % no potassium
-% HL.kR = HL.kR * ones(N, 1);
-% HL.kR(zones.normal_zone) = 0;
 % HL.kR = 0;
 
-% HL.kS = HL.kS * ones(N, 1);
-% HL.kS(zones.normal_zone) = 0;
-
 HL.k_decay = HL.k_decay * ones(N, 1);
-HL.k_decay(zones.normal_zone) = 1000;
-
-% inhomogeneous excitability
-
-% ge_steps = 0.4 * HL.ge(1) / (K+10);
-
-% HL.ge = 0.8 * HL.ge;
+HL.k_decay(zones.normal_zone) = 100;
 
 last.dVe(zones.normal_zone) = -1;
-last.dVi(zones.normal_zone) = 0.1;
+% last.dVi(zones.normal_zone) = 0;
 last.dVe(lessihb_idx) = -1;
-last.dVi(lessihb_idx) = 0.1;
+% last.dVi(lessihb_idx) = 0;
 
-% last.D22(lessihb_idx) = 5;
-last.D22(:) = 5;
-last.D11 = last.D22 / 100;
+% last.D22(:) = 5;
+% last.D11 = last.D22 / 100;
+
+%% bifurcation stuff
 
 % HL.ge(zones.lessihb_zone) = 0.8 * HL.ge(zones.lessihb_zone);
 % HL.ge(zones.focus_zone) = 0.8 * HL.ge(zones.focus_zone);
@@ -108,7 +95,7 @@ last.D11 = last.D22 / 100;
 % increase inhibitory strength in all locations other than a patch
 % HL.Vi_rest(zones.normal_zone) = HL.Vi_rest(zones.normal_zone) + 3;
 
-%% 
+%% other means of introducing excitability
 % Nie_b(normal_zone) = 1.2 * HL.Nie_b;
 % Nii_b(normal_zone) = 1.2 * HL.Nii_b;
 % Nie_b(focus_zone) = 0.95 * HL.Nie_b;
@@ -127,18 +114,18 @@ N_samp = 0;
 
 %% run simulation
 for k = 1:K
-    
-    % HL.ge(focus_indices) = HL.ge(focus_indices) - ge_steps;
-    
-    if k == 10 / T0
-        last.K(1:7) = 10;
-        source_drive = NaN;
-    elseif k > 150 / T0
-        source_drive = NaN;
+        
+    if k == 1
+        % last.K(1:7) = 10;
+        % HL.Vi_rest(zones.focus_zone) = HL.Vi_rest(zones.focus_zone) + 10;
+    end
+
+    if k > 0
+        source_drive = 3;
     else
         source_drive = NaN;
     end
-
+        
     if print_count
         fprintf(['Running simulation , ' num2str(k) ' ... ']);
     end
@@ -151,17 +138,24 @@ for k = 1:K
     
     if visualize
         if strcmp(type, 'sphere')
-            subplot(1, 2, 1);
+            subplot(1, 3, 1);
             scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, last.K(neg_hemi), 'filled');
             % scatter(locs(pos_hemi,1), locs(pos_hemi,2), 15, last.Ve(pos_hemi), 'filled');
             % caxis([-65,-50])
             % caxis([0,30]);
             colorbar;
+            title('K');
 
-            subplot(1, 2, 2);    
+            subplot(1, 3, 2);    
             scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, last.Ve(neg_hemi), 'filled');
             caxis([-65,-50]);
-            % caxis([0,30]);
+            title('Ve');
+            
+            subplot(1, 3, 3);    
+            scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, last.Qe(neg_hemi), 'filled');
+            caxis([0,30]);
+            title('Qe');
+            
         elseif strcmp(type, 'brain')
             clf(f);
             figure_wire(surf, last.Qe, false);
@@ -184,7 +178,6 @@ for k = 1:K
     
     if print_count
         fprintf(['RT ' num2str(toc) '\n']);
-        % fprintf(['mean ' num2str(mean(last.Ve)) ' sd ' num2str(std(last.Ve)) '\n']);
         fprintf(['K normal ' num2str(mean(last.K(zones.normal_zone))) ' K abnormal ' num2str(mean(last.K(lessihb_idx))) '\n']);
         fprintf(['D2 ' num2str(mean(last.D22(lessihb_idx))) ' dVe ' num2str(mean(last.dVe(lessihb_idx))) '\n']);
         fprintf(['Ve focus ' num2str(last.Ve(1)) '\n']);

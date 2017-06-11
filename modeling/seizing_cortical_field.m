@@ -146,7 +146,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
                             + HL.gi * Psi_ie(Ve_grid) .* Phi_ie ...      %I-to-E
                             + D11 .* (laplacian * Ve_grid));
 
-        Vi_grid_1 = Vi_grid + dt/HL.tau_i * ((HL.Vi_rest - Vi_grid) + del_ViRest ...
+        Vi_grid_1 = Vi_grid + dt/HL.tau_i * ((HL.Vi_rest - Vi_grid) + del_ViRest + K ...
                             + HL.ge .* Psi_ei(Vi_grid) .* Phi_ei ...      %E-to-I
                             + HL.gi * Psi_ii(Vi_grid) .* Phi_ii ...      %I-to-I
                             + D22 .* (laplacian * Vi_grid));
@@ -160,13 +160,13 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         % 5. update extracellular ion
         K_1 = K + dt/HL.tau_K * (-HL.k_decay .* K ...   % decay term.
                 + HL.kS ...                          % spontaneous term.
-                + HL.kR .* (Qe_grid + Qi_grid)./(1+exp(-((Qe_grid + Qi_grid)-15))) ... % reaction term.
+                + HL.kR .* (Qe_grid + Qi_grid) ... %./(1+exp(-((Qe_grid + Qi_grid)-15))) ... % reaction term.
                 + HL.kD * (laplacian * K));          % diffusion term.
 
         % 6. update inhibitory gap junction strength, and resting voltages
-        D22_1         = D22        + dt/HL.tau_dD  * (HL.KtoD*K);
-        del_VeRest_1  = del_VeRest + dt/HL.tau_dVe * (HL.KtoVe*K);
-        del_ViRest_1  = del_ViRest + dt/HL.tau_dVi * (HL.KtoVi*K);
+        % D22_1         = D22        + dt/HL.tau_dD  * (HL.KtoD*K);
+        % del_VeRest_1  = del_VeRest + dt/HL.tau_dVe * (HL.KtoVe*K);
+        % del_ViRest_1  = del_ViRest + dt/HL.tau_dVi * (HL.KtoVi*K);
 
         % 7. update dynamic variables
         phi2_ee = phi2_ee_1;
@@ -186,15 +186,17 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
 
         Ve_grid = Ve_grid_1;
         Vi_grid = Vi_grid_1;
-        D22 = max(D22_1,0.1);                         % the inhibitory gap junctions cannot pass below a minimum value of 0.1.
+        
+        D22 = 15 * exp(-K/2);
+        % D22 = max(D22_1,0.1);                         % the inhibitory gap junctions cannot pass below a minimum value of 0.1.
         D11 = D22 / 100;                              % see definition in [Steyn-Ross et al PRX 2013, Table I].
         
-        del_VeRest = min(del_VeRest_1, 1.5);          % the excitatory population resting voltage cannot pass above a maximum value of 1.5.    
+        % del_VeRest = min(del_VeRest_1, 1.5);          % the excitatory population resting voltage cannot pass above a maximum value of 1.5.    
         if ~isnan(source_del_VeRest)
             del_VeRest(map == 1) = source_del_VeRest; % set the "source" locations' excitatory population resting voltage
         end
-  
-        del_ViRest = min(del_ViRest_1,0.8);           % the inhibitory population resting voltage cannot pass above a maximum value of 0.8.
+        
+        % del_ViRest = min(del_ViRest_1,0.8);           % the inhibitory population resting voltage cannot pass above a maximum value of 0.8.
         K = K_1;
         % K = min(K_1,1);                               % the extracellular ion cannot pass above a maximum value of 1.0.
 
