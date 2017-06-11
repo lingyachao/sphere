@@ -51,9 +51,6 @@ map = make_map(laplacian);
 
 %% initialize initial state
 last = make_IC(N);
-% last.dVe = zeros(N, 1);
-% last.dVi = zeros(N, 1);
-% last.Ve = -60 * ones(N, 1);
 
 %% define zones
 % lessihb_idx = lessihb_area;
@@ -69,44 +66,8 @@ zones.normal_zone = ~lessihb_idx;
 global HL
 HL = SCM_init_globs(N);
 
-% no potassium
-% HL.kR = HL.kR * ones(N, 1);
-% HL.kR(zones.normal_zone) = 0;
-% HL.kR = 0;
-
-% HL.kS = HL.kS * ones(N, 1);
-% HL.kS(zones.normal_zone) = 0;
-
-HL.k_decay = HL.k_decay * ones(N, 1);
-HL.k_decay(zones.normal_zone) = 1000;
-
-% inhomogeneous excitability
-
-% ge_steps = 0.4 * HL.ge(1) / (K+10);
-
-% HL.ge = 0.8 * HL.ge;
-
-last.dVe(zones.normal_zone) = -1;
-last.dVi(zones.normal_zone) = 0.1;
-last.dVe(lessihb_idx) = -1;
-last.dVi(lessihb_idx) = 0.1;
-
-% last.D22(lessihb_idx) = 5;
-last.D22(:) = 5;
-last.D11 = last.D22 / 100;
-
-% HL.ge(zones.lessihb_zone) = 0.8 * HL.ge(zones.lessihb_zone);
-% HL.ge(zones.focus_zone) = 0.8 * HL.ge(zones.focus_zone);
-% HL.phi_ee_sc(zones.focus_zone) = 20 * HL.phi_ee_sc(zones.focus_zone);
-
-% gauss_width = 1;
-% [lat,long] = GridSphere(N);
-% arc_dist = 10 * (lat+90) * (pi/180);
-% HL.phi_ee_sc = HL.phi_ee_sc(1) * (1 + 20 * exp(-arc_dist.^2 / gauss_width.^2));
-% HL.ge = HL.ge(1) * (1 - 0.3 * exp(-arc_dist.^2 / gauss_width.^2));
-
 % increase inhibitory strength in all locations other than a patch
-% HL.Vi_rest(zones.normal_zone) = HL.Vi_rest(zones.normal_zone) + 3;
+HL.Vi_rest(zones.normal_zone) = HL.Vi_rest(zones.normal_zone) + 3;
 
 %% 
 % Nie_b(normal_zone) = 1.2 * HL.Nie_b;
@@ -127,15 +88,13 @@ N_samp = 0;
 
 %% run simulation
 for k = 1:K
-    
-    % HL.ge(focus_indices) = HL.ge(focus_indices) - ge_steps;
-    
-    if k == 10 / T0
+     
+    if k <= 30 / T0
         source_drive = NaN;
     elseif k > 150 / T0
         source_drive = NaN;
     else
-        source_drive = NaN;
+        source_drive = 3;
     end
 
     if print_count
@@ -152,8 +111,6 @@ for k = 1:K
         if strcmp(type, 'sphere')
             subplot(1, 2, 1);
             scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, last.K(neg_hemi), 'filled');
-            % scatter(locs(pos_hemi,1), locs(pos_hemi,2), 15, last.Ve(pos_hemi), 'filled');
-            % caxis([-65,-50])
             % caxis([0,30]);
             colorbar;
 
@@ -184,9 +141,9 @@ for k = 1:K
     if print_count
         fprintf(['RT ' num2str(toc) '\n']);
         % fprintf(['mean ' num2str(mean(last.Ve)) ' sd ' num2str(std(last.Ve)) '\n']);
-        fprintf(['K normal ' num2str(mean(last.K(zones.normal_zone))) ' K abnormal ' num2str(mean(last.K(lessihb_idx))) '\n']);
-        fprintf(['D2 ' num2str(mean(last.D22(lessihb_idx))) ' dVe ' num2str(mean(last.dVe(lessihb_idx))) '\n']);
-        fprintf(['Ve focus ' num2str(last.Ve(1)) '\n']);
+        % fprintf(['K normal ' num2str(mean(last.K(zones.normal_zone))) ' K abnormal ' num2str(mean(last.K(lessihb_idx))) '\n']);
+        % fprintf(['D2 ' num2str(mean(last.D22(lessihb_idx))) ' dVe ' num2str(mean(last.dVe(lessihb_idx))) '\n']);
+        % fprintf(['Ve focus ' num2str(last.Ve(1)) '\n']);
     end
 end
 

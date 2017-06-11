@@ -159,7 +159,6 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
 
         % 5. update extracellular ion
         K_1 = K + dt/HL.tau_K * (-HL.k_decay .* K ...   % decay term.
-                % + HL.kS ...                          % spontaneous term.
                 + HL.kR .* (Qe_grid + Qi_grid)./(1+exp(-((Qe_grid + Qi_grid)-15))) ... % reaction term.
                 + HL.kD * (laplacian * K));          % diffusion term.
 
