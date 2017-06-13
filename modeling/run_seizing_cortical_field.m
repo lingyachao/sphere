@@ -1,9 +1,9 @@
 clear; close all;
 
 %% specify run type
-type = 'sphere';
-note = 'bifur';
-save_output = false;
+type = 'brain';
+note = 'full_data';
+save_output = true;
 visualize = true;
 print_count = true;
 
@@ -16,6 +16,8 @@ if strcmp(type, 'sphere')
 elseif strcmp(type, 'brain')
     load('./computed_brain_grid/N40962.mat');
     load('unitsphere.mat', 'coord');
+    macro_idx = find(coord(1,:)' > 0.5)';
+    micro_idx = [];
 else
     error('not recognized type');
 end
@@ -45,8 +47,8 @@ end
 
 %% initialize parameters and map
 k = 0;
-K = 2000;
-T0 = 0.1;
+K = 200;
+T0 = 1;
 map = make_map(laplacian);
 
 %% initialize initial state
@@ -54,8 +56,8 @@ last = make_IC(N);
 
 %% define zones
 % lessihb_idx = lessihb_area;
-lessihb_idx = locs(:,3) < -6;
-% lessihb_idx = coord(1,:)' > 0.5;
+% lessihb_idx = locs(:,3) < -6;
+lessihb_idx = coord(1,:)' > 0.5;
 % lessihb_idx = true(N, 1);
 
 zones.focus_zone = map == 1;

@@ -49,7 +49,7 @@ dist_grid = 12;
 
 quiver3(selected(1), selected(2), selected(3), n(1), n(2), n(3), 15, 'Color', 'red');
 
-center = selected + 3*n;
+center = selected + 0*n;
 e_pos = ones(25, 1) * center + ...
     dist_grid * repelem(-2:2, 5)' * perp(1,:) + ...
     dist_grid * repmat((-2:2)', 5, 1) * perp(2,:);
@@ -68,6 +68,8 @@ for k = 1:25
     e_ver(k) = I;
 end
 
+scatter3(locs(e_ver,1), locs(e_ver,2), locs(e_ver,3), 40, ...
+    'filled', 'MarkerFaceColor', 'red', 'MarkerEdgeColor', 'black');
 
 
 
