@@ -1,13 +1,3 @@
-% allocate storing space
-Qe_rand = NaN(K*T, 3);
-Ve_rand = NaN(K*T, 3);
-Qe_avg = NaN(K*T, 3);
-Ve_avg = NaN(K*T, 3);
-Qe_macro = NaN(K*T, 25);
-Ve_macro = NaN(K*T, 25);
-Qe_micro = NaN(K*T, 14);
-Ve_micro = NaN(K*T, 14);
-
 % load node positions on BRAIN
 load('./computed_brain_grid/N40962.mat');
 
@@ -16,6 +6,21 @@ load('unitsphere.mat', 'coord');
 locs2 = 10 * coord';
 pos_hemi = locs2(:,3) >= 0;
 neg_hemi = locs2(:,3) < 0;
+
+% load vertices that are closest to electrodes
+% and create a filter for subsetting macro_indices
+load('./computed_brain_grid/electrode_idx.mat');
+electrode_filter = ismember(macro_idx, e_ver(:,1));
+
+% allocate storing space
+Qe_rand = NaN(K*T, 3);
+Ve_rand = NaN(K*T, 3);
+Qe_avg = NaN(K*T, 3);
+Ve_avg = NaN(K*T, 3);
+Qe_macro = NaN(K*T, size(e_ver, 1));
+Ve_macro = NaN(K*T, size(e_ver, 1));
+Qe_micro = NaN(K*T, length(micro_idx));
+Ve_micro = NaN(K*T, length(micro_idx));
 
 % start movie
 vidObj = VideoWriter(VIDEO_FILE, 'MPEG-4');
@@ -34,12 +39,17 @@ surf3 = surf2;
 surf3.vertices(:,1) = -surf3.vertices(:,1);
 surf3.vertices(:,3) = -surf3.vertices(:,3);
 
-for k = 1:2000
+for k = 1:K
     clf;
     
     fprintf(['Read in ' num2str(k) '\n']);
     load([RAW_DIR 'seizing_cortical_field_k_'  num2str(k) '.mat']);
 
+    % subset macro to keep only the ones close to electrodes
+    fine.Qe_elec = fine.Qe_macro(:,electrode_filter);
+    fine.Ve_macro = fine.Ve_macro(:,electrode_filter);
+    
+    % save 
     Qe_rand(1+(k-1)*T : k*T,1) = fine.Qe_focus(:,1);
     Qe_rand(1+(k-1)*T : k*T,2) = fine.Qe_macro(:,1);
     Qe_rand(1+(k-1)*T : k*T,3) = fine.Qe_macro(:,25);
@@ -61,15 +71,15 @@ for k = 1:2000
     Qe_micro(1+(k-1)*T : k*T,:) = fine.Qe_micro;
     Ve_micro(1+(k-1)*T : k*T,:) = fine.Ve_micro;
     
-
     % plot frame for video and write frame
 
     subplot(2, 3, [1,2,4,5]);
     figure_wire(surf, last.Qe, false);
     view(90, 0);
     hold on;
-    scatter3(locs(micro_idx,1), locs(micro_idx,2), locs(micro_idx,3), 15, 'g', 'filled');
-    scatter3(locs(macro_idx,1), locs(macro_idx,2), locs(macro_idx,3), 15, 'r', 'filled');
+    % scatter3(locs(micro_idx,1), locs(micro_idx,2), locs(micro_idx,3), 15, 'g', 'filled');
+    scatter3(e_pos(:,1), e_pos(:,2), e_pos(:,3), 20, ...
+        'filled', 'MarkerFaceColor', 'y', 'MarkerEdgeColor', 'black');
     
     subplot(2, 3, 3);
     figure_wire(surf2, last.Qe, false);

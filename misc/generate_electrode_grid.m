@@ -8,7 +8,7 @@ surf.faces = tri;
 
 % get boundary of brain
 k = boundary(locs, 0.3);
-pt = trisurf(k, locs(:,1), locs(:,2), locs(:,3),'Facecolor','white');
+pt = trisurf(k, locs(:,1), locs(:,2), locs(:,3),'Facecolor','w');
 
 % compute normal at all vertices
 TR = triangulation(pt.Faces, pt.Vertices);
@@ -36,12 +36,13 @@ end
 
 n = mean(VN(to_avg,:));
 hold on;
-quiver3(selected(1), selected(2), selected(3), n(1), n(2), n(3), 15, 'Color', 'red');
+quiver3(selected(1), selected(2), selected(3), n(1), n(2), n(3), 15, 'Color', 'r');
 
 %% get electrode locations
 
 clf;
-figure_wire(surf, NaN, true);
+load('./data/brain_N40962_06131715_full_data/raw/seizing_cortical_field_k_50.mat');
+figure_wire(surf, last.Qe, false);
 hold on;
 
 perp = null(n)';
@@ -49,27 +50,32 @@ dist_grid = 12;
 
 quiver3(selected(1), selected(2), selected(3), n(1), n(2), n(3), 15, 'Color', 'red');
 
-center = selected + 0*n;
+center = selected + 0.5*n;
 e_pos = ones(25, 1) * center + ...
     dist_grid * repelem(-2:2, 5)' * perp(1,:) + ...
     dist_grid * repmat((-2:2)', 5, 1) * perp(2,:);
 
 scatter3(e_pos(:,1), e_pos(:,2), e_pos(:,3), 40, ...
-    'filled', 'MarkerFaceColor', 'yellow', 'MarkerEdgeColor', 'black');
+    'filled', 'MarkerFaceColor', 'y', 'MarkerEdgeColor', 'black');
 
 %% find nearest vertices for each electrode
 
-e_ver = NaN(25, 1);
+e_ver = NaN(25, 5);
 
 for k = 1:25
     dist = locs - ones(N, 1)*e_pos(k,:);
     dist = sum(abs(dist).^2, 2).^(1/2);
-    [~,I] = min(dist);
-    e_ver(k) = I;
+    [~,I] = sort(dist);
+    e_ver(k,:) = I(1:5);
 end
 
-scatter3(locs(e_ver,1), locs(e_ver,2), locs(e_ver,3), 40, ...
-    'filled', 'MarkerFaceColor', 'red', 'MarkerEdgeColor', 'black');
+cols = {'r', 'm', 'g'};
+for k = 1:3
+    scatter3(locs(e_ver(:,k),1), locs(e_ver(:,k),2), locs(e_ver(:,k),3), 40, ...
+        'filled', 'MarkerFaceColor', cols{k}, 'MarkerEdgeColor', 'black');
+end
+
+save('./computed_brain_grid/electrode_idx.mat', 'e_ver', 'e_pos');
 
 
 

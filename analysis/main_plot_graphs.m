@@ -1,12 +1,19 @@
 clear; close all; 
 
 % data directory to plot
-id = '06041833';
+id = '06131715';
+
 
 folder_list = dir('./data');
 for i = 1 : length(folder_list)
     if ~isempty(strfind(folder_list(i).name, id))
         DATA_DIR = ['./data/' folder_list(i).name '/'];
+        
+        if ~isempty(strfind(folder_list(i).name, 'brain'))
+            type = 'brain';
+        else
+            type = 'sphere';
+        end
     end
 end
 if ~exist('DATA_DIR', 'var')
@@ -22,12 +29,9 @@ SAMPLE_DATA_FILE = [DATA_DIR 'sample_data.mat'];
 COHERENCE_FILE = [DATA_DIR 'coherence.mat'];
 VIDEO_FILE = [DATA_DIR 'movie_sparse_sphere.mp4'];
 
-% add functions to path
-addpath(genpath('./analysis'));
-
 % total number of files; number of time points in each file; duration per file
-K = 2000; T = 50; T0 = 0.1;
-% K = 200; T = 500; T0 = 1;
+% K = 2000; T = 50; T0 = 0.1;
+K = 200; T = 500; T0 = 1;
 
 % for coherence split the entire course into P periods
 % P = 39; % each period is 10s, overlapping 5s with the previous period
@@ -38,9 +42,11 @@ per_P = 5000;
 % load or generate data
 if exist(SAMPLE_DATA_FILE, 'file') == 2
     load(SAMPLE_DATA_FILE);
-else
+elseif strcmp(type, 'sphere')
     prepare_sample_data;
-    % error('script should be run in the root folder'); 
+    % error('script should be run in the root folder');
+else
+    prepare_sample_data_brain;
 end
 
 % load or compute coherence data
