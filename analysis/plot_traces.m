@@ -1,4 +1,4 @@
-figure;
+fg = figure;
 
 time = (1:K*T) / T;
 
@@ -21,3 +21,6 @@ subplot(4, 1, 4);
 plot_traces_helper(time, Ve_avg, ...
     'average voltage for all nodes in zone', ...
     'voltage (mV)', [-70 -40]);
+
+% save figure
+saveas(fg, TRACES_FIG);

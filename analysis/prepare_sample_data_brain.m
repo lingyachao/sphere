@@ -7,20 +7,40 @@ locs2 = 10 * coord';
 pos_hemi = locs2(:,3) >= 0;
 neg_hemi = locs2(:,3) < 0;
 
+% load faces data
+surf.vertices = locs;
+surf.faces = tri;
+surf2.vertices = locs2;
+surf2.faces = tri;
+surf3 = surf2;
+surf3.vertices(:,1) = -surf3.vertices(:,1);
+surf3.vertices(:,3) = -surf3.vertices(:,3);
+
+% load meta file
+load(META_FILE);
+
 % load vertices that are closest to electrodes
-% and create a filter for subsetting macro_indices
-load('./computed_brain_grid/electrode_idx.mat');
-electrode_filter = ismember(macro_idx, e_ver(:,1));
+loc_grid_center = [64.41, -7.282, 21.48]; % center of the ECoG grid (mm)
+dist_grid = 12; % distance between electrodes (mm)
+[focus_idx, macro_pos, macro_idx, macro_2d, ...
+            micro_pos, micro_idx, micro_2d] = ...
+    generate_electrode_grid(loc_grid_center, dist_grid, RAW_DIR);
+save(ELEC_FILE, 'focus_idx', 'macro_pos', 'macro_idx', 'macro_2d', 'micro_pos', 'micro_idx', 'micro_2d');
+
+% create a filter for subsetting electrodes
+[~,macro_filter] = ismember(macro_idx(:,1), lessihb_idx);
+[~,micro_filter] = ismember(micro_idx, lessihb_idx);
+[~,focus_filter] = ismember(focus_idx, lessihb_idx);
 
 % allocate storing space
-Qe_rand = NaN(K*T, 3);
-Ve_rand = NaN(K*T, 3);
+Qe_rand = NaN(K*T, 4);
+Ve_rand = NaN(K*T, 4);
 Qe_avg = NaN(K*T, 3);
 Ve_avg = NaN(K*T, 3);
-Qe_macro = NaN(K*T, size(e_ver, 1));
-Ve_macro = NaN(K*T, size(e_ver, 1));
-Qe_micro = NaN(K*T, length(micro_idx));
-Ve_micro = NaN(K*T, length(micro_idx));
+Qe_macro = NaN(K*T, size(macro_idx, 1));
+Ve_macro = NaN(K*T, size(macro_idx, 1));
+Qe_micro = NaN(K*T, size(micro_idx, 1));
+Ve_micro = NaN(K*T, size(micro_idx, 1));
 
 % start movie
 vidObj = VideoWriter(VIDEO_FILE, 'MPEG-4');
@@ -30,24 +50,20 @@ open(vidObj);
 % set plotting window
 f = figure;
 set(f, 'Position', [200 300 900 400]);
-load('autism.surface.mat', 'tri');
-surf.vertices = locs;
-surf.faces = tri;
-surf2.vertices = locs2;
-surf2.faces = tri;
-surf3 = surf2;
-surf3.vertices(:,1) = -surf3.vertices(:,1);
-surf3.vertices(:,3) = -surf3.vertices(:,3);
 
 for k = 1:K
-    clf;
+    clf(f);
     
     fprintf(['Read in ' num2str(k) '\n']);
     load([RAW_DIR 'seizing_cortical_field_k_'  num2str(k) '.mat']);
 
     % subset macro to keep only the ones close to electrodes
-    fine.Qe_elec = fine.Qe_macro(:,electrode_filter);
-    fine.Ve_macro = fine.Ve_macro(:,electrode_filter);
+    fine.Qe_focus = fine.Qe_lessihb(:,focus_filter);
+    fine.Ve_focus = fine.Ve_lessihb(:,focus_filter);
+    fine.Qe_macro = fine.Qe_lessihb(:,macro_filter);
+    fine.Ve_macro = fine.Ve_lessihb(:,macro_filter);
+    fine.Qe_micro = fine.Qe_lessihb(:,micro_filter);
+    fine.Ve_micro = fine.Ve_lessihb(:,micro_filter);
     
     % save 
     Qe_rand(1+(k-1)*T : k*T,1) = fine.Qe_focus(:,1);
@@ -78,7 +94,7 @@ for k = 1:K
     view(90, 0);
     hold on;
     % scatter3(locs(micro_idx,1), locs(micro_idx,2), locs(micro_idx,3), 15, 'g', 'filled');
-    scatter3(e_pos(:,1), e_pos(:,2), e_pos(:,3), 20, ...
+    scatter3(macro_pos(:,1), macro_pos(:,2), macro_pos(:,3), 20, ...
         'filled', 'MarkerFaceColor', 'y', 'MarkerEdgeColor', 'black');
     
     subplot(2, 3, 3);
@@ -88,8 +104,8 @@ for k = 1:K
     figure_wire(surf3, last.Qe, false);
     
     drawnow;
-    f = getframe;
-    writeVideo(vidObj,f);
+    im = getframe(f);
+    writeVideo(vidObj,im);
 end
 
 save(SAMPLE_DATA_FILE, 'Qe_rand', 'Ve_rand', 'Qe_avg', 'Ve_avg', ...

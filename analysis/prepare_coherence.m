@@ -1,6 +1,6 @@
 % required toolbox
-CHRONUX_PATH = './chronux_2_12';
-addpath(genpath(CHRONUX_PATH));
+% CHRONUX_PATH = './chronux_2_12';
+% addpath(genpath(CHRONUX_PATH));
 
 % parameters for computing coherence
 BAND = [1 13];                   % select a frequency range to analyze
@@ -17,8 +17,8 @@ params.err = [1 0.05];           % ... theoretical error bars, p=0.05.
 N_freq = length(freq); 
 
 % subset macro/micronodes to reduce run time
-Qe_macro = Qe_macro(:,[1:7,8:2:18]);
-Qe_micro = Qe_micro(:,[1:7,8:2:18]);
+% Qe_macro = Qe_macro(:,[1:7,8:2:18]);
+% Qe_micro = Qe_micro(:,[1:7,8:2:18]);
 
 N_macro = size(Qe_macro, 2);
 macro_t_coh = NaN(N_macro, N_macro, N_freq, P);
@@ -32,8 +32,8 @@ micro_t_phi = NaN(N_micro, N_micro, N_freq, P);
 
 for p = 1:P
     fprintf(['Computing coherence for period ' num2str(p) '\n']);
-    range = ((p-1) * per_P / 2) + 1 : ((p+1) * per_P / 2);
-    % range = ((p-1) * per_P) + 1 : (p*per_P);
+    % range = ((p-1) * per_P / 2) + 1 : ((p+1) * per_P / 2);
+    range = ((p-1) * per_P) + 1 : (p*per_P);
     [coh,phi,~,coh_conf] = compute_coherence(Qe_macro(range,:), params);
     macro_t_coh(:,:,:,p) = coh;
     macro_t_coh_conf(:,:,:,p) = coh_conf;

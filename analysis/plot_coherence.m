@@ -1,25 +1,17 @@
-%% if drawing one period, draw this
-central_t = 5:10:195;
-period_idx = find(central_t == 115);
-
 %% coherence between two farthest electrodes from 110-120s
-figure;
+fg = figure;
 subplot(2, 2, 1);
-plot(freq, squeeze(t_coh(10,13,:,period_idx)));
+plot(freq, squeeze(t_coh(1,25,:,period_idx)));
 xlabel('frequency (Hz)');
 ylabel('coherence');
 title('coherence between two farthest electrodes during 110-120s');
 
 %% average coherence through time
 
-% load electrode positions
-load('./computed_sphere_grid/node_pos_13.mat');
-% position = locs(macro_idx(locs(macro_idx,1) > 45), [3,2]);
-
 ic = NaN(P,1);
 for i = 1:P
     coh_avg = mean(squeeze(t_coh(:,:,:,i)), 3);
-    dist = pdist(position)';
+    dist = pdist(macro_2d)';
     coh_pair = tril(coh_avg, -1);
     coh_pair = coh_pair(:);
     coh_pair = coh_pair(coh_pair > 0);
@@ -43,7 +35,7 @@ title('average coherence through time');
     t_coh_conf(:,:,:,period_idx), t_phi(:,:,:,period_idx), freq);
 
 % find center electrode
-[~, center] = min((position(:,1) - mean(position(:,1))).^2 + (position(:,2) - mean(position(:,2))).^2);
+[~, center] = min((macro_2d(:,1) - mean(macro_2d(:,1))).^2 + (macro_2d(:,2) - mean(macro_2d(:,2))).^2);
 
 % subplot(2, 2, 3);
 % scatter(position(:,1), position(:,2), 400, 1000 * delay(center,:), 'filled');
@@ -56,7 +48,7 @@ title('average coherence through time');
 %% estimate parameters of the wave during 110-120s
 
 subplot(2, 2, 3);
-[src_dir, speed, ci_dir, ci_sp] = estimate_wave(delay, position, 'plot');
+[src_dir, speed, ci_dir, ci_sp] = estimate_wave(delay, macro_2d, 'plot');
 c = colorbar;
 c.Label.String = 'delay to center electrode X (ms)';
 title('fit a plane wave (during 110-120s)');
@@ -67,7 +59,7 @@ dirs = NaN(P,1);
 for i = 1:P
     [delay, delay_ci_lo, delay_ci_up] = compute_delay(t_coh(:,:,:,i), ...
         t_coh_conf(:,:,:,i), t_phi(:,:,:,i), freq);
-    [src_dir, speed, ci_dir, ci_sp] = estimate_wave(delay, position, 'no');
+    [src_dir, speed, ci_dir, ci_sp] = estimate_wave(delay, macro_2d, 'no');
     dirs(i) = src_dir;
 end
 
@@ -80,3 +72,6 @@ xlim([0 200]);
 ylabel('source direction (rad)');
 ylim([-pi pi]);
 title('source direction through time');
+
+%% save figure
+saveas(fg, COHERENCE_FIG);

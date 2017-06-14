@@ -13,4 +13,10 @@ for k=1:200
     
     save(['./data/brain_N40962_06141205_full_data/raw/seizing_cortical_field_k_' num2str(k) '.mat'], ...
             'samp_time', 'last', 'fine');
-end    
+end
+
+%%
+
+
+save(['./computed_brain_grid/N' num2str(N) '.mat'], ...
+    'N', 'locs', 'laplacian', 'avg_D', 'tri');

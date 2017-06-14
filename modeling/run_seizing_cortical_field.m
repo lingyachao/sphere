@@ -16,8 +16,6 @@ if strcmp(type, 'sphere')
 elseif strcmp(type, 'brain')
     load('./computed_brain_grid/N40962.mat');
     load('unitsphere.mat', 'coord');
-    macro_idx = find(coord(1,:)' > 0.5)';
-    micro_idx = [];
 else
     error('not recognized type');
 end
@@ -32,6 +30,7 @@ if save_output
 
     OUTPUT_DIR = ['./data/' folder_name '/raw/'];
     mkdir(OUTPUT_DIR);
+    META_FILE = ['./data/' folder_name '/meta.mat'];
 end
 
 %% set plotting window
@@ -57,12 +56,15 @@ last = make_IC(N);
 %% define zones
 % lessihb_idx = lessihb_area;
 % lessihb_idx = locs(:,3) < -6;
-lessihb_idx = coord(1,:)' > 0.5;
+lessihb_filter = coord(1,:)' > 0.5;
 % lessihb_idx = true(N, 1);
 
 zones.focus_zone = map == 1;
-zones.lessihb_zone = lessihb_idx & map ~= 1;
-zones.normal_zone = ~lessihb_idx;
+zones.lessihb_zone = lessihb_filter & map ~= 1;
+zones.normal_zone = ~lessihb_filter;
+
+lessihb_idx = find(lessihb_filter);
+normal_sample_idx = randsample(find(zones.normal_zone),3);
     
 %% initialize constants and make modifications
 global HL
@@ -87,6 +89,9 @@ HL.Vi_rest(zones.normal_zone) = HL.Vi_rest(zones.normal_zone) + 3;
 %% for plotting trace of one node
 Ve_samp = [];
 N_samp = 0;
+
+%% save meta data
+save(META_FILE, 'HL', 'map', 'lessihb_idx', 'normal_sample_idx', 'last');
 
 %% run simulation
 for k = 1:K
