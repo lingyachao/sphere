@@ -1,7 +1,7 @@
 function [samp_time,last,fine] = seizing_cortical_field( ...
     source_del_VeRest, map, time_end, IC, ...
     ~, laplacian, avg_D, ...
-    zones, micro_idx, macro_idx, focus_idx, normal_idx)
+    zones, lessihb_idx, normal_sample_idx)
  
     global HL
     
@@ -51,19 +51,15 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
     samp_time = (0:10:Nsteps-1)' * dt;
     N_samp = Nsteps/samp_rate;
     
-    fine.Qe_micro = zeros(N_samp, length(micro_idx));
-    fine.Qe_macro = zeros(N_samp, length(macro_idx));
-    fine.Qe_focus = zeros(N_samp, length(focus_idx));
-    fine.Qe_normal = zeros(N_samp, length(normal_idx));
+    fine.Qe_lessihb = zeros(N_samp, length(lessihb_idx));
+    fine.Qe_normal = zeros(N_samp, length(normal_sample_idx));
     
     fine.Qe_focus_avg = zeros(N_samp, 1);
     fine.Qe_lessihb_avg = zeros(N_samp, 1);
     fine.Qe_normal_avg = zeros(N_samp, 1);
     
-    fine.Ve_micro = zeros(N_samp, length(micro_idx));
-    fine.Ve_macro = zeros(N_samp, length(macro_idx));
-    fine.Ve_focus = zeros(N_samp, length(focus_idx));
-    fine.Ve_normal = zeros(N_samp, length(normal_idx));
+    fine.Ve_lessihb = zeros(N_samp, length(lessihb_idx));
+    fine.Ve_normal = zeros(N_samp, length(normal_sample_idx));
     
     fine.Ve_focus_avg = zeros(N_samp, 1);
     fine.Ve_lessihb_avg = zeros(N_samp, 1);
@@ -79,19 +75,15 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         if mod(i, samp_rate) == 0
             idx = i/samp_rate + 1;
             
-            fine.Qe_micro(idx,:) = Qe_grid(micro_idx);
-            fine.Qe_macro(idx,:) = Qe_grid(macro_idx);
-            fine.Qe_focus(idx,:) = Qe_grid(focus_idx);
-            fine.Qe_normal(idx,:) = Qe_grid(normal_idx);
+            fine.Qe_lessihb(idx,:) = Qe_grid(lessihb_idx);
+            fine.Qe_normal(idx,:) = Qe_grid(normal_sample_idx);
 
             fine.Qe_focus_avg(idx,:) = mean(Qe_grid(zones.focus_zone));
             fine.Qe_lessihb_avg(idx,:) = mean(Qe_grid(zones.lessihb_zone));
             fine.Qe_normal_avg(idx,:) = mean(Qe_grid(zones.normal_zone));
 
-            fine.Ve_micro(idx,:) = Ve_grid(micro_idx);
-            fine.Ve_macro(idx,:) = Ve_grid(macro_idx);
-            fine.Ve_focus(idx,:) = Ve_grid(focus_idx);
-            fine.Ve_normal(idx,:) = Ve_grid(normal_idx);
+            fine.Ve_lessihb(idx,:) = Ve_grid(lessihb_idx);
+            fine.Ve_normal(idx,:) = Ve_grid(normal_sample_idx);
 
             fine.Ve_focus_avg(idx,:) = mean(Ve_grid(zones.focus_zone));
             fine.Ve_lessihb_avg(idx,:) = mean(Ve_grid(zones.lessihb_zone));

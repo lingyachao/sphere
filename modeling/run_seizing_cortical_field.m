@@ -1,7 +1,7 @@
 clear; close all;
 
 %% specify run type
-type = 'brain';
+type = 'sphere';
 note = 'full_data';
 save_output = true;
 visualize = true;
@@ -10,9 +10,6 @@ print_count = true;
 %% load grid
 if strcmp(type, 'sphere')
     load('./computed_sphere_grid/N10242_R10_wideNodes.mat'); 
-    % load('./computed_sphere_grid/N42_R10.mat'); avg_D = 0.3;
-    pos_hemi = locs(:,3) >= 0;
-    neg_hemi = locs(:,3) < 0;
 elseif strcmp(type, 'brain')
     load('./computed_brain_grid/N40962.mat');
     load('unitsphere.mat', 'coord');
@@ -54,10 +51,10 @@ map = make_map(laplacian);
 last = make_IC(N);
 
 %% define zones
-% lessihb_idx = lessihb_area;
-% lessihb_idx = locs(:,3) < -6;
-lessihb_filter = coord(1,:)' > 0.5;
-% lessihb_idx = true(N, 1);
+% lessihb_filter = lessihb_area;
+lessihb_filter = locs(:,3) < -6;
+% lessihb_filter = coord(1,:)' > 0.5;
+% lessihb_filter = true(N, 1);
 
 zones.focus_zone = map == 1;
 zones.lessihb_zone = lessihb_filter & map ~= 1;
@@ -86,10 +83,6 @@ HL.Vi_rest(zones.normal_zone) = HL.Vi_rest(zones.normal_zone) + 3;
 % HL.gamma_i = HL.gamma_i / lam;
 % HL.gi = HL.gi * lam;
 
-%% for plotting trace of one node
-Ve_samp = [];
-N_samp = 0;
-
 %% save meta data
 save(META_FILE, 'HL', 'map', 'lessihb_idx', 'normal_sample_idx', 'last');
 
@@ -112,19 +105,22 @@ for k = 1:K
     [samp_time,last,fine] = seizing_cortical_field(...
         source_drive, map, T0, last, ...
         locs, laplacian, avg_D, ...
-        zones, micro_idx, macro_idx, focus_idx, normal_idx);
+        zones, lessihb_idx, normal_sample_idx);
     
     if visualize
         if strcmp(type, 'sphere')
+            pos_hemi = locs(:,3) >= 0;
+            neg_hemi = locs(:,3) < 0;
+            
             subplot(1, 2, 1);
             scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, last.K(neg_hemi), 'filled');
-            % caxis([0,30]);
+            caxis([0,1]);
             colorbar;
 
             subplot(1, 2, 2);    
-            scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, last.Ve(neg_hemi), 'filled');
-            caxis([-65,-50]);
-            % caxis([0,30]);
+            scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, last.Qe(neg_hemi), 'filled');
+            caxis([0,30]);
+            
         elseif strcmp(type, 'brain')
             clf(f);
             figure_wire(surf, last.Qe, false);
@@ -137,14 +133,7 @@ for k = 1:K
         save([OUTPUT_DIR 'seizing_cortical_field_k_' num2str(k) '.mat'], ...
             'samp_time', 'last', 'fine');
     end
-    
-    % for plotting focal voltage traces
-    if k == 1
-        N_samp = length(fine.Ve_focus(:,1));
-        Ve_samp = NaN(K * N_samp,1);
-    end
-    Ve_samp((k-1)*N_samp+1 : k*N_samp) = fine.Ve_focus(:,1);
-    
+
     if print_count
         fprintf(['RT ' num2str(toc) '\n']);
         % fprintf(['mean ' num2str(mean(last.Ve)) ' sd ' num2str(std(last.Ve)) '\n']);
@@ -153,6 +142,3 @@ for k = 1:K
         % fprintf(['Ve focus ' num2str(last.Ve(1)) '\n']);
     end
 end
-
-figure;
-plot(Ve_samp);
