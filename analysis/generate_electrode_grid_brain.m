@@ -3,10 +3,12 @@ function [focus_idx, macro_pos, macro_idx, macro_2d, ...
     loc_grid_center, dist_grid, RAW_DIR)
 
     load('N40962.mat');
+    load([RAW_DIR 'seizing_cortical_field_k_'  num2str(50) '.mat']);
 
     % get boundary of brain
     k = boundary(locs, 0.3);
-    pt = trisurf(k, locs(:,1), locs(:,2), locs(:,3),'Facecolor','w');
+    pt = trisurf(k, locs(:,1), locs(:,2), locs(:,3), last.Qe);
+    view(90, 0);
 
     % compute normal at all vertices
     TR = triangulation(pt.Faces, pt.Vertices);
@@ -34,7 +36,6 @@ function [focus_idx, macro_pos, macro_idx, macro_2d, ...
     %% get electrode locations
 
     clf;
-    load([RAW_DIR 'seizing_cortical_field_k_'  num2str(50) '.mat']);
     surf.vertices = locs;
     surf.faces = tri;
     figure_wire(surf, last.Qe, false);
@@ -42,7 +43,7 @@ function [focus_idx, macro_pos, macro_idx, macro_2d, ...
     hold on;
     quiver3(loc_grid_center(1), loc_grid_center(2), loc_grid_center(3), n(1), n(2), n(3), 15, 'Color', 'red');
 
-    center = loc_grid_center + 0.5*n;
+    center = loc_grid_center + 2*n;
     perp = null(n)';
     macro_pos = ones(25, 1) * center + ...
         dist_grid * repelem(-2:2, 5)' * perp(1,:) + ...
@@ -57,7 +58,7 @@ function [focus_idx, macro_pos, macro_idx, macro_2d, ...
     macro_idx = NaN(25, 5);
 
     for k = 1:25
-        dist = locs - ones(N, 1)*macro_pos(k,:);
+        dist = locs - ones(N, 1) * macro_pos(k,:);
         dist = sum(abs(dist).^2, 2).^(1/2);
         [~,I] = sort(dist);
         macro_idx(k,:) = I(1:5);

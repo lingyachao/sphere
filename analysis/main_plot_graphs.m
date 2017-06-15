@@ -1,10 +1,20 @@
 clear; close all; 
 
-% data directory to plot
+%% data directory to plot
 id = '06141205';
 % id = '06150910';
 
-%% directory and file names
+%% some parameters
+
+% total number of files; number of time points in each file; duration per file
+% K = 2000; T = 50; T0 = 0.1;
+K = 200; T = 500; T0 = 1;
+
+% for coherence split the entire course into P periods
+P = 20; per_P = 5000;
+% P = 39; per_P = 5000; % each period is 10s, overlapping 5s with the previous period
+
+%%  input directory and file names
 
 folder_list = dir('./data');
 for i = 1 : length(folder_list)
@@ -22,29 +32,44 @@ if ~exist('DATA_DIR', 'var')
     error('folder ID does not exist');
 end
 
-% define subfolder/subfile names
 if exist([DATA_DIR 'raw/'], 'dir')
     RAW_DIR = [DATA_DIR 'raw/'];
 else
     RAW_DIR = DATA_DIR;
 end
 META_FILE = [DATA_DIR 'meta.mat'];
-ELEC_FILE = [DATA_DIR 'electrode_data.mat'];
-SAMPLE_DATA_FILE = [DATA_DIR 'sample_data.mat'];
-COHERENCE_FILE = [DATA_DIR 'coherence.mat'];
-VIDEO_FILE = [DATA_DIR 'movie_sparse_sphere.mp4'];
-TRACES_FIG = [DATA_DIR 'traces.fig'];
-COHERENCE_FIG = [DATA_DIR 'coherence_summary.fig'];
 
-%% some parameters
+%% load vertices that are closest to electrodes
+if strcmp(type, 'sphere')
+    [focus_idx, macro_pos, macro_idx, macro_2d, ...
+                micro_pos, micro_idx, micro_2d] = ...
+        generate_electrode_grid_sphere(RAW_DIR);
+else
+    find_electrode_grid_center(RAW_DIR, 10);
+    keyboard;
+    loc_grid_center = [56.24, 23.04, 5.64];       % center of the ECoG grid (mm)
+    dist_grid = 10;                                 % distance between electrodes (mm)
+    [focus_idx, macro_pos, macro_idx, macro_2d, ...
+                micro_pos, micro_idx, micro_2d] = ...
+        generate_electrode_grid_brain(loc_grid_center, dist_grid, RAW_DIR);
+end
 
-% total number of files; number of time points in each file; duration per file
-% K = 2000; T = 50; T0 = 0.1;
-K = 200; T = 500; T0 = 1;
+%% output directory and file names
+ANALYSIS_DIR = [DATA_DIR 'grid_'...
+                         num2str(loc_grid_center(1), '%.2f') '_' ...
+                         num2str(loc_grid_center(2), '%.2f') '_' ...
+                         num2str(loc_grid_center(3), '%.2f') '_' num2str(dist_grid) '/'];
+mkdir(ANALYSIS_DIR);
 
-% for coherence split the entire course into P periods
-P = 20; per_P = 5000;
-% P = 39; per_P = 5000; % each period is 10s, overlapping 5s with the previous period
+ELEC_FILE = [ANALYSIS_DIR 'electrode_data.mat'];
+save(ELEC_FILE, 'focus_idx', 'macro_pos', 'macro_idx', 'macro_2d', ...
+                             'micro_pos', 'micro_idx', 'micro_2d');
+
+SAMPLE_DATA_FILE = [ANALYSIS_DIR 'sample_data.mat'];
+COHERENCE_FILE = [ANALYSIS_DIR 'coherence.mat'];
+VIDEO_FILE = [ANALYSIS_DIR 'movie_sparse_sphere.mp4'];
+TRACES_FIG = [ANALYSIS_DIR 'traces.fig'];
+COHERENCE_FIG = [ANALYSIS_DIR 'coherence_summary.fig'];
 
 %% load or generate data
 if exist(SAMPLE_DATA_FILE, 'file') == 2

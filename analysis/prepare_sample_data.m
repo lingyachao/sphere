@@ -16,21 +16,6 @@ end
 % load meta file
 load(META_FILE);
 
-% load vertices that are closest to electrodes
-if strcmp(type, 'sphere')
-    [focus_idx, macro_pos, macro_idx, macro_2d, ...
-                micro_pos, micro_idx, micro_2d] = ...
-        generate_electrode_grid_sphere(RAW_DIR);
-else
-    loc_grid_center = [64.41, -7.282, 21.48];       % center of the ECoG grid (mm)
-    dist_grid = 12;                                 % distance between electrodes (mm)
-    [focus_idx, macro_pos, macro_idx, macro_2d, ...
-                micro_pos, micro_idx, micro_2d] = ...
-        generate_electrode_grid_brain(loc_grid_center, dist_grid, RAW_DIR);
-end
-
-save(ELEC_FILE, 'focus_idx', 'macro_pos', 'macro_idx', 'macro_2d', 'micro_pos', 'micro_idx', 'micro_2d');
-
 % create a filter for subsetting electrodes
 [~,macro_filter] = ismember(macro_idx(:,1), lessihb_idx);
 [~,micro_filter] = ismember(micro_idx, lessihb_idx);
