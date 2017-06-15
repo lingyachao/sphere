@@ -1,17 +1,50 @@
-% allocate storing space
-Qe_rand = NaN(K*T, 4);
-Ve_rand = NaN(K*T, 4);
-Qe_avg = NaN(K*T, 4);
-Ve_avg = NaN(K*T, 4);
-Qe_macro = NaN(K*T, 19);
-Ve_macro = NaN(K*T, 19);
-Qe_micro = NaN(K*T, 19);
-Ve_micro = NaN(K*T, 19);
+%% load grid
+if strcmp(type, 'sphere')
+    load('N10242_R10.mat'); 
+elseif strcmp(type, 'brain')
+    load('N40962.mat');
+    load('unitsphere.mat');
+    
+    surf.vertices = locs;
+    surf.faces = tri;
+    surf_sphere.vertices = 10 * coord';
+    surf_sphere.faces = tri;
+else
+    error('not recognized type');
+end
 
-% load node positions
-load('N10242_R10_wideNodes.mat');
-pos_hemi = locs(:,3) >= 0;
-neg_hemi = locs(:,3) < 0;
+% load meta file
+load(META_FILE);
+
+% load vertices that are closest to electrodes
+if strcmp(type, 'sphere')
+    [focus_idx, macro_pos, macro_idx, macro_2d, ...
+                micro_pos, micro_idx, micro_2d] = ...
+        generate_electrode_grid_sphere(RAW_DIR);
+else
+    loc_grid_center = [64.41, -7.282, 21.48];       % center of the ECoG grid (mm)
+    dist_grid = 12;                                 % distance between electrodes (mm)
+    [focus_idx, macro_pos, macro_idx, macro_2d, ...
+                micro_pos, micro_idx, micro_2d] = ...
+        generate_electrode_grid_brain(loc_grid_center, dist_grid, RAW_DIR);
+end
+
+save(ELEC_FILE, 'focus_idx', 'macro_pos', 'macro_idx', 'macro_2d', 'micro_pos', 'micro_idx', 'micro_2d');
+
+% create a filter for subsetting electrodes
+[~,macro_filter] = ismember(macro_idx(:,1), lessihb_idx);
+[~,micro_filter] = ismember(micro_idx, lessihb_idx);
+[~,focus_filter] = ismember(focus_idx, lessihb_idx);
+
+% allocate storing space
+Qe_rand  = NaN(K*T, 4);
+Ve_rand  = NaN(K*T, 4);
+Qe_avg   = NaN(K*T, 3);
+Ve_avg   = NaN(K*T, 3);
+Qe_macro = NaN(K*T, size(macro_idx, 1));
+Ve_macro = NaN(K*T, size(macro_idx, 1));
+Qe_micro = NaN(K*T, size(micro_idx, 1));
+Ve_micro = NaN(K*T, size(micro_idx, 1));
 
 % start movie
 vidObj = VideoWriter(VIDEO_FILE, 'MPEG-4');
@@ -23,10 +56,19 @@ f = figure;
 set(f, 'Position', [200 300 900 400]);
 
 for k = 1:K
-
+    
     fprintf(['Read in ' num2str(k) '\n']);
     load([RAW_DIR 'seizing_cortical_field_k_'  num2str(k) '.mat']);
 
+    % subset macro to keep only the ones close to electrodes
+    fine.Qe_focus = fine.Qe_lessihb(:,focus_filter);
+    fine.Ve_focus = fine.Ve_lessihb(:,focus_filter);
+    fine.Qe_macro = fine.Qe_lessihb(:,macro_filter);
+    fine.Ve_macro = fine.Ve_lessihb(:,macro_filter);
+    fine.Qe_micro = fine.Qe_lessihb(:,micro_filter);
+    fine.Ve_micro = fine.Ve_lessihb(:,micro_filter);
+    
+    % fill in data 
     Qe_rand(1+(k-1)*T : k*T,1) = fine.Qe_focus(:,1);
     Qe_rand(1+(k-1)*T : k*T,2) = fine.Qe_macro(:,1);
     Qe_rand(1+(k-1)*T : k*T,3) = fine.Qe_macro(:,8);
@@ -48,23 +90,16 @@ for k = 1:K
     Qe_micro(1+(k-1)*T : k*T,:) = fine.Qe_micro;
     Ve_micro(1+(k-1)*T : k*T,:) = fine.Ve_micro;
     
-
     % plot frame for video and write frame
-    scatter(locs(pos_hemi,1), locs(pos_hemi,2), 15, last.Qe(pos_hemi), 'filled');
-    caxis([0,30]);
-    xlim([-10,33]);
-    
-    hold on;
-    scatter(23 - locs(neg_hemi,1), locs(neg_hemi,2), 15, last.Qe(neg_hemi), 'filled');
-    caxis([0,30]);
+    clf(f);
+    if strcmp(type, 'sphere')
+        plot_sphere_instance(locs, last, macro_idx, micro_idx);
+    else
+        plot_brain_instance(surf, surf_sphere, last, macro_pos, micro_pos);
+    end
     drawnow;
-        
-    scatter(23 - locs(micro_idx,1),locs(micro_idx,2), 15, 'g', 'filled');
-    scatter(23 - locs(macro_idx,1), locs(macro_idx,2), 15, 'r', 'filled');
-    
-    f = getframe;
-    writeVideo(vidObj,f);
-    clf;
+    im = getframe(f);
+    writeVideo(vidObj,im);
 end
 
 save(SAMPLE_DATA_FILE, 'Qe_rand', 'Ve_rand', 'Qe_avg', 'Ve_avg', ...

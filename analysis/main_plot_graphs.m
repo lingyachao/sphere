@@ -2,8 +2,10 @@ clear; close all;
 
 % data directory to plot
 id = '06141205';
+% id = '06150910';
 
-% get dir full-name
+%% directory and file names
+
 folder_list = dir('./data');
 for i = 1 : length(folder_list)
     if ~isempty(strfind(folder_list(i).name, id))
@@ -34,6 +36,8 @@ VIDEO_FILE = [DATA_DIR 'movie_sparse_sphere.mp4'];
 TRACES_FIG = [DATA_DIR 'traces.fig'];
 COHERENCE_FIG = [DATA_DIR 'coherence_summary.fig'];
 
+%% some parameters
+
 % total number of files; number of time points in each file; duration per file
 % K = 2000; T = 50; T0 = 0.1;
 K = 200; T = 500; T0 = 1;
@@ -46,10 +50,8 @@ P = 20; per_P = 5000;
 if exist(SAMPLE_DATA_FILE, 'file') == 2
     load(SAMPLE_DATA_FILE);
     load(ELEC_FILE);
-elseif strcmp(type, 'sphere')
-    prepare_sample_data;
 else
-    prepare_sample_data_brain;
+    prepare_sample_data;
 end
 
 %% load or compute coherence data

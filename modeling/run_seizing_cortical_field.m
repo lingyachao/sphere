@@ -3,42 +3,29 @@ clear; close all;
 %% specify run type
 type = 'sphere';
 note = 'full_data';
-save_output = true;
+save_output = false;
 visualize = true;
 print_count = true;
 
 %% load grid
 if strcmp(type, 'sphere')
-    load('./computed_sphere_grid/N10242_R10_wideNodes.mat'); 
+    load('N10242_R10.mat'); 
 elseif strcmp(type, 'brain')
-    load('./computed_brain_grid/N40962.mat');
-    load('unitsphere.mat', 'coord');
+    load('N40962.mat');
+    load('unitsphere.mat');
+    
+    surf.vertices = locs;
+    surf.faces = tri;
+    surf_sphere.vertices = 10 * coord';
+    surf_sphere.faces = tri;
 else
     error('not recognized type');
-end
-
-%% set the output directory
-if save_output
-    if strcmp(type, 'sphere')
-        folder_name = ['sphere_N' num2str(N) '_R' num2str(R) '_' datestr(now, 'mmddHHMM') '_' note];
-    elseif strcmp(type, 'brain')
-        folder_name = ['brain_N' num2str(N) '_' datestr(now, 'mmddHHMM') '_' note];
-    end
-
-    OUTPUT_DIR = ['./data/' folder_name '/raw/'];
-    mkdir(OUTPUT_DIR);
-    META_FILE = ['./data/' folder_name '/meta.mat'];
 end
 
 %% set plotting window
 if visualize
     f = figure;
     set(f, 'Position', [200 300 900 400]);
-    if strcmp(type, 'brain')
-        load('autism.surface.mat', 'tri');
-        surf.vertices = locs;
-        surf.faces = tri;
-    end
 end
 
 %% initialize parameters and map
@@ -83,8 +70,20 @@ HL.Vi_rest(zones.normal_zone) = HL.Vi_rest(zones.normal_zone) + 3;
 % HL.gamma_i = HL.gamma_i / lam;
 % HL.gi = HL.gi * lam;
 
-%% save meta data
-save(META_FILE, 'HL', 'map', 'lessihb_idx', 'normal_sample_idx', 'last');
+%% set the output directory and save meta file
+if save_output
+    if strcmp(type, 'sphere')
+        folder_name = ['sphere_N' num2str(N) '_R' num2str(R) '_' datestr(now, 'mmddHHMM') '_' note];
+    elseif strcmp(type, 'brain')
+        folder_name = ['brain_N' num2str(N) '_' datestr(now, 'mmddHHMM') '_' note];
+    end
+
+    OUTPUT_DIR = ['./data/' folder_name '/raw/'];
+    mkdir(OUTPUT_DIR);
+    
+    META_FILE = ['./data/' folder_name '/meta.mat'];
+    save(META_FILE, 'HL', 'map', 'lessihb_idx', 'normal_sample_idx', 'last');
+end
 
 %% run simulation
 for k = 1:K
@@ -100,7 +99,7 @@ for k = 1:K
     if print_count
         fprintf(['Running simulation , ' num2str(k) ' ... ']);
     end
-    tic; % start timer
+    tic;
 
     [samp_time,last,fine] = seizing_cortical_field(...
         source_drive, map, T0, last, ...
@@ -108,24 +107,12 @@ for k = 1:K
         zones, lessihb_idx, normal_sample_idx);
     
     if visualize
+        clf(f);
         if strcmp(type, 'sphere')
-            pos_hemi = locs(:,3) >= 0;
-            neg_hemi = locs(:,3) < 0;
-            
-            subplot(1, 2, 1);
-            scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, last.K(neg_hemi), 'filled');
-            caxis([0,1]);
-            colorbar;
-
-            subplot(1, 2, 2);    
-            scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, last.Qe(neg_hemi), 'filled');
-            caxis([0,30]);
-            
+            plot_sphere_instance(locs, last, NaN, NaN);
         elseif strcmp(type, 'brain')
-            clf(f);
-            figure_wire(surf, last.Qe, false);
+            plot_brain_instance(surf, surf_sphere, last, NaN, NaN);
         end
-        
         drawnow;
     end
     

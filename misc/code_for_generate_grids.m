@@ -1,13 +1,8 @@
 %% generate sphere grid
 
 [N,locs,laplacian,avg_D] = make_sphere(10000, R);
-micro_idx = [744 659 753 837 836 752 658 579 669 777 845 933 929 932 844 776 668 578 573]';
-macro_idx = [744 437 821 1141 1140 820 436 251 555 981 1253 1585 1537 1584 1252 980 554 250 187]';
-focus_idx = [1, 3];
-normal_idx = [6000, 8000, 10000];
-save(['./computed_sphere_grid/N' num2str(N) '_R' num2str(R) '_wideNodes.mat'], ...
-    'N', 'locs', 'laplacian', 'avg_D', 'R', ...
-    'micro_idx', 'macro_idx', 'focus_idx', 'normal_idx');
+save(['./computed_sphere_grid/N' num2str(N) '_R' num2str(R) '.mat'], ...
+    'N', 'locs', 'laplacian', 'avg_D', 'R');
 
 %% generate sphere grid with hole
 

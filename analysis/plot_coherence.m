@@ -1,7 +1,7 @@
 %% coherence between two farthest electrodes from 110-120s
 fg = figure;
 subplot(2, 2, 1);
-plot(freq, squeeze(t_coh(1,25,:,period_idx)));
+plot(freq, squeeze(t_coh(1,8,:,period_idx)));
 xlabel('frequency (Hz)');
 ylabel('coherence');
 title('coherence between two farthest electrodes during 110-120s');
