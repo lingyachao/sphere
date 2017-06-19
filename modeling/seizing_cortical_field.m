@@ -1,7 +1,8 @@
 function [samp_time,last,fine] = seizing_cortical_field( ...
     source_del_VeRest, map, time_end, IC, ...
     ~, laplacian, avg_D, ...
-    zones, lessihb_idx, normal_sample_idx)
+    zones, lessihb_idx, normal_sample_idx, ...
+    save_output)
  
     global HL
     
@@ -51,19 +52,23 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
     samp_time = (0:10:Nsteps-1)' * dt;
     N_samp = Nsteps/samp_rate;
     
-    fine.Qe_lessihb = zeros(N_samp, length(lessihb_idx));
-    fine.Qe_normal = zeros(N_samp, length(normal_sample_idx));
-    
-    fine.Qe_focus_avg = zeros(N_samp, 1);
-    fine.Qe_lessihb_avg = zeros(N_samp, 1);
-    fine.Qe_normal_avg = zeros(N_samp, 1);
-    
-    fine.Ve_lessihb = zeros(N_samp, length(lessihb_idx));
-    fine.Ve_normal = zeros(N_samp, length(normal_sample_idx));
-    
-    fine.Ve_focus_avg = zeros(N_samp, 1);
-    fine.Ve_lessihb_avg = zeros(N_samp, 1);
-    fine.Ve_normal_avg = zeros(N_samp, 1);
+    if save_output
+        fine.Qe_lessihb = zeros(N_samp, length(lessihb_idx));
+        fine.Qe_normal = zeros(N_samp, length(normal_sample_idx));
+
+        fine.Qe_focus_avg = zeros(N_samp, 1);
+        fine.Qe_lessihb_avg = zeros(N_samp, 1);
+        fine.Qe_normal_avg = zeros(N_samp, 1);
+
+        fine.Ve_lessihb = zeros(N_samp, length(lessihb_idx));
+        fine.Ve_normal = zeros(N_samp, length(normal_sample_idx));
+
+        fine.Ve_focus_avg = zeros(N_samp, 1);
+        fine.Ve_lessihb_avg = zeros(N_samp, 1);
+        fine.Ve_normal_avg = zeros(N_samp, 1);
+    else
+        fine = NaN;
+    end
     
     % noise-amplitude coefficients for subcortical flux (note 1/sqrt(dt) factor)
     B_ee = HL.noise_sf * sqrt(HL.noise_sc * HL.phi_ee_sc / dt);
@@ -72,7 +77,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
     for i = 0:Nsteps-1
 
         % 0. record Qe/Ve every 10 steps
-        if mod(i, samp_rate) == 0
+        if mod(i, samp_rate) == 0 && save_output
             idx = i/samp_rate + 1;
             
             fine.Qe_lessihb(idx,:) = Qe_grid(lessihb_idx);
@@ -105,12 +110,17 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
 
         % 2. update the 4 synaptic flux equations (include sc noise)
 
+        % long_range = sparse(N, N);
+        long_range = sparse([1,200], [200,1], [1,1], N, N);
+        u = 200;
+        
         %%%% E-to-E %%%%
         F_ee_1   = F_ee + dt * HL.gamma_e^2 * (-2/HL.gamma_e*F_ee - Phi_ee ...
                         + HL.Nee_a * phi_ee ...             % long range
                         + HL.Nee_b * Qe_grid ...            % short range
                         + HL.noise_sc * HL.phi_ee_sc ...    % subcortical (tonic)
-                        + B_ee .* randn(N, 1));              % subcortical (random)
+                        + B_ee .* randn(N, 1) ...           % subcortical (random)
+                        + u * long_range * Qe_grid);
         Phi_ee_1 = Phi_ee + dt*F_ee;
 
         %%%% E-to-I %%%%
@@ -118,7 +128,8 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
                         + HL.Nei_a * phi_ei ...             % long range
                         + HL.Nei_b * Qe_grid ...            % short range
                         + HL.noise_sc * HL.phi_ei_sc ...    % subcortical (tonic)
-                        + B_ei * randn(N, 1));              % subcortical (random)
+                        + B_ei * randn(N, 1) ...            % subcortical (random)
+                        + u * long_range * Qe_grid);
         Phi_ei_1 = Phi_ei + dt*F_ei;
 
         %%%% I-to-E %%%%
@@ -177,7 +188,8 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
 
         Ve_grid = Ve_grid_1;
         Vi_grid = Vi_grid_1;
-        D22 = max(D22_1,0.1);                         % the inhibitory gap junctions cannot pass below a minimum value of 0.1.
+        D22 = max(D22_1,0.1);
+        % D22 = max(D22_1,0.1);                         % the inhibitory gap junctions cannot pass below a minimum value of 0.1.
         D11 = D22 / 100;                              % see definition in [Steyn-Ross et al PRX 2013, Table I].
         
         del_VeRest = min(del_VeRest_1, 1.5);          % the excitatory population resting voltage cannot pass above a maximum value of 1.5.    
@@ -227,7 +239,7 @@ function weight = Psi_ee(V)
     % e-to-e reversal-potential weighting function
 
     global HL
-    weight = (HL.Ve_rev - V)/(HL.Ve_rev - HL.Ve_rest);
+    weight = (HL.Ve_rev - V)./(HL.Ve_rev - HL.Ve_rest);
 end
 
 %------------------------------------------------------------------------
@@ -243,7 +255,7 @@ function weight = Psi_ie(V)
     % i-to-e reversal-potential weighting function
 
     global HL
-    weight = (HL.Vi_rev - V)/(HL.Vi_rev - HL.Ve_rest);
+    weight = (HL.Vi_rev - V)./(HL.Vi_rev - HL.Ve_rest);
 end
 
 %------------------------------------------------------------------------

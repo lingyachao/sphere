@@ -30,8 +30,8 @@ end
 
 %% initialize parameters and map
 k = 0;
-K = 200;
-T0 = 1;
+K = 2000;
+T0 = 0.1;
 map = make_map(laplacian);
 
 %% initialize initial state
@@ -53,6 +53,15 @@ normal_sample_idx = randsample(find(zones.normal_zone),3);
 %% initialize constants and make modifications
 global HL
 HL = SCM_init_globs(N);
+
+last.dVe(:) = 1.5;
+last.dVi(:) = 0;
+last.D22(:) = 3;
+last.D11(:) = last.D22/100;
+last.Qe(:) = 15;
+last.Qi(:) = 30;
+last.Ve(:) = -58.5;
+last.Vi(:) = -58.5;
 
 % increase inhibitory strength in all locations other than a patch
 HL.Vi_rest(zones.normal_zone) = HL.Vi_rest(zones.normal_zone) + 3;
@@ -88,12 +97,12 @@ end
 %% run simulation
 for k = 1:K
      
-    if k <= 30 / T0
+    if k <= 30
         source_drive = NaN;
     elseif k > 150 / T0
         source_drive = NaN;
     else
-        source_drive = 3;
+        source_drive = NaN;
     end
 
     if print_count
@@ -104,7 +113,8 @@ for k = 1:K
     [samp_time,last,fine] = seizing_cortical_field(...
         source_drive, map, T0, last, ...
         locs, laplacian, avg_D, ...
-        zones, lessihb_idx, normal_sample_idx);
+        zones, lessihb_idx, normal_sample_idx, ...
+        save_output);
     
     if visualize
         clf(f);
@@ -124,6 +134,7 @@ for k = 1:K
     if print_count
         fprintf(['RT ' num2str(toc) '\n']);
         % fprintf(['mean ' num2str(mean(last.Ve)) ' sd ' num2str(std(last.Ve)) '\n']);
+        fprintf(['K normal ' num2str(mean(last.K(zones.normal_zone))) ' K abnormal ' num2str(mean(last.K(lessihb_idx))) '\n']);
         % fprintf(['K normal ' num2str(mean(last.K(zones.normal_zone))) ' K abnormal ' num2str(mean(last.K(lessihb_idx))) '\n']);
         % fprintf(['D2 ' num2str(mean(last.D22(lessihb_idx))) ' dVe ' num2str(mean(last.dVe(lessihb_idx))) '\n']);
         % fprintf(['Ve focus ' num2str(last.Ve(1)) '\n']);

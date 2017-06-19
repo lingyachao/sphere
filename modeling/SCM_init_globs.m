@@ -1,17 +1,20 @@
 function H = SCM_init_globs(N)
 
     % time constants
-    H.v = 280;                                      % axonal conduction velocity (cm/s), [original = 140 cm/s]
+    H.v = 140;
+    % H.v = 280;                                      % axonal conduction velocity (cm/s), [original = 140 cm/s]
     H.Lambda = 4.0;                                 % inverse-length scale for connectivity (/cm)
     H.gamma_e = 170;                                % EPSP decay rate (/s)
     H.gamma_i = 50;                                 % IPSP decay rate (/s)
-    H.tau_e = 0.02;                                 % excit neuron time-constant (/s) [original = 0.04 s]
-    H.tau_i = 0.02;                                 % inhib neuron time-constant (/s) [original = 0.04 s]
+    H.tau_e = 0.04;
+    H.tau_i = 0.04;
+    % H.tau_e = 0.02;                                 % excit neuron time-constant (/s) [original = 0.04 s]
+    % H.tau_i = 0.02;                                 % inhib neuron time-constant (/s) [original = 0.04 s]
 
     % noise factors
     H.noise = 0.5;
-    H.noise_sf = 0.2*20*H.noise;                    % noise scale-factor
-    H.noise_sc = 0.2;                               % subcortical noise
+    H.noise_sf = 0.2*20*H.noise;                      % noise scale-factor
+    H.noise_sc = 0.2;                                 % subcortical noise
     
     % sigmoid characteristics
     [H.Qe_max,  H.Qi_max]  = deal(30,    60);       % sigmoid maximum (s^-1)
@@ -62,6 +65,7 @@ function H = SCM_init_globs(N)
     % non-homogenous parameters
     H.Nie_b = H.Nie_b * ones(N, 1);
     H.Nii_b = H.Nii_b * ones(N, 1);
+    H.Ve_rest = H.Ve_rest * ones(N, 1);
     H.Vi_rest = H.Vi_rest * ones(N, 1);
     H.ge = H.ge * ones(N, 1);
     H.phi_ee_sc = H.phi_ee_sc * ones(N, 1);
