@@ -1,7 +1,8 @@
 function [samp_time,last,fine] = seizing_cortical_field( ...
     source_del_VeRest, map, time_end, IC, ...
     ~, laplacian, avg_D, ...
-    zones, lessihb_idx, normal_sample_idx)
+    zones, lessihb_idx, normal_sample_idx, ...
+    save_output)
  
     global HL
     
@@ -44,26 +45,32 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
     del_VeRest = IC.dVe;
     del_ViRest = IC.dVi;
     K = IC.K;
-
-    % allocate matrices for recording Qe/Ve (fine time scale) at micro/macro
-    % nodes, focus nodes, normal nodes
+        
     samp_rate = 10;
     samp_time = (0:10:Nsteps-1)' * dt;
     N_samp = Nsteps/samp_rate;
+
+    if save_output
+        % allocate matrices for recording Qe/Ve (fine time scale) at micro/macro
+        % nodes, focus nodes, normal nodes
     
-    fine.Qe_lessihb = zeros(N_samp, length(lessihb_idx));
-    fine.Qe_normal = zeros(N_samp, length(normal_sample_idx));
+        fine.Qe_lessihb = zeros(N_samp, length(lessihb_idx));
+        fine.Qe_normal = zeros(N_samp, length(normal_sample_idx));
+
+        fine.Qe_focus_avg = zeros(N_samp, 1);
+        fine.Qe_lessihb_avg = zeros(N_samp, 1);
+        fine.Qe_normal_avg = zeros(N_samp, 1);
+
+        fine.Ve_lessihb = zeros(N_samp, length(lessihb_idx));
+        fine.Ve_normal = zeros(N_samp, length(normal_sample_idx));
+
+        fine.Ve_focus_avg = zeros(N_samp, 1);
+        fine.Ve_lessihb_avg = zeros(N_samp, 1);
+        fine.Ve_normal_avg = zeros(N_samp, 1);
     
-    fine.Qe_focus_avg = zeros(N_samp, 1);
-    fine.Qe_lessihb_avg = zeros(N_samp, 1);
-    fine.Qe_normal_avg = zeros(N_samp, 1);
-    
-    fine.Ve_lessihb = zeros(N_samp, length(lessihb_idx));
-    fine.Ve_normal = zeros(N_samp, length(normal_sample_idx));
-    
-    fine.Ve_focus_avg = zeros(N_samp, 1);
-    fine.Ve_lessihb_avg = zeros(N_samp, 1);
-    fine.Ve_normal_avg = zeros(N_samp, 1);
+    else
+        fine = NaN;
+    end
     
     % noise-amplitude coefficients for subcortical flux (note 1/sqrt(dt) factor)
     B_ee = HL.noise_sf * sqrt(HL.noise_sc * HL.phi_ee_sc / dt);
@@ -72,7 +79,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
     for i = 0:Nsteps-1
 
         % 0. record Qe/Ve every 10 steps
-        if mod(i, samp_rate) == 0
+        if save_output && mod(i, samp_rate) == 0
             idx = i/samp_rate + 1;
             
             fine.Qe_lessihb(idx,:) = Qe_grid(lessihb_idx);

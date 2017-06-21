@@ -30,8 +30,8 @@ end
 
 %% initialize parameters and map
 k = 0;
-K = 200;
-T0 = 1;
+K = 2000;
+T0 = 0.1;
 map = make_map(laplacian);
 
 %% initialize initial state
@@ -53,6 +53,11 @@ normal_sample_idx = randsample(find(zones.normal_zone),3);
 %% initialize constants and make modifications
 global HL
 HL = SCM_init_globs(N);
+
+last.D22(:) = 0.5;
+last.D11 = last.D22/100;
+% last.dVe(:) = -8;
+% last.dVi(:) = 0;
 
 % increase inhibitory strength in all locations other than a patch
 HL.Vi_rest(zones.normal_zone) = HL.Vi_rest(zones.normal_zone) + 3;
@@ -88,12 +93,12 @@ end
 %% run simulation
 for k = 1:K
      
-    if k <= 30 / T0
-        source_drive = NaN;
+    if true
+        source_drive = 4 * sin(k/3); % -8 + 8 * sin(k/3);
     elseif k > 150 / T0
         source_drive = NaN;
     else
-        source_drive = 3;
+        source_drive = NaN;
     end
 
     if print_count
@@ -104,7 +109,8 @@ for k = 1:K
     [samp_time,last,fine] = seizing_cortical_field(...
         source_drive, map, T0, last, ...
         locs, laplacian, avg_D, ...
-        zones, lessihb_idx, normal_sample_idx);
+        zones, lessihb_idx, normal_sample_idx, ...
+        save_output);
     
     if visualize
         clf(f);
