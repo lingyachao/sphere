@@ -58,6 +58,7 @@ HL.kR = 5;
 HL.KtoD  = 0;
 HL.KtoVe = 0;
 HL.KtoVi = 0;
+HL.kD = 0;
 
 last.D22(:) = 2;
 last.D11 = last.D22/100;
@@ -67,14 +68,13 @@ last.dVe(zones.normal_zone) = -1;
 % HL.FSi = [];
 HL.FSi = false(N, 1);
 HL.FSi(randsample(1:N, floor(N/5))) = true;
-HL.FSi(locs(:,3) > -6.5) = false;
 last.Qi_fs = last.Qi;
 last.Qi_fs(~HL.FSi) = 0;
 
-last.K(1:7) = 20;
+last.K(1:7) = 25;
 
 % increase inhibitory strength in all locations other than a patch
-HL.Vi_rest(zones.normal_zone) = HL.Vi_rest(zones.normal_zone) + 3;
+% HL.Vi_rest(zones.normal_zone) = HL.Vi_rest(zones.normal_zone) + 3;
 
 %% 
 % Nie_b(normal_zone) = 1.2 * HL.Nie_b;
