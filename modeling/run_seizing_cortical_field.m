@@ -54,10 +54,20 @@ normal_sample_idx = randsample(find(zones.normal_zone),3);
 global HL
 HL = SCM_init_globs(N);
 
-last.D22(:) = 0.5;
+% HL.kR = 0;
+HL.KtoD  = 0;
+
+last.D22(:) = 2;
 last.D11 = last.D22/100;
 % last.dVe(:) = -8;
 % last.dVi(:) = 0;
+
+% HL.FSi = [];
+HL.FSi = false(N, 1);
+HL.FSi(randsample(1:N, floor(N/5))) = true;
+
+last.Qi_fs = last.Qi;
+last.Qi_fs(~HL.FSi) = 0;
 
 % increase inhibitory strength in all locations other than a patch
 HL.Vi_rest(zones.normal_zone) = HL.Vi_rest(zones.normal_zone) + 3;
@@ -94,12 +104,14 @@ end
 for k = 1:K
      
     if true
-        source_drive = 4 * sin(k/3); % -8 + 8 * sin(k/3);
+        source_drive = 2;
     elseif k > 150 / T0
         source_drive = NaN;
     else
         source_drive = NaN;
     end
+    
+    % HL.Qi_max = HL.Qi_max - 0.2;
 
     if print_count
         fprintf(['Running simulation , ' num2str(k) ' ... ']);

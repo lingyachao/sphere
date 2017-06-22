@@ -1,7 +1,7 @@
 function H = SCM_init_globs(N)
 
     % time constants
-    H.v = 280;                                      % axonal conduction velocity (cm/s), [original = 140 cm/s]
+    H.v = 140;                                      % axonal conduction velocity (cm/s), [original = 140 cm/s]
     H.Lambda = 4.0;                                 % inverse-length scale for connectivity (/cm)
     H.gamma_e = 170;                                % EPSP decay rate (/s)
     H.gamma_i = 50;                                 % IPSP decay rate (/s)
@@ -14,21 +14,22 @@ function H = SCM_init_globs(N)
     H.noise_sc = 0.2;                               % subcortical noise
     
     % sigmoid characteristics
-    [H.Qe_max,  H.Qi_max]  = deal(30,    60);       % sigmoid maximum (s^-1)
-    [H.theta_e, H.theta_i] = deal(-58.5, -58.5);	% sigmoid threshold (mV)
-    [H.sigma_e, H.sigma_i] = deal(3.0,   5.0);		% sigmoid 'width' (mV)
+    [H.Qe_max, H.Qi_max, H.Qi_max_fs]  = deal(30, 60, 120);        % sigmoid maximum (s^-1)
+    [H.theta_e, H.theta_i] = deal(-58.5, -58.5);	               % sigmoid threshold (mV)
+    [H.sigma_e, H.sigma_i] = deal(3.0,   5.0);		               % sigmoid 'width' (mV)
 
     % gain per synapse at resting voltage (millivolt.sec)
     [H.ge, H.gi] = deal(1.00e-3, -1.05e-3);
 
     % voltage limits
-    [H.Ve_rev,  H.Vi_rev]  = deal(0, -70);          % reversal potential (mV)
+    [H.Ve_rev, H.Vi_rev]  = deal(0, -70);          % reversal potential (mV)
     [H.Ve_rest, H.Vi_rest] = deal(-64, -64);        % resting potential (mV)
 
     % connectivities: j-->k convention (dimensionless)
     [H.Nee_a, H.Nei_a] = deal(2000, 2000);			% cortico-cortical
     [H.Nee_b, H.Nei_b] = deal(800, 800);
     [H.Nie_b, H.Nii_b] = deal(600, 600);
+    [H.Nie_fs, H.Nii_fs] = deal(300, 300);
     [H.Nee_sc,H.Nei_sc]= deal(50, 50);              % subcortical
 
     % parameters for proportion of extracellular potassium.
