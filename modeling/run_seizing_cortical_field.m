@@ -49,12 +49,18 @@ zones.normal_zone = ~lessihb_filter;
 
 lessihb_idx = find(lessihb_filter);
 normal_sample_idx = randsample(find(zones.normal_zone),3);
-    
+
+%% arc distances
+
+[lat,long] = GridSphere(N);
+arc_dist = 10 * (lat+90) * (pi/180);
+% last.K = 10 * exp(-arc_dist.^2 / gauss_width.^2);
+
 %% initialize constants and make modifications
 global HL
 HL = SCM_init_globs(N);
 
-HL.kR = 5;
+HL.kR = 2.5;
 HL.KtoD  = 0;
 HL.KtoVe = 0;
 HL.KtoVi = 0;
@@ -62,19 +68,20 @@ HL.kD = 0;
 
 last.D22(:) = 2;
 last.D11 = last.D22/100;
-last.dVe(zones.normal_zone) = -1;
+% last.dVe(zones.normal_zone) = -1;
 % last.dVi(:) = 0;
 
-% HL.FSi = [];
 HL.FSi = false(N, 1);
 HL.FSi(randsample(1:N, floor(N/5))) = true;
+
 last.Qi_fs = last.Qi;
 last.Qi_fs(~HL.FSi) = 0;
 
-last.K(1:7) = 25;
+last.K(1:7) = 15;
 
 % increase inhibitory strength in all locations other than a patch
-% HL.Vi_rest(zones.normal_zone) = HL.Vi_rest(zones.normal_zone) + 3;
+% HL.Vi_rest = HL.Vi_rest + 3 ./ (1+exp(-(arc_dist-9)));
+HL.Vi_rest(zones.normal_zone) = HL.Vi_rest(zones.normal_zone) + 3;
 
 %% 
 % Nie_b(normal_zone) = 1.2 * HL.Nie_b;
@@ -114,8 +121,6 @@ for k = 1:K
     else
         source_drive = NaN;
     end
-    
-    % HL.Qi_max = HL.Qi_max - 0.2;
 
     if print_count
         fprintf(['Running simulation , ' num2str(k) ' ... ']);
