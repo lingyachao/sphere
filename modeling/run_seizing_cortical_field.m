@@ -72,12 +72,15 @@ last.D11 = last.D22/100;
 % last.dVi(:) = 0;
 
 HL.FSi = false(N, 1);
+HL.FSi(1:7) = true;
 HL.FSi(randsample(1:N, floor(N/5))) = true;
+
 
 last.Qi_fs = last.Qi;
 last.Qi_fs(~HL.FSi) = 0;
+last.Vi_fs = last.Vi;
 
-last.K(1:7) = 15;
+last.K(1:7) = 6;
 
 % increase inhibitory strength in all locations other than a patch
 % HL.Vi_rest = HL.Vi_rest + 3 ./ (1+exp(-(arc_dist-9)));
@@ -153,6 +156,7 @@ for k = 1:K
         % fprintf(['mean ' num2str(mean(last.Ve)) ' sd ' num2str(std(last.Ve)) '\n']);
         % fprintf(['K normal ' num2str(mean(last.K(zones.normal_zone))) ' K abnormal ' num2str(mean(last.K(lessihb_idx))) '\n']);
         % fprintf(['D2 ' num2str(mean(last.D22(lessihb_idx))) ' dVe ' num2str(mean(last.dVe(lessihb_idx))) '\n']);
-        % fprintf(['Ve focus ' num2str(last.Ve(1)) '\n']);
+        fprintf(['Ve focus ' num2str(last.Ve(1)) ' ']);
+        fprintf(['K focus ' num2str(last.K(1)) '\n']);
     end
 end

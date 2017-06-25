@@ -25,6 +25,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
     Qi_grid_fs = IC.Qi_fs;
     Ve_grid = IC.Ve;
     Vi_grid = IC.Vi;
+    Vi_grid_fs = IC.Vi_fs;
 
     phi_ee = IC.phi_ee;
     phi_ei = IC.phi_ei;
@@ -150,30 +151,35 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
                             + HL.ge .* Psi_ei(Vi_grid) .* Phi_ei ...      %E-to-I
                             + HL.gi * Psi_ii(Vi_grid) .* Phi_ii ...      %I-to-I
                             + D22 .* (laplacian * Vi_grid));
+        
+        Vi_grid_fs_1 = Vi_grid_fs + dt/HL.tau_i * ((HL.Vi_rest - Vi_grid_fs) + del_ViRest ...
+                            + HL.ge .* Psi_ei(Vi_grid_fs) .* Phi_ei ...      %E-to-I
+                            + HL.gi * Psi_ii(Vi_grid_fs) .* Phi_ii);      %I-to-I
 
         % 4. update the firing rates
         Qe_grid = HL.Qe_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_e) .* (Ve_grid - HL.theta_e)))) ...     % The E voltage must be big enough,
                   - HL.Qe_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_e) .* (Ve_grid - (HL.theta_e+30)))));     % ... but not too big.
         Qi_grid = HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid - HL.theta_i)))) ...     % The I voltage must be big enough,
                   - HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid - (HL.theta_i+30)))));     % ... but not too big.
-        Qi_grid_fs = HL.Qi_max_fs * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid - HL.theta_i)))) ...     % The I voltage must be big enough,
-                  - HL.Qi_max_fs * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid - (HL.theta_i+30)))));
+        Qi_grid_fs = HL.Qi_max_fs * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid_fs - HL.theta_i)))) ...     % The I voltage must be big enough,
+                  - HL.Qi_max_fs * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid_fs - (HL.theta_i+30)))));
         
         Qe_grid(K > 25) = 0;
-        Qi_grid_fs(~HL.FSi | K > 5) = 0;
+        Qi_grid_fs(~HL.FSi) = 0;
                       
         % 5. update extracellular ion
-        joint_Q = Qi_grid + Qe_grid + Qi_grid_fs;
+        joint_Q = Qi_grid_fs; % Qi_grid + Qe_grid;
         K_1 = K + dt/HL.tau_K * (-HL.k_decay .* K ...   % decay term.
-                + HL.kR .* joint_Q ./(1+exp(-(joint_Q - 15))) ... % reaction term.
+                + HL.kR .* joint_Q ./(1+exp(-(joint_Q - 10))) ... % reaction term.
                 + HL.kD * (laplacian * K));          % diffusion term.
 
         % 6. update inhibitory gap junction strength, and resting voltages
         D22_1         = D22        + dt/HL.tau_dD  * (HL.KtoD*K);
-        del_VeRest_1  = del_VeRest + dt/HL.tau_dVe * (HL.KtoVe*K);
-        del_ViRest_1  = del_ViRest + dt/HL.tau_dVi * (HL.KtoVi*K);
+        % del_VeRest_1  = del_VeRest + dt/HL.tau_dVe * (HL.KtoVe*K);
+        % del_ViRest_1  = del_ViRest + dt/HL.tau_dVi * (HL.KtoVi*K);
 
-        del_VeRest_1 = max(K-10 , ones(N,1));
+        del_VeRest_1 = max(K-5, 1);
+        del_ViRest_1 = max(K-3, 0.1);
         % del_VeRest_1(zones.normal_zone) = -1;
         
         % 7. update dynamic variables
@@ -194,16 +200,20 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
 
         Ve_grid = Ve_grid_1;
         Vi_grid = Vi_grid_1;
+        Vi_grid_fs = Vi_grid_fs_1;
+        
         D22 = max(D22_1,0.1);                           % the inhibitory gap junctions cannot pass below a minimum value of 0.1.
         D11 = D22 / 100;                                % see definition in [Steyn-Ross et al PRX 2013, Table I].
         
+        % del_VeRest = del_VeRest_1;
         del_VeRest = min(del_VeRest_1, 3);
         % del_VeRest = min(del_VeRest_1, 1.5);          % the excitatory population resting voltage cannot pass above a maximum value of 1.5.    
         if ~isnan(source_del_VeRest)
             % del_VeRest(map == 1) = source_del_VeRest; % set the "source" locations' excitatory population resting voltage
         end
   
-        del_ViRest = min(del_ViRest_1,0.8);             % the inhibitory population resting voltage cannot pass above a maximum value of 0.8.
+        del_ViRest = min(del_ViRest_1, 3);
+        % del_ViRest = min(del_ViRest_1,0.8);             % the inhibitory population resting voltage cannot pass above a maximum value of 0.8.
         K = K_1;
         % K(zones.normal_zone) = 0;
         % K = min(K_1,1);                               % the extracellular ion cannot pass above a maximum value of 1.0.
@@ -220,6 +230,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
     last.Qi_fs = Qi_grid_fs;
     last.Ve = Ve_grid;
     last.Vi = Vi_grid;
+    last.Vi_fs = Vi_grid_fs;
 
     last.phi_ee = phi_ee;
     last.phi_ei = phi_ei;
