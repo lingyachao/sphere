@@ -6,6 +6,8 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
  
     global HL
     
+    save_output = true;
+    
     % set no. of sampling points (must be even!) along each axis of cortical grid
     N = size(laplacian, 1);
     

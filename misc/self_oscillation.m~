@@ -1,0 +1,16 @@
+N = 42;
+
+global source_drive
+global coupling
+% HL = SCM_init_globs(N);
+
+Ve_samp_s = NaN(1500, 10);
+
+for source_drive = 1:10
+    for coupling = 
+    subplot(2, 5, source_drive);
+    run_seizing_cortical_field;
+    Ve_samp_s(:,source_drive) = Ve_samp;
+    ylim([-70 -45]);
+    title(['dVe = ' num2str(source_drive)]);
+end

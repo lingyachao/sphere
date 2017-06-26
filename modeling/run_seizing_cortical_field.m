@@ -1,10 +1,10 @@
-clear; close all;
+% clear; close all;
 
 %% specify run type
 type = 'sphere';
 note = 'full_data';
 save_output = false;
-visualize = true;
+visualize = false;
 print_count = true;
 
 %% load grid
@@ -30,8 +30,8 @@ end
 
 %% initialize parameters and map
 k = 0;
-K = 2000;
-T0 = 0.1;
+K = 3;
+T0 = 1;
 map = make_map(laplacian);
 
 %% initialize initial state
@@ -39,7 +39,7 @@ last = make_IC(N);
 
 %% define zones
 % lessihb_filter = lessihb_area;
-lessihb_filter = locs(:,3) < -6;
+% lessihb_filter = locs(:,3) < -6;
 % lessihb_filter = coord(1,:)' > 0.5;
 % lessihb_filter = true(N, 1);
 
@@ -54,7 +54,8 @@ normal_sample_idx = randsample(find(zones.normal_zone),3);
 global HL
 HL = SCM_init_globs(N);
 
-last.D22(:) = 0.5;
+global coupling
+last.D22(:) = coupling;
 last.D11 = last.D22/100;
 % last.dVe(:) = -8;
 % last.dVi(:) = 0;
@@ -90,16 +91,21 @@ if save_output
     save(META_FILE, 'HL', 'map', 'lessihb_idx', 'normal_sample_idx', 'last');
 end
 
+%% for plotting trace of one node
+Ve_samp = [];
+N_samp = 0;
+
 %% run simulation
 for k = 1:K
      
-    if true
-        source_drive = 4 * sin(k/3); % -8 + 8 * sin(k/3);
-    elseif k > 150 / T0
-        source_drive = NaN;
-    else
-        source_drive = NaN;
-    end
+    global source_drive
+%     if true
+%         source_drive = 10;
+%     elseif k > 150 / T0
+%         source_drive = NaN;
+%     else
+%         source_drive = NaN;
+%     end
 
     if print_count
         fprintf(['Running simulation , ' num2str(k) ' ... ']);
@@ -127,6 +133,12 @@ for k = 1:K
             'samp_time', 'last', 'fine');
     end
 
+    if k == 1
+        N_samp = length(fine.Ve_lessihb(:,1));
+        Ve_samp = NaN(K * N_samp,1);
+    end
+    Ve_samp((k-1)*N_samp+1 : k*N_samp) = fine.Ve_lessihb(:,1);
+    
     if print_count
         fprintf(['RT ' num2str(toc) '\n']);
         % fprintf(['mean ' num2str(mean(last.Ve)) ' sd ' num2str(std(last.Ve)) '\n']);
@@ -135,3 +147,6 @@ for k = 1:K
         % fprintf(['Ve focus ' num2str(last.Ve(1)) '\n']);
     end
 end
+
+% figure;
+plot(0:0.002:2.998, Ve_samp);
