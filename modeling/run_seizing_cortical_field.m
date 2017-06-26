@@ -3,13 +3,17 @@
 %% specify run type
 type = 'sphere';
 note = 'full_data';
+% N = 10242;
+
 save_output = false;
 visualize = false;
 print_count = true;
 
 %% load grid
-if strcmp(type, 'sphere')
-    load('N10242_R10.mat'); 
+if strcmp(type, 'sphere') && N == 10242
+    load('N10242_R10.mat');
+elseif strcmp(type, 'sphere') && N == 42
+    load('N42_R10.mat'); avg_D = 0.3777;
 elseif strcmp(type, 'brain')
     load('N40962.mat');
     load('unitsphere.mat');
@@ -30,35 +34,43 @@ end
 
 %% initialize parameters and map
 k = 0;
-K = 3;
-T0 = 1;
+K = 30;
+T0 = 0.1;
 map = make_map(laplacian);
+if N == 42
+    map = ones(N, 1);
+end
 
 %% initialize initial state
 last = make_IC(N);
 
 %% define zones
 % lessihb_filter = lessihb_area;
-% lessihb_filter = locs(:,3) < -6;
 % lessihb_filter = coord(1,:)' > 0.5;
-% lessihb_filter = true(N, 1);
-
+lessihb_filter = locs(:,3) < -6;
+if N == 42
+    lessihb_filter = true(N, 1);
+end
+    
 zones.focus_zone = map == 1;
 zones.lessihb_zone = lessihb_filter & map ~= 1;
 zones.normal_zone = ~lessihb_filter;
 
 lessihb_idx = find(lessihb_filter);
-normal_sample_idx = randsample(find(zones.normal_zone),3);
+normal_sample_idx = []; % randsample(find(zones.normal_zone),3);
     
 %% initialize constants and make modifications
 global HL
 HL = SCM_init_globs(N);
 
 global coupling
+global source_drive
+
+% source_drive = 5;
+% coupling = 0.5;
+
 last.D22(:) = coupling;
 last.D11 = last.D22/100;
-% last.dVe(:) = -8;
-% last.dVi(:) = 0;
 
 % increase inhibitory strength in all locations other than a patch
 HL.Vi_rest(zones.normal_zone) = HL.Vi_rest(zones.normal_zone) + 3;
@@ -93,19 +105,11 @@ end
 
 %% for plotting trace of one node
 Ve_samp = [];
+Vi_samp = [];
 N_samp = 0;
 
 %% run simulation
 for k = 1:K
-     
-    global source_drive
-%     if true
-%         source_drive = 10;
-%     elseif k > 150 / T0
-%         source_drive = NaN;
-%     else
-%         source_drive = NaN;
-%     end
 
     if print_count
         fprintf(['Running simulation , ' num2str(k) ' ... ']);
@@ -136,8 +140,10 @@ for k = 1:K
     if k == 1
         N_samp = length(fine.Ve_lessihb(:,1));
         Ve_samp = NaN(K * N_samp,1);
+        Vi_samp = NaN(K * N_samp,1);
     end
     Ve_samp((k-1)*N_samp+1 : k*N_samp) = fine.Ve_lessihb(:,1);
+    Vi_samp((k-1)*N_samp+1 : k*N_samp) = fine.Vi_lessihb(:,1);
     
     if print_count
         fprintf(['RT ' num2str(toc) '\n']);
@@ -149,4 +155,12 @@ for k = 1:K
 end
 
 % figure;
-plot(0:0.002:2.998, Ve_samp);
+
+c = 'b';
+if N == 42
+    c = 'r';
+end
+
+plot(0.002*(1:length(Ve_samp)), Ve_samp, 'Color', c);
+hold on;
+plot(0.002*(1:length(Vi_samp)), Vi_samp, 'Color', c, 'LineStyle', ':');

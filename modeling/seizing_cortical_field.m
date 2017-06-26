@@ -64,6 +64,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         fine.Qe_normal_avg = zeros(N_samp, 1);
 
         fine.Ve_lessihb = zeros(N_samp, length(lessihb_idx));
+        fine.Vi_lessihb = zeros(N_samp, length(lessihb_idx));
         fine.Ve_normal = zeros(N_samp, length(normal_sample_idx));
 
         fine.Ve_focus_avg = zeros(N_samp, 1);
@@ -92,6 +93,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
             fine.Qe_normal_avg(idx,:) = mean(Qe_grid(zones.normal_zone));
 
             fine.Ve_lessihb(idx,:) = Ve_grid(lessihb_idx);
+            fine.Vi_lessihb(idx,:) = Vi_grid(lessihb_idx);
             fine.Ve_normal(idx,:) = Ve_grid(normal_sample_idx);
 
             fine.Ve_focus_avg(idx,:) = mean(Ve_grid(zones.focus_zone));

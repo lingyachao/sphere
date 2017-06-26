@@ -1,30 +1,39 @@
-N = 42;
-
 global source_drive
 global coupling
 
-Ve_samp_focus = NaN(1500, 10, 5);
-Ve_samp_homo = NaN(1500, 10, 5);
+Ve_samp_focus = NaN(1500, 8, 5);
+Vi_samp_focus = NaN(1500, 8, 5);
+Ve_samp_homo = NaN(1500, 8, 5);
+Vi_samp_homo = NaN(1500, 8, 5);
 
-for i = 1:10
+for i = 1:8
     for j = 1:5
-        
+
         source_drive = i;
         coupling = j * 0.5;
+        fprintf(['dVe = ' num2str(source_drive) ' D22 = ' num2str(coupling) '\n']);
         
-        subplot(5, 10, i + 10*(j-1));
+        subplot(5, 8, i + 8*(j-1));
         
-        lessihb_filter = locs(:,3) < -6;
+        N = 10242;
         run_seizing_cortical_field;
         Ve_samp_focus(:,i,j) = Ve_samp;
+        Vi_samp_focus(:,i,j) = Vi_samp;
+        % plot(0:0.002:2.998, Ve_samp_focus(:,i,j));
         
         hold on;
         
-        lessihb_filter = true(N, 1);
+        N = 42;
         run_seizing_cortical_field;
         Ve_samp_homo(:,i,j) = Ve_samp;
+        Vi_samp_homo(:,i,j) = Vi_samp;
         
         ylim([-70 -45]);
-        title(['dVe = ' num2str(source_drive) ' D22 = ' num2str(coupling)]);
+        title(['dVe = ' num2str(source_drive) ' D22 = ' num2str(coupling)], 'FontSize', 10);
+        drawnow;
     end
 end
+
+save('./images/self_oscillation_grid.mat', ...
+    'Ve_samp_focus', 'Vi_samp_focus', ...
+    'Ve_samp_homo', 'Vi_samp_homo');
