@@ -6,6 +6,8 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
  
     global HL
     
+    save_output = true;
+    
     % set no. of sampling points (must be even!) along each axis of cortical grid
     N = size(laplacian, 1);
     
@@ -64,6 +66,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         fine.Qe_normal_avg = zeros(N_samp, 1);
 
         fine.Ve_lessihb = zeros(N_samp, length(lessihb_idx));
+        fine.Vi_lessihb = zeros(N_samp, length(lessihb_idx));
         fine.Ve_normal = zeros(N_samp, length(normal_sample_idx));
 
         fine.Ve_focus_avg = zeros(N_samp, 1);
@@ -92,6 +95,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
             fine.Qe_normal_avg(idx,:) = mean(Qe_grid(zones.normal_zone));
 
             fine.Ve_lessihb(idx,:) = Ve_grid(lessihb_idx);
+            fine.Vi_lessihb(idx,:) = Vi_grid(lessihb_idx);
             fine.Ve_normal(idx,:) = Ve_grid(normal_sample_idx);
 
             fine.Ve_focus_avg(idx,:) = mean(Ve_grid(zones.focus_zone));
@@ -164,13 +168,13 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         Qi_grid_fs = HL.Qi_max_fs * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid_fs - HL.theta_i)))) ...     % The I voltage must be big enough,
                   - HL.Qi_max_fs * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid_fs - (HL.theta_i+30)))));
         
-        Qe_grid(K > 25) = 0;
-        Qi_grid_fs(~HL.FSi) = 0;
+        % Qe_grid(K > 25) = 0;
+        Qi_grid_fs(~HL.FSi | K > 5) = 0;
                       
         % 5. update extracellular ion
         joint_Q = Qi_grid_fs; % Qi_grid + Qe_grid;
         K_1 = K + dt/HL.tau_K * (-HL.k_decay .* K ...   % decay term.
-                + HL.kR .* joint_Q ./(1+exp(-(joint_Q - 10))) ... % reaction term.
+                + HL.kR .* joint_Q ./(1+exp(-(joint_Q - 5))) ... % reaction term.
                 + HL.kD * (laplacian * K));          % diffusion term.
 
         % 6. update inhibitory gap junction strength, and resting voltages
@@ -178,8 +182,8 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         % del_VeRest_1  = del_VeRest + dt/HL.tau_dVe * (HL.KtoVe*K);
         % del_ViRest_1  = del_ViRest + dt/HL.tau_dVi * (HL.KtoVi*K);
 
-        del_VeRest_1 = max(K-5, 1);
-        del_ViRest_1 = max(K-3, 0.1);
+        del_VeRest_1 = 1 + max(K-9, 0);
+        del_ViRest_1 = del_ViRest; % max(K-3, 0.1);
         % del_VeRest_1(zones.normal_zone) = -1;
         
         % 7. update dynamic variables

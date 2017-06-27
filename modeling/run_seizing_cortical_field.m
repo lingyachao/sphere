@@ -30,7 +30,7 @@ end
 
 %% initialize parameters and map
 k = 0;
-K = 2000;
+K = 300;
 T0 = 0.1;
 map = make_map(laplacian);
 
@@ -60,7 +60,8 @@ arc_dist = 10 * (lat+90) * (pi/180);
 global HL
 HL = SCM_init_globs(N);
 
-HL.kR = 2.5;
+HL.kR = 10;
+HL.k_decay = 0.5;
 HL.KtoD  = 0;
 HL.KtoVe = 0;
 HL.KtoVi = 0;
@@ -72,19 +73,18 @@ last.D11 = last.D22/100;
 % last.dVi(:) = 0;
 
 HL.FSi = false(N, 1);
-HL.FSi(1:7) = true;
-HL.FSi(randsample(1:N, floor(N/5))) = true;
-
+% HL.FSi(1:7) = true;
+% HL.FSi(randsample(1:N, floor(N/5))) = true;
 
 last.Qi_fs = last.Qi;
 last.Qi_fs(~HL.FSi) = 0;
 last.Vi_fs = last.Vi;
 
-last.K(1:7) = 6;
+last.K(1:7) = 11;
 
 % increase inhibitory strength in all locations other than a patch
 % HL.Vi_rest = HL.Vi_rest + 3 ./ (1+exp(-(arc_dist-9)));
-HL.Vi_rest(zones.normal_zone) = HL.Vi_rest(zones.normal_zone) + 3;
+HL.Vi_rest(zones.normal_zone) = HL.Vi_rest(zones.normal_zone) + 1;
 
 %% 
 % Nie_b(normal_zone) = 1.2 * HL.Nie_b;
@@ -113,6 +113,11 @@ if save_output
     META_FILE = ['./data/' folder_name '/meta.mat'];
     save(META_FILE, 'HL', 'map', 'lessihb_idx', 'normal_sample_idx', 'last');
 end
+
+%% for plotting trace of one node
+Ve_samp = [];
+Vi_samp = [];
+N_samp = 0;
 
 %% run simulation
 for k = 1:K
@@ -151,6 +156,14 @@ for k = 1:K
             'samp_time', 'last', 'fine');
     end
 
+    if k == 1
+        N_samp = length(fine.Ve_lessihb(:,1));
+        Ve_samp = NaN(K * N_samp,1);
+        Vi_samp = NaN(K * N_samp,1);
+    end
+    Ve_samp((k-1)*N_samp+1 : k*N_samp) = fine.Ve_lessihb(:,1);
+    Vi_samp((k-1)*N_samp+1 : k*N_samp) = fine.Vi_lessihb(:,1);
+    
     if print_count
         fprintf(['RT ' num2str(toc) '\n']);
         % fprintf(['mean ' num2str(mean(last.Ve)) ' sd ' num2str(std(last.Ve)) '\n']);
@@ -160,3 +173,14 @@ for k = 1:K
         fprintf(['K focus ' num2str(last.K(1)) '\n']);
     end
 end
+
+figure;
+
+c = 'b';
+if N == 42
+    c = 'r';
+end
+
+plot(0.002*(1:length(Ve_samp)), Ve_samp, 'Color', c);
+hold on;
+plot(0.002*(1:length(Vi_samp)), Vi_samp, 'Color', c, 'LineStyle', ':');
