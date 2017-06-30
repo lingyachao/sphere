@@ -17,7 +17,7 @@ end
 load(META_FILE);
 
 % create a filter for subsetting electrodes
-[~,macro_filter] = ismember(macro_idx(:,1), lessihb_idx);
+% [~,macro_filter] = ismember(macro_idx(:,1), lessihb_idx);
 [~,micro_filter] = ismember(micro_idx, lessihb_idx);
 [~,focus_filter] = ismember(focus_idx, lessihb_idx);
 
@@ -48,8 +48,8 @@ for k = 1:K
     % subset macro to keep only the ones close to electrodes
     fine.Qe_focus = fine.Qe_lessihb(:,focus_filter);
     fine.Ve_focus = fine.Ve_lessihb(:,focus_filter);
-    fine.Qe_macro = fine.Qe_lessihb(:,macro_filter);
-    fine.Ve_macro = fine.Ve_lessihb(:,macro_filter);
+    fine.Qe_macro = fine.Qe_lessihb * macro_idx(:,lessihb_idx)';
+    fine.Ve_macro = fine.Ve_lessihb * macro_idx(:,lessihb_idx)';
     fine.Qe_micro = fine.Qe_lessihb(:,micro_filter);
     fine.Ve_micro = fine.Ve_lessihb(:,micro_filter);
     

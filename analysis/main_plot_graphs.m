@@ -45,13 +45,13 @@ if strcmp(type, 'sphere')
                 micro_pos, micro_idx, micro_2d] = ...
         generate_electrode_grid_sphere(RAW_DIR);
 else
-    loc_grid_center = [56.24, 23.04, 5.64];       % center of the ECoG grid (mm)
-    dist_grid = 10;                                 % distance between electrodes (mm)
-    find_electrode_grid_center(RAW_DIR, 10);
+    loc_grid_center = [64.41, -7.28, 21.48];        % center of the ECoG grid (mm)
+    dist_grid = 12;                                 % distance between electrodes (mm)
+    find_electrode_grid_center(RAW_DIR, 12);
     keyboard;
     [focus_idx, macro_pos, macro_idx, macro_2d, ...
                 micro_pos, micro_idx, micro_2d] = ...
-        generate_electrode_grid_brain(loc_grid_center, dist_grid, RAW_DIR);
+        generate_electrode_grid_brain_realistic(loc_grid_center, dist_grid, RAW_DIR);
 end
 
 %% output directory and file names
@@ -61,7 +61,7 @@ else
     ANALYSIS_DIR = [DATA_DIR 'grid_'...
                              num2str(loc_grid_center(1), '%.2f') '_' ...
                              num2str(loc_grid_center(2), '%.2f') '_' ...
-                             num2str(loc_grid_center(3), '%.2f') '_' num2str(dist_grid) '/'];
+                             num2str(loc_grid_center(3), '%.2f') '_' num2str(dist_grid) '_dipole_small_area/'];
     mkdir(ANALYSIS_DIR);
 end
 
