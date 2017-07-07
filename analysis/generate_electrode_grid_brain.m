@@ -1,6 +1,6 @@
-function [focus_idx, macro_pos, macro_idx, macro_2d, ...
-                     micro_pos, micro_idx, micro_2d] = generate_electrode_grid_brain( ...
-    loc_grid_center, dist_grid, RAW_DIR)
+function [focus_idx, macro_pos, macro_transform, macro_2d, ...
+                     micro_pos, micro_transform, micro_2d] = generate_electrode_grid_brain( ...
+    loc_grid_center, dist_grid, RAW_DIR, flag_dipole)
 
     load('N40962.mat');
     load([RAW_DIR 'seizing_cortical_field_k_'  num2str(50) '.mat']);
@@ -55,26 +55,36 @@ function [focus_idx, macro_pos, macro_idx, macro_2d, ...
 
     %% find nearest vertices for each electrode
 
-    macro_idx = NaN(25, 5);
-
+    macro_transform = zeros(25, N);
+    
+    
     for k = 1:25
-        dist = locs - ones(N, 1) * macro_pos(k,:);
-        dist = sum(abs(dist).^2, 2).^(1/2);
+        ur = ones(N, 1) * macro_pos(k,:) - locs;
+        dist = sum(ur.^2, 2).^(1/2);
+        ur = ur ./ (dist * ones(1, 3));
         [~,I] = sort(dist);
-        macro_idx(k,:) = I(1:5);
-    end
+        
+        if flag_dipole
+            VN2 = vertexNormal(triangulation(tri, locs));
+            pot_coeff = sum(ur.*VN2, 2) ./ dist.^2;
+            macro_transform(k,I(1:25)) = pot_coeff(I(1:25));
+        else
+            top_N = 7;
+            macro_transform(k,I(1:top_N)) = 1/top_N;
 
-    cols = {'r', 'm', 'g'};
-    for k = 1:3
-        scatter3(locs(macro_idx(:,k),1), locs(macro_idx(:,k),2), locs(macro_idx(:,k),3), 15, ...
-            'filled', 'MarkerFaceColor', cols{k}, 'MarkerEdgeColor', 'black');
+            cols = {'r', 'm', 'g'};
+            for close = 1:3
+                scatter3(locs(I(close),1), locs(I(close),2), locs(I(close),3), 15, ...
+                    'filled', 'MarkerFaceColor', cols{close}, 'MarkerEdgeColor', 'black');
+            end
+        end
     end
-
+    
     %% save focus, macro and micro data
     focus_idx = find(make_map(laplacian));
-    micro_pos = [];
-    micro_idx = [];
-    micro_2d = [];
+    micro_pos = zeros(0, 3);
+    micro_transform = zeros(0, N);
+    micro_2d = zeros(0, 2);
     
 end
 

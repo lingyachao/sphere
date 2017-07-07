@@ -16,9 +16,7 @@ end
 % load meta file
 load(META_FILE);
 
-% create a filter for subsetting electrodes
-% [~,macro_filter] = ismember(macro_idx(:,1), lessihb_idx);
-[~,micro_filter] = ismember(micro_idx, lessihb_idx);
+% create a filter for subsetting focal nodes
 [~,focus_filter] = ismember(focus_idx, lessihb_idx);
 
 % allocate storing space
@@ -26,10 +24,11 @@ Qe_rand  = NaN(K*T, 4);
 Ve_rand  = NaN(K*T, 4);
 Qe_avg   = NaN(K*T, 3);
 Ve_avg   = NaN(K*T, 3);
-Qe_macro = NaN(K*T, size(macro_idx, 1));
-Ve_macro = NaN(K*T, size(macro_idx, 1));
-Qe_micro = NaN(K*T, size(micro_idx, 1));
-Ve_micro = NaN(K*T, size(micro_idx, 1));
+
+Qe_macro = NaN(K*T, size(macro_transform, 1));
+Ve_macro = NaN(K*T, size(macro_transform, 1));
+Qe_micro = NaN(K*T, size(micro_transform, 1));
+Ve_micro = NaN(K*T, size(micro_transform, 1));
 
 % start movie
 vidObj = VideoWriter(VIDEO_FILE, 'MPEG-4');
@@ -48,10 +47,10 @@ for k = 1:K
     % subset macro to keep only the ones close to electrodes
     fine.Qe_focus = fine.Qe_lessihb(:,focus_filter);
     fine.Ve_focus = fine.Ve_lessihb(:,focus_filter);
-    fine.Qe_macro = fine.Qe_lessihb * macro_idx(:,lessihb_idx)';
-    fine.Ve_macro = fine.Ve_lessihb * macro_idx(:,lessihb_idx)';
-    fine.Qe_micro = fine.Qe_lessihb(:,micro_filter);
-    fine.Ve_micro = fine.Ve_lessihb(:,micro_filter);
+    fine.Qe_macro = fine.Qe_lessihb * macro_transform(:,lessihb_idx)';
+    fine.Ve_macro = fine.Ve_lessihb * macro_transform(:,lessihb_idx)';
+    fine.Qe_micro = fine.Qe_lessihb * micro_transform(:,lessihb_idx)';
+    fine.Ve_micro = fine.Ve_lessihb * micro_transform(:,lessihb_idx)';
     
     % fill in data 
     Qe_rand(1+(k-1)*T : k*T,1) = fine.Qe_focus(:,1);
@@ -78,7 +77,7 @@ for k = 1:K
     % plot frame for video and write frame
     clf(f);
     if strcmp(type, 'sphere')
-        plot_sphere_instance(locs, last, macro_idx, micro_idx);
+        plot_sphere_instance(locs, last, macro_pos, micro_pos);
     else
         plot_brain_instance(surf, surf_sphere, last, macro_pos, micro_pos);
     end
@@ -87,7 +86,8 @@ for k = 1:K
     writeVideo(vidObj,im);
 end
 
-save(SAMPLE_DATA_FILE, 'Qe_rand', 'Ve_rand', 'Qe_avg', 'Ve_avg', ...
+save(SAMPLE_DATA_FILE, ...
+    'Qe_rand', 'Ve_rand', 'Qe_avg', 'Ve_avg', ...
     'Qe_macro', 'Ve_macro', 'Qe_micro', 'Ve_micro');
 
 close(vidObj);

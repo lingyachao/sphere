@@ -1,4 +1,4 @@
-function plot_sphere_instance(locs, last, macro_idx, micro_idx)
+function plot_sphere_instance(locs, last, macro_pos, micro_pos)
     
     neg_hemi = locs(:,3) < 0;
 
@@ -12,11 +12,11 @@ function plot_sphere_instance(locs, last, macro_idx, micro_idx)
     
     hold on;
     if ~isnan(macro_idx)
-        scatter(locs(macro_idx,1), locs(macro_idx,2), 15, ...
+        scatter(macro_pos(:,1), macro_pos(:,2), 15, ...
             'filled', 'MarkerFaceColor', 'm', 'MarkerEdgeColor', 'black');
     end
     if ~isnan(micro_idx)
-        scatter(locs(micro_idx,1), locs(micro_idx,2), 15, ...
+        scatter(micro_pos(:,1), micro_pos(:,2), 15, ...
             'filled', 'MarkerFaceColor', 'g', 'MarkerEdgeColor', 'black');
     end
     
