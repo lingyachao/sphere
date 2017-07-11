@@ -3,17 +3,17 @@
 %% specify run type
 type = 'sphere';
 note = 'full_data';
-% N = 10242;
+N = 10242;
 
 save_output = false;
-visualize = false;
+visualize = true;
 print_count = true;
 
 %% load grid
 if strcmp(type, 'sphere') && N == 10242
     load('N10242_R10.mat');
-elseif strcmp(type, 'sphere') && N == 42
-    load('N42_R10.mat'); avg_D = 0.3777;
+elseif strcmp(type, 'sphere') && N < 10000
+    load(['N' num2str(N) '_R10.mat']); avg_D = 0.3777;
 elseif strcmp(type, 'brain')
     load('N40962.mat');
     load('unitsphere.mat');
@@ -37,7 +37,9 @@ k = 0;
 K = 30;
 T0 = 0.1;
 map = make_map(laplacian);
-if N == 42
+map(1:12) = 1;
+
+if N < 10000
     map = ones(N, 1);
 end
 
@@ -48,7 +50,7 @@ last = make_IC(N);
 % lessihb_filter = lessihb_area;
 % lessihb_filter = coord(1,:)' > 0.5;
 lessihb_filter = locs(:,3) < -6;
-if N == 42
+if N < 10000
     lessihb_filter = true(N, 1);
 end
     
@@ -66,27 +68,14 @@ HL = SCM_init_globs(N);
 global coupling
 global source_drive
 
-% source_drive = 5;
-% coupling = 0.5;
+source_drive = 5;
+coupling = 1.5;
 
 last.D22(:) = coupling;
 last.D11 = last.D22/100;
 
 % increase inhibitory strength in all locations other than a patch
 HL.Vi_rest(zones.normal_zone) = HL.Vi_rest(zones.normal_zone) + 3;
-
-%% 
-% Nie_b(normal_zone) = 1.2 * HL.Nie_b;
-% Nii_b(normal_zone) = 1.2 * HL.Nii_b;
-% Nie_b(focus_zone) = 0.95 * HL.Nie_b;
-% Nii_b(focus_zone) = 0.95 * HL.Nii_b;
-% Nie_b(lessihb_zone) = 0.95 * HL.Nie_b;
-% Nii_b(lessihb_zone) = 0.95 * HL.Nii_b;
-
-% [HL.Nee_a, HL.Nei_a] = deal(5000, 5000);
-% lam = 1;
-% HL.gamma_i = HL.gamma_i / lam;
-% HL.gi = HL.gi * lam;
 
 %% set the output directory and save meta file
 if save_output
@@ -147,20 +136,16 @@ for k = 1:K
     
     if print_count
         fprintf(['RT ' num2str(toc) '\n']);
-        % fprintf(['mean ' num2str(mean(last.Ve)) ' sd ' num2str(std(last.Ve)) '\n']);
-        % fprintf(['K normal ' num2str(mean(last.K(zones.normal_zone))) ' K abnormal ' num2str(mean(last.K(lessihb_idx))) '\n']);
-        % fprintf(['D2 ' num2str(mean(last.D22(lessihb_idx))) ' dVe ' num2str(mean(last.dVe(lessihb_idx))) '\n']);
-        % fprintf(['Ve focus ' num2str(last.Ve(1)) '\n']);
     end
 end
 
-% figure;
+figure;
 
 c = 'b';
-if N == 42
+if N < 10000
     c = 'r';
 end
 
-plot(0.002*(1:length(Ve_samp)), Ve_samp, 'Color', c);
+plot(0.002 * (1:length(Ve_samp)), Ve_samp, 'Color', c);
 hold on;
-plot(0.002*(1:length(Vi_samp)), Vi_samp, 'Color', c, 'LineStyle', ':');
+plot(0.002 * (1:length(Vi_samp)), Vi_samp, 'Color', c, 'LineStyle', ':');

@@ -1,6 +1,7 @@
 %% generate sphere grid
 
-[N,locs,laplacian,avg_D] = make_sphere(10000, R);
+R = 10;
+[N,locs,laplacian,avg_D] = make_sphere_grid(42, R);
 save(['./computed_sphere_grid/N' num2str(N) '_R' num2str(R) '.mat'], ...
     'N', 'locs', 'laplacian', 'avg_D', 'R');
 

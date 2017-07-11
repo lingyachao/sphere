@@ -19,11 +19,10 @@ for i = 1:8
         run_seizing_cortical_field;
         Ve_samp_focus(:,i,j) = Ve_samp;
         Vi_samp_focus(:,i,j) = Vi_samp;
-        % plot(0:0.002:2.998, Ve_samp_focus(:,i,j));
         
         hold on;
         
-        N = 42;
+        N = 12;
         run_seizing_cortical_field;
         Ve_samp_homo(:,i,j) = Ve_samp;
         Vi_samp_homo(:,i,j) = Vi_samp;
@@ -34,6 +33,8 @@ for i = 1:8
     end
 end
 
-save('./images/self_oscillation_grid.mat', ...
+save('./images/self_oscillation_grid_12.mat', ...
     'Ve_samp_focus', 'Vi_samp_focus', ...
     'Ve_samp_homo', 'Vi_samp_homo');
+
+savefig('./images/self_oscillation_grid_12.fig');
