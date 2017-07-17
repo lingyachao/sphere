@@ -1,6 +1,6 @@
 function [focus_idx, macro_pos, macro_transform, macro_2d, ...
                      micro_pos, micro_transform, micro_2d] = generate_electrode_grid_brain( ...
-    loc_grid_center, dist_grid, RAW_DIR, flag_dipole)
+    loc_grid_center, dist_grid, RAW_DIR, flag_dipole, closest_N)
 
     load('N40962.mat');
     load([RAW_DIR 'seizing_cortical_field_k_'  num2str(50) '.mat']);
@@ -53,10 +53,9 @@ function [focus_idx, macro_pos, macro_transform, macro_2d, ...
     scatter3(macro_pos(:,1), macro_pos(:,2), macro_pos(:,3), 40, ...
         'filled', 'MarkerFaceColor', 'y', 'MarkerEdgeColor', 'black');
 
-    %% find nearest vertices for each electrode
+    %% compute gain matrix
 
     macro_transform = zeros(25, N);
-    
     
     for k = 1:25
         ur = ones(N, 1) * macro_pos(k,:) - locs;
@@ -67,17 +66,16 @@ function [focus_idx, macro_pos, macro_transform, macro_2d, ...
         if flag_dipole
             VN2 = vertexNormal(triangulation(tri, locs));
             pot_coeff = sum(ur.*VN2, 2) ./ dist.^2;
-            macro_transform(k,I(1:25)) = pot_coeff(I(1:25));
+            macro_transform(k,I(1:closest_N)) = pot_coeff(I(1:closest_N));
         else
-            top_N = 7;
-            macro_transform(k,I(1:top_N)) = 1/top_N;
-
-            cols = {'r', 'm', 'g'};
-            for close = 1:3
-                scatter3(locs(I(close),1), locs(I(close),2), locs(I(close),3), 15, ...
-                    'filled', 'MarkerFaceColor', cols{close}, 'MarkerEdgeColor', 'black');
-            end
+            macro_transform(k,I(1:closest_N)) = 1/closest_N;
         end
+        
+        cols = {'r', 'm', 'g'};
+        for close = 1:3
+            scatter3(locs(I(close),1), locs(I(close),2), locs(I(close),3), 15, ...
+                'filled', 'MarkerFaceColor', cols{close}, 'MarkerEdgeColor', 'black');
+        end        
     end
     
     %% save focus, macro and micro data

@@ -6,8 +6,7 @@ function find_electrode_grid_center(RAW_DIR, dist_grid)
     % get boundary of brain
     
     fig = figure;
-    set(fig, 'Position', [200 300 1600 400]);
-    subplot(1,2,1);
+    set(fig, 'Position', [200 300 800 400]);
     bounds = boundary(locs, 0.3);
     pt = trisurf(bounds, locs(:,1), locs(:,2), locs(:,3), last.Qe);
     view(90, 0);

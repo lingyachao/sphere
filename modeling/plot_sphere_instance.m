@@ -11,11 +11,11 @@ function plot_sphere_instance(locs, last, macro_pos, micro_pos)
     caxis([0,30]); axis off;
     
     hold on;
-    if ~isnan(macro_idx)
+    if ~isnan(macro_pos)
         scatter(macro_pos(:,1), macro_pos(:,2), 15, ...
             'filled', 'MarkerFaceColor', 'm', 'MarkerEdgeColor', 'black');
     end
-    if ~isnan(micro_idx)
+    if ~isnan(micro_pos)
         scatter(micro_pos(:,1), micro_pos(:,2), 15, ...
             'filled', 'MarkerFaceColor', 'g', 'MarkerEdgeColor', 'black');
     end

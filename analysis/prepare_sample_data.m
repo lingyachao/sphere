@@ -1,18 +1,3 @@
-%% load grid
-if strcmp(type, 'sphere')
-    load('N10242_R10.mat'); 
-elseif strcmp(type, 'brain')
-    load('N40962.mat');
-    load('unitsphere.mat');
-    
-    surf.vertices = locs;
-    surf.faces = tri;
-    surf_sphere.vertices = 10 * coord';
-    surf_sphere.faces = tri;
-else
-    error('not recognized type');
-end
-
 % load meta file
 load(META_FILE);
 

@@ -14,7 +14,7 @@ K = 200; T = 500; T0 = 1;
 P = 20; per_P = 5000;
 % P = 39; per_P = 5000; % each period is 10s, overlapping 5s with the previous period
 
-%%  input directory and file names
+%% input directory and file names
 
 folder_list = dir('./data');
 for i = 1 : length(folder_list)
@@ -45,22 +45,24 @@ if strcmp(type, 'sphere')
                 micro_pos, micro_transform, micro_2d] = ...
         generate_electrode_grid_sphere(RAW_DIR);
 else
+    NOTE = 'closest7_avg';
     loc_grid_center = [64.41, -7.28, 21.48];        % center of the ECoG grid (mm)
     dist_grid = 12;                                 % distance between electrodes (mm)
-    find_electrode_grid_center(RAW_DIR, 12);
-    flag_dipole = true;
+    find_electrode_grid_center(RAW_DIR, dist_grid);
+    flag_dipole = false;
+    closest_N = 7;
     keyboard;
     
     [focus_idx, macro_pos, macro_transform, macro_2d, ...
                 micro_pos, micro_transform, micro_2d] = ...
-        generate_electrode_grid_brain(loc_grid_center, dist_grid, RAW_DIR, flag_dipole);
+        generate_electrode_grid_brain(loc_grid_center, dist_grid, RAW_DIR, ...
+                                      flag_dipole, closest_N);
 end
 
 %% output directory and file names
 if strcmp(type, 'sphere')
     ANALYSIS_DIR = DATA_DIR;
 else
-    NOTE = 'test_close';
     ANALYSIS_DIR = [DATA_DIR 'grid_'...
                              num2str(loc_grid_center(1), '%.2f') '_' ...
                              num2str(loc_grid_center(2), '%.2f') '_' ...
@@ -75,8 +77,25 @@ save(ELEC_FILE, 'focus_idx', 'macro_pos', 'macro_transform', 'macro_2d', ...
 SAMPLE_DATA_FILE = [ANALYSIS_DIR 'sample_data.mat'];
 COHERENCE_FILE = [ANALYSIS_DIR 'coherence.mat'];
 VIDEO_FILE = [ANALYSIS_DIR 'movie_sparse_sphere.mp4'];
+
+COURSE_FIG = [ANALYSIS_DIR 'course.fig'];
 TRACES_FIG = [ANALYSIS_DIR 'traces.fig'];
 COHERENCE_FIG = [ANALYSIS_DIR 'coherence_summary.fig'];
+
+%% load grid
+if strcmp(type, 'sphere')
+    load('N10242_R10.mat');
+    pos_hemi = locs(:,3) >= 0;
+    neg_hemi = locs(:,3) < 0;
+else
+    load('N40962.mat');
+    load('unitsphere.mat');
+    
+    surf.vertices = locs;
+    surf.faces = tri;
+    surf_sphere.vertices = 10 * coord';
+    surf_sphere.faces = tri;
+end
 
 %% load or generate data
 if exist(SAMPLE_DATA_FILE, 'file') == 2
@@ -94,10 +113,8 @@ else
 end
 
 %% plot seizure course
-if strcmp(type, 'sphere')
-    plot_course;
-end
-    
+plot_course;
+
 %% plot firing rate and voltage traces
 plot_traces;
 
