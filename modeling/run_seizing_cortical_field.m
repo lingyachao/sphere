@@ -54,7 +54,7 @@ HL = SCM_init_globs(N);
 HL.kR = 1.5;
 HL.KtoVe = 1000;
 HL.KtoVi = 0;
-HL.KtoD  = 0;
+HL.KtoD  = -50;
 
 % last.D22(:) = 0.5;
 % last.D11 = last.D22/100;
