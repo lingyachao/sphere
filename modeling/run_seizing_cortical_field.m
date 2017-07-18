@@ -38,42 +38,28 @@ map = make_map(laplacian);
 last = make_IC(N);
 
 %% define zones
-% lessihb_filter = lessihb_area;
-lessihb_filter = locs(:,3) < -6;
-% lessihb_filter = coord(1,:)' > 0.5;
-% lessihb_filter = true(N, 1);
+lessihb_filter = true(N, 1);
 
 zones.focus_zone = map == 1;
 zones.lessihb_zone = lessihb_filter & map ~= 1;
 zones.normal_zone = ~lessihb_filter;
 
 lessihb_idx = find(lessihb_filter);
-normal_sample_idx = randsample(find(zones.normal_zone),3);
+normal_sample_idx = []; % randsample(find(zones.normal_zone),3);
     
 %% initialize constants and make modifications
 global HL
 HL = SCM_init_globs(N);
 
-last.D22(:) = 0.5;
-last.D11 = last.D22/100;
-% last.dVe(:) = -8;
+HL.kR = 1.5;
+HL.KtoVe = 1000;
+HL.KtoVi = 0;
+HL.KtoD  = 0;
+
+% last.D22(:) = 0.5;
+% last.D11 = last.D22/100;
+last.dVe(:) = -3;
 % last.dVi(:) = 0;
-
-% increase inhibitory strength in all locations other than a patch
-HL.Vi_rest(zones.normal_zone) = HL.Vi_rest(zones.normal_zone) + 3;
-
-%% 
-% Nie_b(normal_zone) = 1.2 * HL.Nie_b;
-% Nii_b(normal_zone) = 1.2 * HL.Nii_b;
-% Nie_b(focus_zone) = 0.95 * HL.Nie_b;
-% Nii_b(focus_zone) = 0.95 * HL.Nii_b;
-% Nie_b(lessihb_zone) = 0.95 * HL.Nie_b;
-% Nii_b(lessihb_zone) = 0.95 * HL.Nii_b;
-
-% [HL.Nee_a, HL.Nei_a] = deal(5000, 5000);
-% lam = 1;
-% HL.gamma_i = HL.gamma_i / lam;
-% HL.gi = HL.gi * lam;
 
 %% set the output directory and save meta file
 if save_output
@@ -94,7 +80,7 @@ end
 for k = 1:K
      
     if true
-        source_drive = 4 * sin(k/3); % -8 + 8 * sin(k/3);
+        source_drive = 3;
     elseif k > 150 / T0
         source_drive = NaN;
     else
