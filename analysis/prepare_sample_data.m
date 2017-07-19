@@ -15,6 +15,10 @@ Ve_macro = NaN(K*T, size(macro_transform, 1));
 Qe_micro = NaN(K*T, size(micro_transform, 1));
 Ve_micro = NaN(K*T, size(micro_transform, 1));
 
+% single node
+node_id = 500;
+[Qe_1, Qi_1, Ve_1, Vi_1, D22_1, dVe_1, dVi_1, K_1] = deal(NaN(K, 1));
+
 % start movie
 vidObj = VideoWriter(VIDEO_FILE, 'MPEG-4');
 vidObj.FrameRate = 23;
@@ -41,11 +45,11 @@ for k = 1:K
     Qe_rand(1+(k-1)*T : k*T,1) = fine.Qe_focus(:,1);
     Qe_rand(1+(k-1)*T : k*T,2) = fine.Qe_macro(:,1);
     Qe_rand(1+(k-1)*T : k*T,3) = fine.Qe_macro(:,8);
-    Qe_rand(1+(k-1)*T : k*T,4) = fine.Qe_normal(:,1);
+    % Qe_rand(1+(k-1)*T : k*T,4) = fine.Qe_normal(:,1);
     Ve_rand(1+(k-1)*T : k*T,1) = fine.Ve_focus(:,1);
     Ve_rand(1+(k-1)*T : k*T,2) = fine.Ve_macro(:,1);
     Ve_rand(1+(k-1)*T : k*T,3) = fine.Ve_macro(:,8);
-    Ve_rand(1+(k-1)*T : k*T,4) = fine.Ve_normal(:,1);
+    % Ve_rand(1+(k-1)*T : k*T,4) = fine.Ve_normal(:,1);
 
     Qe_avg(1+(k-1)*T : k*T,1) = fine.Qe_focus_avg;
     Qe_avg(1+(k-1)*T : k*T,2) = fine.Qe_lessihb_avg;
@@ -59,6 +63,16 @@ for k = 1:K
     Qe_micro(1+(k-1)*T : k*T,:) = fine.Qe_micro;
     Ve_micro(1+(k-1)*T : k*T,:) = fine.Ve_micro;
     
+    % single node
+    Qe_1(k) = last.Qe(node_id);
+    Qi_1(k) = last.Qi(node_id);
+    Ve_1(k) = last.Ve(node_id);
+    Vi_1(k) = last.Vi(node_id);
+    D22_1(k) = last.D22(node_id);
+    dVe_1(k) = last.dVe(node_id);
+    dVi_1(k) = last.dVi(node_id);
+    K_1(k) = last.K(node_id);
+    
     % plot frame for video and write frame
     clf(f);
     if strcmp(type, 'sphere')
@@ -71,8 +85,10 @@ for k = 1:K
     writeVideo(vidObj,im);
 end
 
+single_node = table(Qe_1, Qi_1, Ve_1, Vi_1, D22_1, dVe_1, dVi_1, K_1);
+
 save(SAMPLE_DATA_FILE, ...
     'Qe_rand', 'Ve_rand', 'Qe_avg', 'Ve_avg', ...
-    'Qe_macro', 'Ve_macro', 'Qe_micro', 'Ve_micro');
+    'Qe_macro', 'Ve_macro', 'Qe_micro', 'Ve_micro', 'single_node');
 
 close(vidObj);

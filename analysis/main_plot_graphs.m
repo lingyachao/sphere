@@ -1,16 +1,23 @@
 clear; close all; 
 
 %% data directory to plot
-id = '06141205';
+% id = '07191052';
+id = '07181403';
+% id = '06141205';
 % id = '06150910';
 
 %% some parameters
 
 % total number of files; number of time points in each file; duration per file
-% K = 2000; T = 50; T0 = 0.1;
-K = 200; T = 500; T0 = 1;
+K = 2000; T = 50; T0 = 0.1;
+% K = 150; T = 500; T0 = 1;
+
+total_time = K*T0;
+sparse_time = (1:K) * T0;
+fine_time = (1:K*T) * (T0/T);
 
 % for coherence split the entire course into P periods
+% P = 100; per_P = 1000;
 P = 20; per_P = 5000;
 % P = 39; per_P = 5000; % each period is 10s, overlapping 5s with the previous period
 
@@ -118,9 +125,14 @@ plot_course;
 %% plot firing rate and voltage traces
 plot_traces;
 
+%% plot single node dynamics
+figure;
+plot(sparse_time, table2array(single_node));
+legend('Qe', 'Qi', 'Ve', 'Vi', 'D22', 'dVe', 'dVi', 'K');
+
 %% plot coherence statistics
 [t_coh,t_coh_conf,t_phi] = deal(macro_t_coh, macro_t_coh_conf, macro_t_phi);
 % [t_coh,t_coh_conf,t_phi] = deal(micro_t_coh, micro_t_coh_conf, micro_t_phi);
-central_t = 5:10:195;
+central_t = int32(total_time * (1/P/2 : 1/P : 1-1/P/2));
 period_idx = find(central_t == 115); %if drawing one period, draw this
 plot_coherence;

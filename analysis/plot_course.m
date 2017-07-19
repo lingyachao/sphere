@@ -1,7 +1,7 @@
 fg = figure;
 
 % specify time points to plot
-ks = K/20:K/20:K;
+ks = int32(K * (1/P:1/P:1));
 ncols = ceil(length(ks) / 4);
 
 for i = 1:length(ks)                                      
