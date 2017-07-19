@@ -83,10 +83,11 @@ save(ELEC_FILE, 'focus_idx', 'macro_pos', 'macro_transform', 'macro_2d', ...
 
 SAMPLE_DATA_FILE = [ANALYSIS_DIR 'sample_data.mat'];
 COHERENCE_FILE = [ANALYSIS_DIR 'coherence.mat'];
-VIDEO_FILE = [ANALYSIS_DIR 'movie_sparse_sphere.mp4'];
+VIDEO_FILE = [ANALYSIS_DIR 'movie.mp4'];
 
 COURSE_FIG = [ANALYSIS_DIR 'course.fig'];
 TRACES_FIG = [ANALYSIS_DIR 'traces.fig'];
+SINGLE_FIG = [ANALYSIS_DIR 'single.fig'];
 COHERENCE_FIG = [ANALYSIS_DIR 'coherence_summary.fig'];
 
 %% load grid
@@ -126,9 +127,10 @@ plot_course;
 plot_traces;
 
 %% plot single node dynamics
-figure;
+fg = figure;
 plot(sparse_time, table2array(single_node));
 legend('Qe', 'Qi', 'Ve', 'Vi', 'D22', 'dVe', 'dVi', 'K');
+saveas(fg, SINGLE_FIG);
 
 %% plot coherence statistics
 [t_coh,t_coh_conf,t_phi] = deal(macro_t_coh, macro_t_coh_conf, macro_t_phi);
