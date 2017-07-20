@@ -2,8 +2,8 @@ clear; close all;
 
 %% specify run type
 type = 'sphere';
-note = 'full_data';
-save_output = false;
+note = 'full_FSinhib';
+save_output = true;
 visualize = true;
 print_count = true;
 
@@ -51,28 +51,29 @@ normal_sample_idx = []; % randsample(find(zones.normal_zone),3);
 global HL
 HL = SCM_init_globs(N);
 
-HL.kR = 1.5;
-HL.KtoVe = 1000;
+HL.kR = 2.5;
+HL.KtoVe = 0;
 HL.KtoVi = 0;
-HL.KtoD  = -50;
+HL.KtoD  = -20;
 
 % last.D22(:) = 0.5;
 % last.D11 = last.D22/100;
-last.dVe(:) = -3;
+% last.dVe(:) = -3;
 % last.dVi(:) = 0;
 
 %% set the output directory and save meta file
 if save_output
+    id = datestr(now, 'mmddHHMM');
     if strcmp(type, 'sphere')
-        folder_name = ['sphere_N' num2str(N) '_R' num2str(R) '_' datestr(now, 'mmddHHMM') '_' note];
+        folder_name = ['sphere_N' num2str(N) '_R' num2str(R) '_' id '_' note];
     elseif strcmp(type, 'brain')
-        folder_name = ['brain_N' num2str(N) '_' datestr(now, 'mmddHHMM') '_' note];
+        folder_name = ['brain_N' num2str(N) '_' id '_' note];
     end
 
     OUTPUT_DIR = ['./data/' folder_name '/raw/'];
     mkdir(OUTPUT_DIR);
     
-    META_FILE = ['./data/' folder_name '/meta.mat'];
+    META_FILE = ['./data/' folder_name '/vars.mat'];
     save(META_FILE, 'HL', 'map', 'lessihb_idx', 'normal_sample_idx', 'last');
 end
 
@@ -120,4 +121,9 @@ for k = 1:K
         % fprintf(['D2 ' num2str(mean(last.D22(lessihb_idx))) ' dVe ' num2str(mean(last.dVe(lessihb_idx))) '\n']);
         % fprintf(['Ve focus ' num2str(last.Ve(1)) '\n']);
     end
+end
+
+%% run analysis
+if save_output
+    main_plot_graphs;
 end

@@ -1,25 +1,28 @@
-clear; close all; 
+clearvars -except id K T0;
+close all; 
 
 %% data directory to plot
-% id = '07191052';
-id = '07181403';
-% id = '06141205';
-% id = '06150910';
 
-%% some parameters
+if ~exist('id', 'var')
+    id = '07191525';
+    % id = '07191052';
+    % id = '07181403';
+    % id = '06141205';
+    % id = '06150910';
 
-% total number of files; number of time points in each file; duration per file
-K = 2000; T = 50; T0 = 0.1;
-% K = 150; T = 500; T0 = 1;
+    % total number of files; duration per file
+    K = 2000; T0 = 0.1;
+end
 
+%% time sequences
+
+T = 500 * T0;
 total_time = K*T0;
 sparse_time = (1:K) * T0;
 fine_time = (1:K*T) * (T0/T);
 
 % for coherence split the entire course into P periods
-% P = 100; per_P = 1000;
 P = 20; per_P = 5000;
-% P = 39; per_P = 5000; % each period is 10s, overlapping 5s with the previous period
 
 %% input directory and file names
 
@@ -35,15 +38,8 @@ for i = 1 : length(folder_list)
         end
     end
 end
-if ~exist('DATA_DIR', 'var')
-    error('folder ID does not exist');
-end
 
-if exist([DATA_DIR 'raw/'], 'dir')
-    RAW_DIR = [DATA_DIR 'raw/'];
-else
-    RAW_DIR = DATA_DIR;
-end
+RAW_DIR = [DATA_DIR 'raw/'];
 META_FILE = [DATA_DIR 'meta.mat'];
 
 %% load vertices that are closest to electrodes
@@ -77,18 +73,19 @@ else
     mkdir(ANALYSIS_DIR);
 end
 
-ELEC_FILE = [ANALYSIS_DIR 'electrode_data.mat'];
+VIDEO_FILE = [ANALYSIS_DIR 'movie.mp4'];
+
+SAMPLE_DATA_FILE = [ANALYSIS_DIR 'data_sample.mat'];
+COHERENCE_FILE   = [ANALYSIS_DIR 'data_coherence.mat'];
+ELEC_FILE        = [ANALYSIS_DIR 'data_electrode.mat'];
 save(ELEC_FILE, 'focus_idx', 'macro_pos', 'macro_transform', 'macro_2d', ...
                              'micro_pos', 'micro_transform', 'micro_2d');
 
-SAMPLE_DATA_FILE = [ANALYSIS_DIR 'sample_data.mat'];
-COHERENCE_FILE = [ANALYSIS_DIR 'coherence.mat'];
-VIDEO_FILE = [ANALYSIS_DIR 'movie.mp4'];
-
-COURSE_FIG = [ANALYSIS_DIR 'course.fig'];
-TRACES_FIG = [ANALYSIS_DIR 'traces.fig'];
-SINGLE_FIG = [ANALYSIS_DIR 'single.fig'];
-COHERENCE_FIG = [ANALYSIS_DIR 'coherence_summary.fig'];
+COURSE_FIG       = [ANALYSIS_DIR 'fig_course.fig'];
+TRACES_FIG       = [ANALYSIS_DIR 'fig_traces.fig'];
+SINGLE_FIG       = [ANALYSIS_DIR 'fig_single.fig'];
+COH_MACRO_FIG    = [ANALYSIS_DIR 'fig_coh_summary_macro.fig'];
+COH_MICRO_FIG    = [ANALYSIS_DIR 'fig_coh_summary_micro.fig'];
 
 %% load grid
 if strcmp(type, 'sphere')
@@ -133,8 +130,15 @@ legend('Qe', 'Qi', 'Ve', 'Vi', 'D22', 'dVe', 'dVi', 'K');
 saveas(fg, SINGLE_FIG);
 
 %% plot coherence statistics
-[t_coh,t_coh_conf,t_phi] = deal(macro_t_coh, macro_t_coh_conf, macro_t_phi);
-% [t_coh,t_coh_conf,t_phi] = deal(micro_t_coh, micro_t_coh_conf, micro_t_phi);
 central_t = int32(total_time * (1/P/2 : 1/P : 1-1/P/2));
-period_idx = find(central_t == 115); %if drawing one period, draw this
+period_idx = find(central_t == 175); %if drawing one period, draw this
+
+COHERENCE_FIG = COH_MACRO_FIG;
+[t_coh,t_coh_conf,t_phi] = deal(macro_t_coh, macro_t_coh_conf, macro_t_phi);
 plot_coherence;
+
+if ~isempty(micro_pos)
+    COHERENCE_FIG = COH_MICRO_FIG;
+    [t_coh,t_coh_conf,t_phi] = deal(micro_t_coh, micro_t_coh_conf, micro_t_phi);
+    plot_coherence;
+end

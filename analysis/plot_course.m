@@ -12,6 +12,8 @@ for i = 1:length(ks)
     if strcmp(type, 'sphere')
         scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, last.Qe(neg_hemi), 'filled');
         caxis([0,30]); axis off;
+        hold on;
+        scatter(macro_pos(:,1), macro_pos(:,2), 10, 'filled', 'MarkerFaceColor', 'm');
     else
         figure_wire(surf_sphere, last.Qe, false);
         view(90, 0);

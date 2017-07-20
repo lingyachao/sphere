@@ -130,12 +130,14 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
 
         %%%% I-to-E %%%%
         F_ie_1   = F_ie + dt * HL.gamma_i^2 * (-2/HL.gamma_i*F_ie - Phi_ie ...
-                        + HL.Nie_b .* Qi_grid);            % short range
+                        + (-0.5 * (K > 0.7) + 1.5) .* HL.Nie_b .* Qi_grid);
+                        % + HL.Nie_b .* Qi_grid);            % short range
         Phi_ie_1 = Phi_ie + dt*F_ie;
 
         %%%% I-to-I %%%%
         F_ii_1   = F_ii + dt * HL.gamma_i^2 * (-2/HL.gamma_i*F_ii - Phi_ii ...
-                        + HL.Nii_b .* Qi_grid);            % short range
+                        + (-0.5 * (K > 0.7) + 1.5) .* HL.Nii_b .* Qi_grid);
+                        % + HL.Nii_b .* Qi_grid);            % short range
         Phi_ii_1 = Phi_ii + dt*F_ii;
 
         % 3. update the soma voltages
