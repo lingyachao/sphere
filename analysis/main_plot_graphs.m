@@ -40,7 +40,7 @@ for i = 1 : length(folder_list)
 end
 
 RAW_DIR = [DATA_DIR 'raw/'];
-META_FILE = [DATA_DIR 'meta.mat'];
+META_FILE = [DATA_DIR 'vars.mat'];
 
 %% load vertices that are closest to electrodes
 if strcmp(type, 'sphere')
@@ -134,11 +134,13 @@ central_t = int32(total_time * (1/P/2 : 1/P : 1-1/P/2));
 period_idx = find(central_t == 175); %if drawing one period, draw this
 
 COHERENCE_FIG = COH_MACRO_FIG;
-[t_coh,t_coh_conf,t_phi] = deal(macro_t_coh, macro_t_coh_conf, macro_t_phi);
+[t_coh,t_coh_conf,t_phi,electrode_2d] = deal( ...
+    macro_t_coh, macro_t_coh_conf, macro_t_phi, macro_2d);
 plot_coherence;
 
 if ~isempty(micro_pos)
     COHERENCE_FIG = COH_MICRO_FIG;
-    [t_coh,t_coh_conf,t_phi] = deal(micro_t_coh, micro_t_coh_conf, micro_t_phi);
+    [t_coh,t_coh_conf,t_phi,electrode_2d] = deal( ...
+        micro_t_coh, micro_t_coh_conf, micro_t_phi, micro_2d);
     plot_coherence;
 end

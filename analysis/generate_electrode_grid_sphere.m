@@ -10,13 +10,13 @@ function [focus_idx, macro_pos, macro_transform, macro_2d, ...
     macro_transform = zeros(19, N);
     macro_transform(sub2ind(size(macro_transform), 1:19, macro_idx)) = 1;
     macro_pos = locs(macro_idx,:);
-    macro_2d = position;
+    macro_2d = position * 4 * avg_D;
     
     micro_idx = [744 659 753 837 836 752 658 579 669 777 845 933 929 932 844 776 668 578 573];
     micro_transform = zeros(19, N);
     micro_transform(sub2ind(size(micro_transform), 1:19, micro_idx)) = 1;
     micro_pos = locs(micro_idx,:);
-    micro_2d = position;
+    micro_2d = position * avg_D;
     
     load([RAW_DIR 'seizing_cortical_field_k_'  num2str(50) '.mat']);
     f = figure;
