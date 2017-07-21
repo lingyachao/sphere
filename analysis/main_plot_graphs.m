@@ -1,5 +1,7 @@
-clearvars -except id K T0;
-close all; 
+clear;
+% clearvars -except id K T0;
+close all;
+% set(0,'DefaultFigureWindowStyle','docked');
 
 %% data directory to plot
 if ~exist('id', 'var')
@@ -39,7 +41,8 @@ sparse_time = (1:K) * T0;
 fine_time = (1:K*T) * (T0/T);
 
 % for coherence split the entire course into P periods
-P = 20; per_P = K*T/P;
+P = total_time/10;
+per_P = K*T/P;
 
 %% gain matrix for electrodes
 if strcmp(type, 'sphere')
@@ -123,24 +126,26 @@ plot_course;
 plot_traces;
 
 %% plot single node dynamics
-fg = figure;
+fg_single = figure;
 plot(sparse_time, table2array(single_node));
 legend('Qe', 'Qi', 'Ve', 'Vi', 'D22', 'dVe', 'dVi', 'K');
-saveas(fg, SINGLE_FIG);
+saveas(fg_single, SINGLE_FIG);
 
 %% plot coherence statistics
 central_t = int32(total_time * (1/P/2 : 1/P : 1-1/P/2));
-period_idx = find(central_t == 175); %if drawing one period, draw this
+period_idx = length(central_t) - 2; % estimate wave for this period
 
 COHERENCE_FIG = COH_MACRO_FIG;
 [t_coh,t_coh_conf,t_phi,electrode_2d] = deal( ...
     macro_t_coh, macro_t_coh_conf, macro_t_phi, macro_2d);
+fprintf('macro electrodes ');
 plot_coherence;
 
 if ~isempty(micro_pos)
     COHERENCE_FIG = COH_MICRO_FIG;
     [t_coh,t_coh_conf,t_phi,electrode_2d] = deal( ...
         micro_t_coh, micro_t_coh_conf, micro_t_phi, micro_2d);
+    fprintf('micro electrodes ');
     plot_coherence;
 end
 

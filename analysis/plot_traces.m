@@ -1,4 +1,4 @@
-fg = figure;
+fg_traces = figure;
 
 subplot(4, 1, 1);
 plot_traces_helper(fine_time, Qe_rand, ...
@@ -21,4 +21,4 @@ plot_traces_helper(fine_time, Ve_avg, ...
     'voltage (mV)', [-70 -40]);
 
 % save figure
-saveas(fg, TRACES_FIG);
+saveas(fg_traces, TRACES_FIG);

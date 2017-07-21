@@ -1,4 +1,4 @@
-fg = figure;
+fg_course = figure;
 
 % specify time points to plot
 ks = int32(K * (1/P:1/P:1));
@@ -23,4 +23,4 @@ for i = 1:length(ks)
 end
 
 % save figure
-saveas(fg, COURSE_FIG);
+saveas(fg_course, COURSE_FIG);
