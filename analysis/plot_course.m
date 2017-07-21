@@ -1,4 +1,4 @@
-fg_course = figure;
+figure(fg_course); axes('parent', tab_course);
 
 % specify time points to plot
 ks = int32(K * (1/P:1/P:1));
@@ -21,6 +21,3 @@ for i = 1:length(ks)
     
     title(['t = ' num2str(ks(i) * T0)]);
 end
-
-% save figure
-saveas(fg_course, COURSE_FIG);

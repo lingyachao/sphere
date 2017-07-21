@@ -1,12 +1,15 @@
 clear;
 % clearvars -except id K T0;
 close all;
-% set(0,'DefaultFigureWindowStyle','docked');
+set(0, 'DefaultFigurePosition', [600, 50, 1000, 900]);
+
+%% tabbed figures
+tabbed = true;
 
 %% data directory to plot
 if ~exist('id', 'var')
-    id = '07191525';
-    % id = '07191052';
+    % id = '07191525';
+    id = '07191052';
     % id = '07181403';
     % id = '06141205';
     % id = '06150910';
@@ -50,16 +53,36 @@ else
 end
 
 VIDEO_FILE = [ANALYSIS_DIR 'movie.mp4'];
-
 SAMPLE_DATA_FILE = [ANALYSIS_DIR 'data_sample.mat'];
 COHERENCE_FILE   = [ANALYSIS_DIR 'data_coherence.mat'];
 ELEC_FILE        = [ANALYSIS_DIR 'data_electrode.mat'];
 
-COURSE_FIG       = [ANALYSIS_DIR 'fig_course.fig'];
-TRACES_FIG       = [ANALYSIS_DIR 'fig_traces.fig'];
-SINGLE_FIG       = [ANALYSIS_DIR 'fig_single.fig'];
-COH_MACRO_FIG    = [ANALYSIS_DIR 'fig_coh_summary_macro.fig'];
-COH_MICRO_FIG    = [ANALYSIS_DIR 'fig_coh_summary_micro.fig'];
+%% *** SPECIFY *** figure name
+if tabbed
+    JOINT_FIG    = [ANALYSIS_DIR 'joint.fig'];
+    fg_joint = figure('Name', 'Joint');
+    tgroup = uitabgroup(fg_joint);
+    
+    tab_course = uitab(tgroup, 'Title', 'Course');
+    tab_traces = uitab(tgroup, 'Title', 'Traces');
+    tab_single = uitab(tgroup, 'Title', 'Single Node');
+    tab_coh_macro = uitab(tgroup, 'Title', 'Coherence (macro)');
+    tab_coh_micro = uitab(tgroup, 'Title', 'Coherence (micro)');
+    
+    [fg_course, fg_traces, fg_single, fg_coh_macro, fg_coh_micro] = deal(fg_joint);
+else
+    COURSE_FIG       = [ANALYSIS_DIR 'fig_course.fig'];
+    TRACES_FIG       = [ANALYSIS_DIR 'fig_traces.fig'];
+    SINGLE_FIG       = [ANALYSIS_DIR 'fig_single.fig'];
+    COH_MACRO_FIG    = [ANALYSIS_DIR 'fig_coh_summary_macro.fig'];
+    COH_MICRO_FIG    = [ANALYSIS_DIR 'fig_coh_summary_micro.fig'];
+    
+    fg_course = figure('Name', 'Course'); tab_course = gcf;
+    fg_traces = figure('Name', 'Traces'); tab_traces = gcf;
+    fg_single = figure('Name', 'Single Node'); tab_single = gcf;
+    fg_coh_macro = figure('Name', 'Coherence (macro)'); tab_coh_macro = gcf;
+    fg_coh_micro = figure('Name', 'Coherence (micro)'); tab_coh_micro = gcf;
+end
 
 %% *** SPECIFY *** time sequences
 K = length(dir([RAW_DIR 'seizing_*.mat']));
@@ -112,26 +135,25 @@ plot_course;
 plot_traces;
 
 %% *** PLOT *** single node dynamics
-fg_single = figure;
+figure(fg_single); axes('parent', tab_single);
 plot(sparse_time, table2array(single_node));
 legend('Qe', 'Qi', 'Ve', 'Vi', 'D22', 'dVe', 'dVi', 'K');
-saveas(fg_single, SINGLE_FIG);
 
 %% *** PLOT *** coherence statistics
 central_t = int32(total_time * (1/P/2 : 1/P : 1-1/P/2));
 period_idx = length(central_t) - 2; % estimate wave for this period
 
-COHERENCE_FIG = COH_MACRO_FIG;
 [t_coh,t_coh_conf,t_phi,electrode_2d] = deal( ...
     macro_t_coh, macro_t_coh_conf, macro_t_phi, macro_2d);
 fprintf('macro electrodes ');
+figure(fg_coh_macro); axes('parent', tab_coh_macro);
 plot_coherence;
 
 if ~isempty(micro_pos)
-    COHERENCE_FIG = COH_MICRO_FIG;
     [t_coh,t_coh_conf,t_phi,electrode_2d] = deal( ...
         micro_t_coh, micro_t_coh_conf, micro_t_phi, micro_2d);
     fprintf('micro electrodes ');
+    figure(fg_coh_micro); axes('parent', tab_coh_micro);
     plot_coherence;
 end
 
@@ -145,3 +167,14 @@ t_l = fine_time(find(Qe_macro(:,node_l) > 15, 1));
 travel_dist = dist(macro_2d([node_e, node_l], :)');
 recruitment_speed = travel_dist(1,2) / (t_l-t_e);
 fprintf(['recruitment speed is ' num2str(recruitment_speed) ' cm/s \n']);
+
+%% *** SAVE *** figure
+if tabbed
+    saveas(fg_joint, JOINT_FIG);
+else
+    saveas(fg_course, COURSE_FIG);
+    saveas(fg_traces, TRACES_FIG);
+    saveas(fg_single, SINGLE_FIG);
+    saveas(fg_coh_macro, COH_MACRO_FIG);
+    saveas(fg_coh_micro, COH_MICRO_FIG);
+end

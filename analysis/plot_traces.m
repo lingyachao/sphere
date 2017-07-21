@@ -1,4 +1,4 @@
-fg_traces = figure;
+figure(fg_traces); axes('parent', tab_traces);
 
 subplot(4, 1, 1);
 plot_traces_helper(fine_time, Qe_rand, ...
@@ -19,6 +19,3 @@ subplot(4, 1, 4);
 plot_traces_helper(fine_time, Ve_avg, ...
     'average voltage for all nodes in zone', ...
     'voltage (mV)', [-70 -40]);
-
-% save figure
-saveas(fg_traces, TRACES_FIG);
