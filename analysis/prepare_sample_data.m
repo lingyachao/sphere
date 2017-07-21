@@ -83,6 +83,22 @@ for k = 1:K
     drawnow;
     im = getframe(f);
     writeVideo(vidObj,im);
+    
+%     for i = 1:T
+%         clf(f);
+%         
+%         subplot(1, 2, 1);
+%         scatter(locs(pos_hemi,1), locs(pos_hemi,2), 15, fine.Qe_lessihb(i, pos_hemi)', 'filled');
+%         caxis([0,30]); axis off;
+% 
+%         subplot(1, 2, 2);    
+%         scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, fine.Qe_lessihb(i, neg_hemi)', 'filled');
+%         caxis([0,30]); axis off;
+%         
+%         drawnow;
+%         im = getframe(f);
+%         writeVideo(vidObj,im);
+%     end
 end
 
 single_node = table(Qe_1, Qi_1, Ve_1, Vi_1, D22_1, dVe_1, dVi_1, K_1);

@@ -15,7 +15,7 @@ delay_ci_up = zeros(size(coh,1));
 
 for i = 1 : size(coh,2)
     for j = i+1 : size(coh,2)
-        fprintf('Compute delay electrodes %d - %d...\n', i, j);
+        % fprintf('Compute delay electrodes %d - %d...\n', i, j);
         coh0 = squeeze(coh(i,j,:));
         conf0 = coh_conf(i,j);
         phi0 = squeeze(phi(i,j,:));

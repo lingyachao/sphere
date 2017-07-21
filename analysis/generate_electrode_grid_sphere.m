@@ -18,10 +18,10 @@ function [focus_idx, macro_pos, macro_transform, macro_2d, ...
     micro_pos = locs(micro_idx,:);
     micro_2d = position * avg_D;
     
-    load([RAW_DIR 'seizing_cortical_field_k_'  num2str(50) '.mat']);
-    f = figure;
-    set(f, 'Position', [200 300 900 400]);
-    plot_sphere_instance(locs, last, macro_pos, micro_pos);
+    % load([RAW_DIR 'seizing_cortical_field_k_'  num2str(50) '.mat']);
+    % f = figure;
+    % set(f, 'Position', [200 300 900 400]);
+    % plot_sphere_instance(locs, last, macro_pos, micro_pos);
 end
 
 

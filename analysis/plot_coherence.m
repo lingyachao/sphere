@@ -12,11 +12,11 @@ title('coherence between two farthest electrodes during 110-120s');
 ic = NaN(P,1);
 for i = 1:P
     coh_avg = mean(squeeze(t_coh(:,:,:,i)), 3);
-    dist = pdist(electrode_2d)';
+    dist_pairs = pdist(electrode_2d)';
     coh_pair = tril(coh_avg, -1);
     coh_pair = coh_pair(:);
     coh_pair = coh_pair(coh_pair > 0);
-    f = polyfit(dist, coh_pair, 1);
+    f = polyfit(dist_pairs, coh_pair, 1);
     ic(i) = f(2);
 end
 
@@ -69,3 +69,6 @@ title('source direction through time');
 
 %% save figure
 saveas(fg, COHERENCE_FIG);
+
+%% display average speed in the last 5 periods
+fprintf(['SWD speed is ' num2str(mean(speeds(end-4:end))) ' cm/s \n']);

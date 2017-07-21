@@ -2,36 +2,23 @@ clearvars -except id K T0;
 close all; 
 
 %% data directory to plot
-
 if ~exist('id', 'var')
     id = '07191525';
     % id = '07191052';
     % id = '07181403';
     % id = '06141205';
     % id = '06150910';
-
-    % total number of files; duration per file
-    K = 2000; T0 = 0.1;
 end
 
-%% time sequences
-
-T = 500 * T0;
-total_time = K*T0;
-sparse_time = (1:K) * T0;
-fine_time = (1:K*T) * (T0/T);
-
-% for coherence split the entire course into P periods
-P = 20; per_P = 5000;
-
 %% input directory and file names
-
 folder_list = dir('./data');
 for i = 1 : length(folder_list)
-    if ~isempty(strfind(folder_list(i).name, id))
-        DATA_DIR = ['./data/' folder_list(i).name '/'];
+    folder_name = folder_list(i).name;
+    
+    if ~isempty(strfind(folder_name, id))
+        DATA_DIR = ['./data/' folder_name '/'];
         
-        if ~isempty(strfind(folder_list(i).name, 'brain'))
+        if ~isempty(strfind(folder_name, 'brain'))
             type = 'brain';
         else
             type = 'sphere';
@@ -42,7 +29,19 @@ end
 RAW_DIR = [DATA_DIR 'raw/'];
 META_FILE = [DATA_DIR 'vars.mat'];
 
-%% load vertices that are closest to electrodes
+%% time sequences
+K = length(dir([RAW_DIR 'seizing_*.mat']));
+T0 = 1 * (K<1000) + 0.1 * (K >= 1000);
+T = 500 * T0;
+
+total_time = K*T0;
+sparse_time = (1:K) * T0;
+fine_time = (1:K*T) * (T0/T);
+
+% for coherence split the entire course into P periods
+P = 20; per_P = K*T/P;
+
+%% gain matrix for electrodes
 if strcmp(type, 'sphere')
     [focus_idx, macro_pos, macro_transform, macro_2d, ...
                 micro_pos, micro_transform, micro_2d] = ...
@@ -144,3 +143,14 @@ if ~isempty(micro_pos)
         micro_t_coh, micro_t_coh_conf, micro_t_phi, micro_2d);
     plot_coherence;
 end
+
+%% calculate recruitment speed
+[~, node_e] = min(macro_pos(:,3));
+[~, node_l] = max(macro_pos(:,3));
+
+t_e = fine_time(find(Qe_macro(:,node_e) > 15, 1));
+t_l = fine_time(find(Qe_macro(:,node_l) > 15, 1));
+
+travel_dist = dist(macro_2d([node_e, node_l], :)');
+recruitment_speed = travel_dist(1,2) / (t_l-t_e);
+fprintf(['recruitment speed is ' num2str(recruitment_speed) ' cm/s \n']);

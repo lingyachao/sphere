@@ -51,7 +51,7 @@ if nargin == 3 && strcmp(varargin{1}, 'plot')
 end
     
 if isnan(src_dir)
-    fprintf('Unable to fit a plane to the delays in space\n');
+    % fprintf('Unable to fit a plane to the delays in space\n');
 elseif nargin == 3 && strcmp(varargin{1}, 'plot')                        % Visualize the fit, if last function input is set.
     x1fit = linspace(min(position(:,1)), max(position(:,1)), 10);
     x2fit = linspace(min(position(:,2)), max(position(:,2)), 10);

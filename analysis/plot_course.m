@@ -5,7 +5,7 @@ ks = int32(K * (1/P:1/P:1));
 ncols = ceil(length(ks) / 4);
 
 for i = 1:length(ks)                                      
-    fprintf(['Read in ' num2str(ks(i)) '\n']);    
+    % fprintf(['Read in ' num2str(ks(i)) '\n']);    
     load([RAW_DIR 'seizing_cortical_field_k_'  num2str(ks(i)) '.mat']);
     subplot(4, ncols, i);
 
