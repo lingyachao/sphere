@@ -1,6 +1,3 @@
-% load meta file
-load(META_FILE);
-
 % create a filter for subsetting focal nodes
 [~,focus_filter] = ismember(focus_idx, lessihb_idx);
 

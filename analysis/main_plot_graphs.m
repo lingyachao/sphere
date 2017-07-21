@@ -12,7 +12,12 @@ if ~exist('id', 'var')
     % id = '06150910';
 end
 
-%% input directory and file names
+% brain type only
+NOTE = 'closest7_avg';
+loc_grid_center = [64.41, -7.28, 21.48];        % center of the ECoG grid (mm)
+dist_grid = 12;                                 % distance between electrodes (mm)
+
+%% *** SPECIFY *** input directory and file names
 folder_list = dir('./data');
 for i = 1 : length(folder_list)
     folder_name = folder_list(i).name;
@@ -30,8 +35,33 @@ end
 
 RAW_DIR = [DATA_DIR 'raw/'];
 META_FILE = [DATA_DIR 'vars.mat'];
+load(META_FILE);
 
-%% time sequences
+%% *** SPECIFY *** output directory and file names
+if strcmp(type, 'sphere')
+    ANALYSIS_DIR = DATA_DIR;
+else
+    ANALYSIS_DIR = [DATA_DIR 'grid_'...
+                             num2str(loc_grid_center(1), '%.2f') '_' ...
+                             num2str(loc_grid_center(2), '%.2f') '_' ...
+                             num2str(loc_grid_center(3), '%.2f') '_' ...
+                             num2str(dist_grid) '_' NOTE '/'];
+    mkdir(ANALYSIS_DIR);
+end
+
+VIDEO_FILE = [ANALYSIS_DIR 'movie.mp4'];
+
+SAMPLE_DATA_FILE = [ANALYSIS_DIR 'data_sample.mat'];
+COHERENCE_FILE   = [ANALYSIS_DIR 'data_coherence.mat'];
+ELEC_FILE        = [ANALYSIS_DIR 'data_electrode.mat'];
+
+COURSE_FIG       = [ANALYSIS_DIR 'fig_course.fig'];
+TRACES_FIG       = [ANALYSIS_DIR 'fig_traces.fig'];
+SINGLE_FIG       = [ANALYSIS_DIR 'fig_single.fig'];
+COH_MACRO_FIG    = [ANALYSIS_DIR 'fig_coh_summary_macro.fig'];
+COH_MICRO_FIG    = [ANALYSIS_DIR 'fig_coh_summary_micro.fig'];
+
+%% *** SPECIFY *** time sequences
 K = length(dir([RAW_DIR 'seizing_*.mat']));
 T0 = 1 * (K<1000) + 0.1 * (K >= 1000);
 T = 500 * T0;
@@ -44,52 +74,7 @@ fine_time = (1:K*T) * (T0/T);
 P = total_time/10;
 per_P = K*T/P;
 
-%% gain matrix for electrodes
-if strcmp(type, 'sphere')
-    [focus_idx, macro_pos, macro_transform, macro_2d, ...
-                micro_pos, micro_transform, micro_2d] = ...
-        generate_electrode_grid_sphere(RAW_DIR);
-else
-    NOTE = 'closest7_avg';
-    loc_grid_center = [64.41, -7.28, 21.48];        % center of the ECoG grid (mm)
-    dist_grid = 12;                                 % distance between electrodes (mm)
-    find_electrode_grid_center(RAW_DIR, dist_grid);
-    flag_dipole = false;
-    closest_N = 7;
-    keyboard;
-    
-    [focus_idx, macro_pos, macro_transform, macro_2d, ...
-                micro_pos, micro_transform, micro_2d] = ...
-        generate_electrode_grid_brain(loc_grid_center, dist_grid, RAW_DIR, ...
-                                      flag_dipole, closest_N);
-end
-
-%% output directory and file names
-if strcmp(type, 'sphere')
-    ANALYSIS_DIR = DATA_DIR;
-else
-    ANALYSIS_DIR = [DATA_DIR 'grid_'...
-                             num2str(loc_grid_center(1), '%.2f') '_' ...
-                             num2str(loc_grid_center(2), '%.2f') '_' ...
-                             num2str(loc_grid_center(3), '%.2f') '_' num2str(dist_grid) '_' NOTE '/'];
-    mkdir(ANALYSIS_DIR);
-end
-
-VIDEO_FILE = [ANALYSIS_DIR 'movie.mp4'];
-
-SAMPLE_DATA_FILE = [ANALYSIS_DIR 'data_sample.mat'];
-COHERENCE_FILE   = [ANALYSIS_DIR 'data_coherence.mat'];
-ELEC_FILE        = [ANALYSIS_DIR 'data_electrode.mat'];
-save(ELEC_FILE, 'focus_idx', 'macro_pos', 'macro_transform', 'macro_2d', ...
-                             'micro_pos', 'micro_transform', 'micro_2d');
-
-COURSE_FIG       = [ANALYSIS_DIR 'fig_course.fig'];
-TRACES_FIG       = [ANALYSIS_DIR 'fig_traces.fig'];
-SINGLE_FIG       = [ANALYSIS_DIR 'fig_single.fig'];
-COH_MACRO_FIG    = [ANALYSIS_DIR 'fig_coh_summary_macro.fig'];
-COH_MICRO_FIG    = [ANALYSIS_DIR 'fig_coh_summary_micro.fig'];
-
-%% load grid
+%% *** SPECIFY *** grid
 if strcmp(type, 'sphere')
     load('N10242_R10.mat');
     pos_hemi = locs(:,3) >= 0;
@@ -104,34 +89,35 @@ else
     surf_sphere.faces = tri;
 end
 
-%% load or generate data
+%% *** LOAD/GENERATE *** sample data
 if exist(SAMPLE_DATA_FILE, 'file') == 2
-    load(SAMPLE_DATA_FILE);
     load(ELEC_FILE);
+    load(SAMPLE_DATA_FILE);
 else
+    prepare_electrode_data;
     prepare_sample_data;
 end
 
-%% load or compute coherence data
+%% *** LOAD/GENERATE *** coherence data
 if exist(COHERENCE_FILE, 'file') == 2
     load(COHERENCE_FILE);
 else
     prepare_coherence;
 end
 
-%% plot seizure course
+%% *** PLOT *** seizure course
 plot_course;
 
-%% plot firing rate and voltage traces
+%% *** PLOT *** firing rate and voltage traces
 plot_traces;
 
-%% plot single node dynamics
+%% *** PLOT *** single node dynamics
 fg_single = figure;
 plot(sparse_time, table2array(single_node));
 legend('Qe', 'Qi', 'Ve', 'Vi', 'D22', 'dVe', 'dVi', 'K');
 saveas(fg_single, SINGLE_FIG);
 
-%% plot coherence statistics
+%% *** PLOT *** coherence statistics
 central_t = int32(total_time * (1/P/2 : 1/P : 1-1/P/2));
 period_idx = length(central_t) - 2; % estimate wave for this period
 
@@ -149,7 +135,7 @@ if ~isempty(micro_pos)
     plot_coherence;
 end
 
-%% calculate recruitment speed
+%% *** CALCULATE *** recruitment speed
 [~, node_e] = min(macro_pos(:,3));
 [~, node_l] = max(macro_pos(:,3));
 
