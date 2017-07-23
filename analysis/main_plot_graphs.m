@@ -1,10 +1,11 @@
-clear;
-% clearvars -except id K T0;
+% clear;
+clearvars -except id DATA_ROOT_DIR;
 close all;
 set(0, 'DefaultFigurePosition', [600, 50, 1000, 900]);
 
-%% tabbed figures
-tabbed = true;
+%% flags
+flag_plot = false;
+flag_tabbed = true;
 
 %% data directory to plot
 if ~exist('id', 'var')
@@ -21,12 +22,16 @@ loc_grid_center = [64.41, -7.28, 21.48];        % center of the ECoG grid (mm)
 dist_grid = 12;                                 % distance between electrodes (mm)
 
 %% *** SPECIFY *** input directory and file names
-folder_list = dir('./data');
+if ~exist('DATA_ROOT_DIR', 'var')
+    DATA_ROOT_DIR = './data/';
+end
+folder_list = dir(DATA_ROOT_DIR);
+
 for i = 1 : length(folder_list)
     folder_name = folder_list(i).name;
     
     if ~isempty(strfind(folder_name, id))
-        DATA_DIR = ['./data/' folder_name '/'];
+        DATA_DIR = [DATA_ROOT_DIR folder_name '/'];
         
         if ~isempty(strfind(folder_name, 'brain'))
             type = 'brain';
@@ -57,8 +62,8 @@ SAMPLE_DATA_FILE = [ANALYSIS_DIR 'data_sample.mat'];
 COHERENCE_FILE   = [ANALYSIS_DIR 'data_coherence.mat'];
 ELEC_FILE        = [ANALYSIS_DIR 'data_electrode.mat'];
 
-%% *** SPECIFY *** figure name
-if tabbed
+%% *** SPECIFY *** figure names
+if flag_tabbed && flag_plot
     JOINT_FIG    = [ANALYSIS_DIR 'joint.fig'];
     fg_joint = figure('Name', 'Joint');
     tgroup = uitabgroup(fg_joint);
@@ -70,7 +75,7 @@ if tabbed
     tab_coh_micro = uitab(tgroup, 'Title', 'Coherence (micro)');
     
     [fg_course, fg_traces, fg_single, fg_coh_macro, fg_coh_micro] = deal(fg_joint);
-else
+elseif flag_plot
     COURSE_FIG       = [ANALYSIS_DIR 'fig_course.fig'];
     TRACES_FIG       = [ANALYSIS_DIR 'fig_traces.fig'];
     SINGLE_FIG       = [ANALYSIS_DIR 'fig_single.fig'];
@@ -128,53 +133,55 @@ else
     prepare_coherence;
 end
 
-%% *** PLOT *** seizure course
-plot_course;
+if flag_plot
+    %% *** PLOT *** seizure course
+    plot_course;
 
-%% *** PLOT *** firing rate and voltage traces
-plot_traces;
+    %% *** PLOT *** firing rate and voltage traces
+    plot_traces;
 
-%% *** PLOT *** single node dynamics
-figure(fg_single); axes('parent', tab_single);
-plot(sparse_time, table2array(single_node));
-legend('Qe', 'Qi', 'Ve', 'Vi', 'D22', 'dVe', 'dVi', 'K');
+    %% *** PLOT *** single node dynamics
+    figure(fg_single); axes('parent', tab_single);
+    plot(sparse_time, table2array(single_node));
+    legend('Qe', 'Qi', 'Ve', 'Vi', 'D22', 'dVe', 'dVi', 'K');
 
-%% *** PLOT *** coherence statistics
-central_t = int32(total_time * (1/P/2 : 1/P : 1-1/P/2));
-period_idx = length(central_t) - 2; % estimate wave for this period
+    %% *** PLOT *** coherence statistics
+    central_t = int32(total_time * (1/P/2 : 1/P : 1-1/P/2));
+    period_idx = length(central_t) - 2; % estimate wave for this period
 
-[t_coh,t_coh_conf,t_phi,electrode_2d] = deal( ...
-    macro_t_coh, macro_t_coh_conf, macro_t_phi, macro_2d);
-fprintf('macro electrodes ');
-figure(fg_coh_macro); axes('parent', tab_coh_macro);
-plot_coherence;
-
-if ~isempty(micro_pos)
     [t_coh,t_coh_conf,t_phi,electrode_2d] = deal( ...
-        micro_t_coh, micro_t_coh_conf, micro_t_phi, micro_2d);
-    fprintf('micro electrodes ');
-    figure(fg_coh_micro); axes('parent', tab_coh_micro);
+        macro_t_coh, macro_t_coh_conf, macro_t_phi, macro_2d);
+    fprintf('macro electrodes ');
+    figure(fg_coh_macro); axes('parent', tab_coh_macro);
     plot_coherence;
-end
 
-%% *** CALCULATE *** recruitment speed
-[~, node_e] = min(macro_pos(:,3));
-[~, node_l] = max(macro_pos(:,3));
+    if ~isempty(micro_pos)
+        [t_coh,t_coh_conf,t_phi,electrode_2d] = deal( ...
+            micro_t_coh, micro_t_coh_conf, micro_t_phi, micro_2d);
+        fprintf('micro electrodes ');
+        figure(fg_coh_micro); axes('parent', tab_coh_micro);
+        plot_coherence;
+    end
 
-t_e = fine_time(find(Qe_macro(:,node_e) > 15, 1));
-t_l = fine_time(find(Qe_macro(:,node_l) > 15, 1));
+    %% *** CALCULATE *** recruitment speed
+    [~, node_e] = min(macro_pos(:,3));
+    [~, node_l] = max(macro_pos(:,3));
 
-travel_dist = dist(macro_2d([node_e, node_l], :)');
-recruitment_speed = travel_dist(1,2) / (t_l-t_e);
-fprintf(['recruitment speed is ' num2str(recruitment_speed) ' cm/s \n']);
+    t_e = fine_time(find(Qe_macro(:,node_e) > 15, 1));
+    t_l = fine_time(find(Qe_macro(:,node_l) > 15, 1));
 
-%% *** SAVE *** figure
-if tabbed
-    saveas(fg_joint, JOINT_FIG);
-else
-    saveas(fg_course, COURSE_FIG);
-    saveas(fg_traces, TRACES_FIG);
-    saveas(fg_single, SINGLE_FIG);
-    saveas(fg_coh_macro, COH_MACRO_FIG);
-    saveas(fg_coh_micro, COH_MICRO_FIG);
+    travel_dist = dist(macro_2d([node_e, node_l], :)');
+    recruitment_speed = travel_dist(1,2) / (t_l-t_e);
+    fprintf(['recruitment speed is ' num2str(recruitment_speed) ' cm/s \n']);
+
+    %% *** SAVE *** figures
+    if flag_tabbed
+        saveas(fg_joint, JOINT_FIG);
+    else
+        saveas(fg_course, COURSE_FIG);
+        saveas(fg_traces, TRACES_FIG);
+        saveas(fg_single, SINGLE_FIG);
+        saveas(fg_coh_macro, COH_MACRO_FIG);
+        saveas(fg_coh_micro, COH_MICRO_FIG);
+    end
 end
