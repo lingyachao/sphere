@@ -2,9 +2,6 @@ function fn_grid_kR_source(kR_arg, source_arg)
 
     DATA_ROOT_DIR = './data/grid_kR_source/';
     mkdir(DATA_ROOT_DIR);
-    
-    %% add folders to path
-    addpath(genpath('./add_ons'));
 
     %% load grid
     load('N10242_R10.mat');
