@@ -1,4 +1,4 @@
-function fn_grid_kR_source(kR_arg, source_arg)
+function fn_grid_kR_source(kR_arg, source_arg, D22min_arg)
 
     DATA_ROOT_DIR = './data/grid_kR_source/';
     mkdir(DATA_ROOT_DIR);
@@ -7,8 +7,8 @@ function fn_grid_kR_source(kR_arg, source_arg)
     load('N10242_R10.mat');
     
     %% initialize parameters and map
-    K = 10;
-    T0 = 1;
+    K = 2000;
+    T0 = 0.1;
     map = make_map(laplacian);
 
     %% initialize initial state
@@ -22,7 +22,7 @@ function fn_grid_kR_source(kR_arg, source_arg)
     zones.normal_zone = ~lessihb_filter;
 
     lessihb_idx = find(lessihb_filter);
-    normal_sample_idx = [];
+    normal_sample_idx = 500;
 
     %% initialize constants and make modifications
     global HL
@@ -32,6 +32,7 @@ function fn_grid_kR_source(kR_arg, source_arg)
     HL.KtoVe = 0;
     HL.KtoVi = 0;
     HL.KtoD  = -20;
+    HL.D22min = D22min_arg;
 
     %% set the output directory and save meta file
     id = ['kR' num2str(kR_arg) '_source' num2str(source_arg)];

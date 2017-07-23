@@ -186,10 +186,10 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
 
         Ve_grid = Ve_grid_1;
         Vi_grid = Vi_grid_1;
-        D22 = max(D22_1,0.1);                         % the inhibitory gap junctions cannot pass below a minimum value of 0.1.
+        D22 = max(D22_1, HL.D22min);                  % the inhibitory gap junctions cannot pass below a minimum value of 0.1.
         D11 = D22 / 100;                              % see definition in [Steyn-Ross et al PRX 2013, Table I].
         
-        del_VeRest = min(del_VeRest_1, 1);          % the excitatory population resting voltage cannot pass above a maximum value of 1.5.    
+        del_VeRest = min(del_VeRest_1, 1);            % the excitatory population resting voltage cannot pass above a maximum value of 1.5.    
         if ~isnan(source_del_VeRest)
             del_VeRest(map == 1) = source_del_VeRest; % set the "source" locations' excitatory population resting voltage
         end

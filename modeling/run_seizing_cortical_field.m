@@ -55,6 +55,7 @@ HL.kR = 2.5;
 HL.KtoVe = 0;
 HL.KtoVi = 0;
 HL.KtoD  = -20;
+HL.D22min = 0.1;
 
 % last.D22(:) = 0.5;
 % last.D11 = last.D22/100;
