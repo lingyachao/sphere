@@ -162,7 +162,7 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
         t_l = fine_time(find(Qe_macro(:,node_l) > 15, 1));
 
         travel_dist = dist(macro_2d([node_e, node_l], :)');
-        if isempty(t_e) || isempty(t_l)
+        if ~isempty(t_e) && ~isempty(t_l)
             recruitment_speed = travel_dist(1,2) / (t_l-t_e);
         else
             recruitment_speed = NaN;
