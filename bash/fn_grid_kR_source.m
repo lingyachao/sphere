@@ -7,8 +7,8 @@ function fn_grid_kR_source(kR_arg, source_arg, D22min_arg)
     load('N10242_R10.mat');
     
     %% initialize parameters and map
-    K = 2000;
-    T0 = 0.1;
+    K = 200;
+    T0 = 1;
     map = make_map(laplacian);
 
     %% initialize initial state
