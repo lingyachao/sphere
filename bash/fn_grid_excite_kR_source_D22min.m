@@ -1,6 +1,6 @@
-function fn_grid_kR_source(kR_arg, source_arg, D22min_arg)
+function fn_grid_excite_kR_source_D22min(kR_arg, source_arg, D22min_arg)
 
-    DATA_ROOT_DIR = './data/grid_kR_source/';
+    DATA_ROOT_DIR = './data/grid_excite_kR_source_D22min/';
     mkdir(DATA_ROOT_DIR);
 
     %% load grid
@@ -29,11 +29,14 @@ function fn_grid_kR_source(kR_arg, source_arg, D22min_arg)
     HL = SCM_init_globs(N);
 
     HL.kR = kR_arg;
-    HL.KtoVe = 0;
+    HL.KtoVe = 1000;
     HL.KtoVi = 0;
-    HL.KtoD  = -20;
+    HL.KtoD  = -50;
     HL.D22min = D22min_arg;
+    HL.FS_ratio = 0;
 
+    last.dVe(:) = -3;
+    
     %% set the output directory and save meta file
     id = ['kR' num2str(kR_arg) '_source' num2str(source_arg) '_D22min' num2str(D22min_arg)];
     folder_name = ['sphere_N' num2str(N) '_R' num2str(R) '_' id];
@@ -60,5 +63,15 @@ function fn_grid_kR_source(kR_arg, source_arg, D22min_arg)
     end
 
     %% run analysis
-    main_plot_graphs(id, DATA_ROOT_DIR, true, true);
+    [~,macro_speed,micro_speed,recruitment_speed] = ...
+        main_plot_graphs(id, DATA_ROOT_DIR, true, true);
+    
+    SPEED_FILE = [DATA_ROOT_DIR folder_name '/speeds.mat'];
+    save(SPEED_FILE, 'macro_speed', 'micro_speed', 'recruitment_speed');
+    
+    %% print speeds to a file
+    fileID = fopen([DATA_ROOT_DIR 'output.txt'],'a');
+    fprintf(fileID, '%s --- %.3f %.3f %.3f\n', ...
+        macro_speed, micro_speed, recruitment_speed);
+    fclose(fileID);
 end

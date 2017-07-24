@@ -1,4 +1,4 @@
-DATA_ROOT_DIR = './data/grid_kR_source/';
+DATA_ROOT_DIR = './data/grid_FS_kR_source_D22min/';
 
 kR_arg_list = [1.5 2.5 3.5];
 source_arg_list = [2 2.5 3 3.5];
