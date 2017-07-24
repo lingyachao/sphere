@@ -16,14 +16,16 @@ Ve_micro = NaN(K*T, size(micro_transform, 1));
 node_id = 500;
 [Qe_1, Qi_1, Ve_1, Vi_1, D22_1, dVe_1, dVi_1, K_1] = deal(NaN(K, 1));
 
-% start movie
-vidObj = VideoWriter(VIDEO_FILE, 'MPEG-4');
-vidObj.FrameRate = 23;
-open(vidObj);
+if flag_plot
+    % start movie
+    vidObj = VideoWriter(VIDEO_FILE, 'MPEG-4');
+    vidObj.FrameRate = 23;
+    open(vidObj);
 
-% set plotting window
-f = figure;
-set(f, 'Position', [200 300 900 400]);
+    % set plotting window
+    f = figure;
+    set(f, 'Position', [200 300 900 400]);
+end
 
 for k = 1:K
     
@@ -71,37 +73,41 @@ for k = 1:K
     K_1(k) = last.K(node_id);
     
     % plot frame for video and write frame
-    clf(f);
-    if strcmp(type, 'sphere')
-        plot_sphere_instance(locs, last, macro_pos, micro_pos);
-    else
-        plot_brain_instance(surf, surf_sphere, last, macro_pos, micro_pos);
+    if flag_plot
+        clf(f);
+        if strcmp(type, 'sphere')
+            plot_sphere_instance(locs, last, macro_pos, micro_pos);
+        else
+            plot_brain_instance(surf, surf_sphere, last, macro_pos, micro_pos);
+        end
+        drawnow;
+        im = getframe(f);
+        writeVideo(vidObj,im);
+
+%         for i = 1:T
+%             clf(f);
+%             
+%             subplot(1, 2, 1);
+%             scatter(locs(pos_hemi,1), locs(pos_hemi,2), 15, fine.Qe_lessihb(i, pos_hemi)', 'filled');
+%             caxis([0,30]); axis off;
+%     
+%             subplot(1, 2, 2);    
+%             scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, fine.Qe_lessihb(i, neg_hemi)', 'filled');
+%             caxis([0,30]); axis off;
+%             
+%             drawnow;
+%             im = getframe(f);
+%             writeVideo(vidObj,im);
+%         end
     end
-    drawnow;
-    im = getframe(f);
-    writeVideo(vidObj,im);
-    
-%     for i = 1:T
-%         clf(f);
-%         
-%         subplot(1, 2, 1);
-%         scatter(locs(pos_hemi,1), locs(pos_hemi,2), 15, fine.Qe_lessihb(i, pos_hemi)', 'filled');
-%         caxis([0,30]); axis off;
-% 
-%         subplot(1, 2, 2);    
-%         scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, fine.Qe_lessihb(i, neg_hemi)', 'filled');
-%         caxis([0,30]); axis off;
-%         
-%         drawnow;
-%         im = getframe(f);
-%         writeVideo(vidObj,im);
-%     end
 end
 
-single_node = table(Qe_1, Qi_1, Ve_1, Vi_1, D22_1, dVe_1, dVi_1, K_1);
+single_node = [Qe_1, Qi_1, Ve_1, Vi_1, D22_1, dVe_1, dVi_1, K_1];
 
 save(SAMPLE_DATA_FILE, ...
     'Qe_rand', 'Ve_rand', 'Qe_avg', 'Ve_avg', ...
     'Qe_macro', 'Ve_macro', 'Qe_micro', 'Ve_micro', 'single_node');
 
-close(vidObj);
+if flag_plot
+    close(vidObj);
+end

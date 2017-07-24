@@ -126,5 +126,5 @@ end
 
 %% run analysis
 if save_output
-    main_plot_graphs;
+    main_plot_graphs(id, './data/', true, true);
 end

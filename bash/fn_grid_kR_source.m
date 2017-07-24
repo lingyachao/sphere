@@ -15,7 +15,7 @@ function fn_grid_kR_source(kR_arg, source_arg, D22min_arg)
     last = make_IC(N);
 
     %% define zones
-    lessihb_filter = true(N, 1);
+    lessihb_filter = locs(:,3) < -6;
 
     zones.focus_zone = map == 1;
     zones.lessihb_zone = lessihb_filter & map ~= 1;
@@ -35,7 +35,7 @@ function fn_grid_kR_source(kR_arg, source_arg, D22min_arg)
     HL.D22min = D22min_arg;
 
     %% set the output directory and save meta file
-    id = ['kR' num2str(kR_arg) '_source' num2str(source_arg)];
+    id = ['kR' num2str(kR_arg) '_source' num2str(source_arg) '_D22min' num2str(D22min_arg)];
     folder_name = ['sphere_N' num2str(N) '_R' num2str(R) '_' id];
 
     OUTPUT_DIR = [DATA_ROOT_DIR folder_name '/raw/'];
@@ -60,5 +60,5 @@ function fn_grid_kR_source(kR_arg, source_arg, D22min_arg)
     end
 
     %% run analysis
-    main_plot_graphs;
+    main_plot_graphs(id, DATA_ROOT_DIR, false, false);
 end

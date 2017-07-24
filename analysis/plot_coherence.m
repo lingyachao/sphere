@@ -15,7 +15,7 @@ for i = 1:P
     dist_pairs = pdist(electrode_2d)';
     coh_pair = tril(coh_avg, -1);
     coh_pair = coh_pair(:);
-    coh_pair = coh_pair(coh_pair > 0);
+    coh_pair = coh_pair(coh_pair > 0 | isnan(coh_pair));
     f = polyfit(dist_pairs, coh_pair, 1);
     ic(i) = f(2);
 end
