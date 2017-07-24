@@ -60,5 +60,5 @@ function fn_grid_kR_source(kR_arg, source_arg, D22min_arg)
     end
 
     %% run analysis
-    main_plot_graphs(id, DATA_ROOT_DIR, false, false);
+    main_plot_graphs(id, DATA_ROOT_DIR, true, true);
 end

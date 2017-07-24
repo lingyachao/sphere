@@ -64,5 +64,6 @@ xlabel('time (s)');
 xlim([0 total_time]);
 title('source direction through time');
 
-%% display average speed in the last 5 periods
-fprintf(['SWD speed is ' num2str(mean(speeds(end-4:end))) ' cm/s \n']);
+%% display average speed in the last 3 periods
+swd_speed = mean(speeds(end-2:end));
+fprintf(['SWD speed is ' num2str(swd_speed) ' cm/s \n']);

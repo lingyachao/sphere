@@ -1,4 +1,5 @@
-function main_plot_graphs(id, DATA_ROOT_DIR, flag_plot, flag_tabbed)
+function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
+    main_plot_graphs(id, DATA_ROOT_DIR, flag_plot, flag_tabbed)
 
     %% figure properties
     set(0, 'DefaultTextFontsize', 8);
@@ -59,6 +60,7 @@ function main_plot_graphs(id, DATA_ROOT_DIR, flag_plot, flag_tabbed)
         tab_coh_micro = uitab(tgroup, 'Title', 'Coherence (micro)');
 
         [fg_course, fg_traces, fg_single, fg_coh_macro, fg_coh_micro] = deal(fg_joint);
+    
     elseif flag_plot
         COURSE_FIG       = [ANALYSIS_DIR 'fig_course.fig'];
         TRACES_FIG       = [ANALYSIS_DIR 'fig_traces.fig'];
@@ -66,6 +68,7 @@ function main_plot_graphs(id, DATA_ROOT_DIR, flag_plot, flag_tabbed)
         COH_MACRO_FIG    = [ANALYSIS_DIR 'fig_coh_summary_macro.fig'];
         COH_MICRO_FIG    = [ANALYSIS_DIR 'fig_coh_summary_micro.fig'];
 
+        fg_joint = NaN;
         fg_course = figure('Name', 'Course'); tab_course = gcf;
         fg_traces = figure('Name', 'Traces'); tab_traces = gcf;
         fg_single = figure('Name', 'Single Node'); tab_single = gcf;
@@ -89,7 +92,7 @@ function main_plot_graphs(id, DATA_ROOT_DIR, flag_plot, flag_tabbed)
     %% *** SPECIFY *** grid
     if strcmp(type, 'sphere')
         load('N10242_R10.mat');
-        pos_hemi = locs(:,3) >= 0;
+        pos_hemi = locs(:,3) >= 0; %#ok<*NODEF,*NASGU>
         neg_hemi = locs(:,3) < 0;
     else
         load('N40962.mat');
@@ -98,7 +101,7 @@ function main_plot_graphs(id, DATA_ROOT_DIR, flag_plot, flag_tabbed)
         surf.vertices = locs;
         surf.faces = tri;
         surf_sphere.vertices = 10 * coord';
-        surf_sphere.faces = tri;
+        surf_sphere.faces = tri; %#ok<*STRNU>
     end
 
     %% *** LOAD/GENERATE *** sample data
@@ -138,13 +141,17 @@ function main_plot_graphs(id, DATA_ROOT_DIR, flag_plot, flag_tabbed)
         fprintf('macro electrodes ');
         figure(fg_coh_macro); axes('parent', tab_coh_macro);
         plot_coherence;
+        macro_speed = swd_speed;
 
         if ~isempty(micro_pos)
             [t_coh,t_coh_conf,t_phi,electrode_2d] = deal( ...
-                micro_t_coh, micro_t_coh_conf, micro_t_phi, micro_2d);
+                micro_t_coh, micro_t_coh_conf, micro_t_phi, micro_2d); %#ok<*ASGLU>
             fprintf('micro electrodes ');
             figure(fg_coh_micro); axes('parent', tab_coh_micro);
             plot_coherence;
+            micro_speed = swd_speed;
+        else
+            micro_speed = NaN;
         end
 
         %% *** CALCULATE *** recruitment speed
@@ -155,7 +162,11 @@ function main_plot_graphs(id, DATA_ROOT_DIR, flag_plot, flag_tabbed)
         t_l = fine_time(find(Qe_macro(:,node_l) > 15, 1));
 
         travel_dist = dist(macro_2d([node_e, node_l], :)');
-        recruitment_speed = travel_dist(1,2) / (t_l-t_e);
+        if isempty(t_e) || isempty(t_l)
+            recruitment_speed = travel_dist(1,2) / (t_l-t_e);
+        else
+            recruitment_speed = NaN;
+        end
         fprintf(['recruitment speed is ' num2str(recruitment_speed) ' cm/s \n']);
 
         %% *** SAVE *** figures
