@@ -64,7 +64,7 @@ function fn_grid_excite_kR_source_D22min(kR_arg, source_arg, D22min_arg)
 
     %% run analysis
     [~,macro_speed,micro_speed,recruitment_speed] = ...
-        main_plot_graphs(id, DATA_ROOT_DIR, true, true);
+        main_plot_graphs(id, DATA_ROOT_DIR, true, false, true);
     
     SPEED_FILE = [DATA_ROOT_DIR folder_name '/speeds.mat'];
     save(SPEED_FILE, 'macro_speed', 'micro_speed', 'recruitment_speed');
@@ -72,6 +72,6 @@ function fn_grid_excite_kR_source_D22min(kR_arg, source_arg, D22min_arg)
     %% print speeds to a file
     fileID = fopen([DATA_ROOT_DIR 'output.txt'],'a');
     fprintf(fileID, '%s --- %.3f %.3f %.3f\n', ...
-        macro_speed, micro_speed, recruitment_speed);
+        id, macro_speed, micro_speed, recruitment_speed);
     fclose(fileID);
 end

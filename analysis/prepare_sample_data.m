@@ -16,7 +16,7 @@ Ve_micro = NaN(K*T, size(micro_transform, 1));
 node_id = 500;
 [Qe_1, Qi_1, Ve_1, Vi_1, D22_1, dVe_1, dVi_1, K_1] = deal(NaN(K, 1));
 
-if flag_plot
+if flag_video
     % start movie
     vidObj = VideoWriter(VIDEO_FILE, 'MPEG-4');
     vidObj.FrameRate = 23;
@@ -73,7 +73,7 @@ for k = 1:K
     K_1(k) = last.K(node_id);
     
     % plot frame for video and write frame
-    if flag_plot
+    if flag_video
         clf(f);
         if strcmp(type, 'sphere')
             plot_sphere_instance(locs, last, macro_pos, micro_pos);
@@ -108,6 +108,6 @@ save(SAMPLE_DATA_FILE, ...
     'Qe_rand', 'Ve_rand', 'Qe_avg', 'Ve_avg', ...
     'Qe_macro', 'Ve_macro', 'Qe_micro', 'Ve_micro', 'single_node');
 
-if flag_plot
+if flag_video
     close(vidObj);
 end

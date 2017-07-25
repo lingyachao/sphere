@@ -1,5 +1,5 @@
 function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
-    main_plot_graphs(id, DATA_ROOT_DIR, flag_plot, flag_tabbed)
+    main_plot_graphs(id, DATA_ROOT_DIR, flag_plot, flag_video, flag_tabbed)
 
     %% figure properties
     set(0, 'DefaultTextFontsize', 8);
