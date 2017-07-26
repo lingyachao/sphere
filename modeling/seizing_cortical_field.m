@@ -1,7 +1,7 @@
 function [samp_time,last,fine] = seizing_cortical_field( ...
     source_del_VeRest, map, time_end, IC, ...
     ~, laplacian, avg_D, ...
-    zones, lessihb_idx, normal_sample_idx, ...
+    zones, fine_idx, normal_sample_idx, ...
     save_output)
  
     global HL
@@ -54,14 +54,14 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         % allocate matrices for recording Qe/Ve (fine time scale) at micro/macro
         % nodes, focus nodes, normal nodes
     
-        fine.Qe_lessihb = zeros(N_samp, length(lessihb_idx));
+        fine.Qe_lessihb = zeros(N_samp, length(fine_idx));
         fine.Qe_normal = zeros(N_samp, length(normal_sample_idx));
 
         fine.Qe_focus_avg = zeros(N_samp, 1);
         fine.Qe_lessihb_avg = zeros(N_samp, 1);
         fine.Qe_normal_avg = zeros(N_samp, 1);
 
-        fine.Ve_lessihb = zeros(N_samp, length(lessihb_idx));
+        fine.Ve_lessihb = zeros(N_samp, length(fine_idx));
         fine.Ve_normal = zeros(N_samp, length(normal_sample_idx));
 
         fine.Ve_focus_avg = zeros(N_samp, 1);
@@ -82,14 +82,14 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         if save_output && mod(i, samp_rate) == 0
             idx = i/samp_rate + 1;
             
-            fine.Qe_lessihb(idx,:) = Qe_grid(lessihb_idx);
+            fine.Qe_lessihb(idx,:) = Qe_grid(fine_idx);
             fine.Qe_normal(idx,:) = Qe_grid(normal_sample_idx);
 
             fine.Qe_focus_avg(idx,:) = mean(Qe_grid(zones.focus_zone));
             fine.Qe_lessihb_avg(idx,:) = mean(Qe_grid(zones.lessihb_zone));
             fine.Qe_normal_avg(idx,:) = mean(Qe_grid(zones.normal_zone));
 
-            fine.Ve_lessihb(idx,:) = Ve_grid(lessihb_idx);
+            fine.Ve_lessihb(idx,:) = Ve_grid(fine_idx);
             fine.Ve_normal(idx,:) = Ve_grid(normal_sample_idx);
 
             fine.Ve_focus_avg(idx,:) = mean(Ve_grid(zones.focus_zone));

@@ -1,11 +1,11 @@
 DATA_ROOT_DIR = './data/grid_excite_kR_source_D22min/';
 
-kR_arg_list = [1.5];
+kR_arg_list = [1.5 2.5 3.5];
 source_arg_list = [2 2.5 3 3.5];
 D22min_arg_list = [0.1 0.6 1.1];
 
-% [grid_macro_speed, grid_micro_speed, grid_recruitment_speed] = ...
-%     deal(NaN(length(kR_arg_list), length(source_arg_list), length(D22min_arg_list)));
+[grid_macro_speed, grid_micro_speed, grid_recruitment_speed] = ...
+    deal(NaN(length(kR_arg_list), length(source_arg_list), length(D22min_arg_list)));
 
 for kR_idx = 1:length(kR_arg_list)
     for source_idx = 1:length(source_arg_list)
@@ -19,19 +19,25 @@ for kR_idx = 1:length(kR_arg_list)
             folder_name = ['sphere_N10242_R10_' id];
             fprintf(['analyzing...' id '\n']);
             
-            
-            %% run analysis
-            [~,macro_speed,micro_speed,recruitment_speed] = ...
-                main_plot_graphs(id, DATA_ROOT_DIR, true, false, true);
-
             SPEED_FILE = [DATA_ROOT_DIR folder_name '/speeds.mat'];
-            save(SPEED_FILE, 'macro_speed', 'micro_speed', 'recruitment_speed');
-
-            %% print speeds to a file
-            fileID = fopen([DATA_ROOT_DIR 'output.txt'],'a');
-            fprintf(fileID, '%s --- %.3f %.3f %.3f\n', ...
-                id, macro_speed, micro_speed, recruitment_speed);
-            fclose(fileID);
+            load(SPEED_FILE);
+            
+            grid_macro_speed(kR_idx, source_idx, D22min_idx) = macro_speed;
+            grid_micro_speed(kR_idx, source_idx, D22min_idx) = micro_speed;
+            grid_recruitment_speed(kR_idx, source_idx, D22min_idx) = recruitment_speed;
+            
+%             %% run analysis
+%             [~,macro_speed,micro_speed,recruitment_speed] = ...
+%                 main_plot_graphs(id, DATA_ROOT_DIR, true, false, true);
+% 
+%             SPEED_FILE = [DATA_ROOT_DIR folder_name '/speeds.mat'];
+%             save(SPEED_FILE, 'macro_speed', 'micro_speed', 'recruitment_speed');
+% 
+%             %% print speeds to a file
+%             fileID = fopen([DATA_ROOT_DIR 'output.txt'],'a');
+%             fprintf(fileID, '%s --- %.3f %.3f %.3f\n', ...
+%                 id, macro_speed, micro_speed, recruitment_speed);
+%             fclose(fileID);
             
 %             [fg_joint, ...
 %                 grid_macro_speed(kR_idx, source_idx, D22min_idx), ...
@@ -45,6 +51,6 @@ for kR_idx = 1:length(kR_arg_list)
         end
     end
 end
-% 
-% save([DATA_ROOT_DIR 'grid_speeds.mat'], ...
-%     'grid_macro_speed', 'grid_micro_speed', 'grid_recruitment_speed');
+
+save([DATA_ROOT_DIR 'grid_speeds.mat'], ...
+    'grid_macro_speed', 'grid_micro_speed', 'grid_recruitment_speed');

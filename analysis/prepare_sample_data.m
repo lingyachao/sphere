@@ -1,5 +1,5 @@
 % create a filter for subsetting focal nodes
-[~,focus_filter] = ismember(focus_idx, lessihb_idx);
+[~,focus_filter] = ismember(focus_idx, fine_idx);
 
 % allocate storing space
 Qe_rand  = NaN(K*T, 4);
@@ -35,10 +35,10 @@ for k = 1:K
     % subset macro to keep only the ones close to electrodes
     fine.Qe_focus = fine.Qe_lessihb(:,focus_filter);
     fine.Ve_focus = fine.Ve_lessihb(:,focus_filter);
-    fine.Qe_macro = fine.Qe_lessihb * macro_transform(:,lessihb_idx)';
-    fine.Ve_macro = fine.Ve_lessihb * macro_transform(:,lessihb_idx)';
-    fine.Qe_micro = fine.Qe_lessihb * micro_transform(:,lessihb_idx)';
-    fine.Ve_micro = fine.Ve_lessihb * micro_transform(:,lessihb_idx)';
+    fine.Qe_macro = fine.Qe_lessihb * macro_transform(:,fine_idx)';
+    fine.Ve_macro = fine.Ve_lessihb * macro_transform(:,fine_idx)';
+    fine.Qe_micro = fine.Qe_lessihb * micro_transform(:,fine_idx)';
+    fine.Ve_micro = fine.Ve_lessihb * micro_transform(:,fine_idx)';
     
     % fill in data 
     Qe_rand(1+(k-1)*T : k*T,1) = fine.Qe_focus(:,1);

@@ -44,9 +44,17 @@ zones.focus_zone = map == 1;
 zones.lessihb_zone = lessihb_filter & map ~= 1;
 zones.normal_zone = ~lessihb_filter;
 
-lessihb_idx = find(lessihb_filter);
+% indices of normal-zone nodes to be recorded at fine time-scale
 normal_sample_idx = []; % randsample(find(zones.normal_zone),3);
-    
+
+if strcmp(type, 'sphere')
+    macro_idx = [744 437 821 1141 1140 820 436 251 555 981 1253 1585 1537 1584 1252 980 554 250 187];
+    micro_idx = [744 659 753 837 836 752 658 579 669 777 845 933 929 932 844 776 668 578 573];
+    fine_idx = union(find(map), [macro_idx, micro_idx]);
+else
+    fine_idx = find(lessihb_filter);
+end
+ 
 %% initialize constants and make modifications
 global HL
 HL = SCM_init_globs(N);
@@ -75,7 +83,7 @@ if save_output
     mkdir(OUTPUT_DIR);
     
     META_FILE = ['./data/' folder_name '/vars.mat'];
-    save(META_FILE, 'HL', 'map', 'lessihb_idx', 'normal_sample_idx', 'last');
+    save(META_FILE, 'HL', 'map', 'fine_idx', 'normal_sample_idx', 'last');
 end
 
 %% run simulation
@@ -97,7 +105,7 @@ for k = 1:K
     [samp_time,last,fine] = seizing_cortical_field(...
         source_drive, map, T0, last, ...
         locs, laplacian, avg_D, ...
-        zones, lessihb_idx, normal_sample_idx, ...
+        zones, fine_idx, normal_sample_idx, ...
         save_output);
     
     if visualize
