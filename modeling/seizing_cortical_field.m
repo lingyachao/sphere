@@ -22,6 +22,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
     % use as initial conditions the "last" values of previous simulation.
     Qe_grid = IC.Qe;
     Qi_grid = IC.Qi;
+    Qi_grid_fs = IC.Qi_fs;
     Ve_grid = IC.Ve;
     Vi_grid = IC.Vi;
 
@@ -130,12 +131,14 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
 
         %%%% I-to-E %%%%
         F_ie_1   = F_ie + dt * HL.gamma_i^2 * (-2/HL.gamma_i*F_ie - Phi_ie ...
-                        + (-HL.FS_ratio * (K > 0.7) + (1+HL.FS_ratio)) .* HL.Nie_b .* Qi_grid); % short range
+                        + (-HL.FS_ratio * (K > 0.7) + (1+HL.FS_ratio)) .* HL.Nie_b .* Qi_grid ...
+                        + HL.Nie_fs .* Qi_grid_fs); % short range
         Phi_ie_1 = Phi_ie + dt*F_ie;
 
         %%%% I-to-I %%%%
         F_ii_1   = F_ii + dt * HL.gamma_i^2 * (-2/HL.gamma_i*F_ii - Phi_ii ...
-                        + (-HL.FS_ratio * (K > 0.7) + (1+HL.FS_ratio)) .* HL.Nii_b .* Qi_grid); % short range
+                        + (-HL.FS_ratio * (K > 0.7) + (1+HL.FS_ratio)) .* HL.Nii_b .* Qi_grid ...
+                        + HL.Nii_fs .* Qi_grid_fs); % short range
         Phi_ii_1 = Phi_ii + dt*F_ii;
 
         % 3. update the soma voltages
@@ -155,10 +158,14 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
                   - HL.Qe_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_e) .* (Ve_grid - (HL.theta_e+30)))));     % ... but not too big.
         Qi_grid = HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid - HL.theta_i)))) ...     % The I voltage must be big enough,
                   - HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid - (HL.theta_i+30)))));     % ... but not too big.
-
+        Qi_grid_fs = HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid + 10*K - HL.theta_i)))) ...     % The I voltage must be big enough,
+                   - HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid + 10*K - (HL.theta_i+10)))));
+              
+              
         % 5. update extracellular ion
+        joint_Q = Qe_grid + Qi_grid + Qi_grid_fs;
         K_1 = K + dt/HL.tau_K * (-HL.k_decay .* K ...   % decay term.
-                + HL.kR .* (Qe_grid + Qi_grid)./(1+exp(-((Qe_grid + Qi_grid)-15))) ... % reaction term.
+                + HL.kR .* joint_Q ./ (1+exp(-(joint_Q - 15))) ... % reaction term.
                 + HL.kD * (laplacian * K));          % diffusion term.
 
         % 6. update inhibitory gap junction strength, and resting voltages
@@ -189,11 +196,12 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         
         del_VeRest = min(del_VeRest_1, 1);            % the excitatory population resting voltage cannot pass above a maximum value of 1.5.    
         if ~isnan(source_del_VeRest)
+            % Qe_grid(1:7) = source_del_VeRest;
             del_VeRest(map == 1) = source_del_VeRest; % set the "source" locations' excitatory population resting voltage
         end
   
-        del_ViRest = min(del_ViRest_1,0.8);           % the inhibitory population resting voltage cannot pass above a maximum value of 0.8.
-        K = min(K_1,1);                               % the extracellular ion cannot pass above a maximum value of 1.0.
+        del_ViRest = min(del_ViRest_1, 30);           % the inhibitory population resting voltage cannot pass above a maximum value of 0.8.
+        K = min(K_1, 14);                               % the extracellular ion cannot pass above a maximum value of 1.0.
 
         % sanity check!
         if any(any(isnan(Qe_grid)))
@@ -204,6 +212,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
     % save the values at the end of time period
     last.Qe = Qe_grid;
     last.Qi = Qi_grid;
+    last.Qi_fs = Qi_grid_fs;
     last.Ve = Ve_grid;
     last.Vi = Vi_grid;
 

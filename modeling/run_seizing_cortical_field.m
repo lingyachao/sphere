@@ -3,7 +3,7 @@ clear; close all;
 %% specify run type
 type = 'sphere';
 note = 'full_FSinhib';
-save_output = true;
+save_output = false;
 visualize = true;
 print_count = true;
 
@@ -36,6 +36,7 @@ map = make_map(laplacian);
 
 %% initialize initial state
 last = make_IC(N);
+last.Qi_fs = last.Qi;
 
 %% define zones
 lessihb_filter = true(N, 1);
@@ -64,9 +65,12 @@ HL.KtoVe = 0;
 HL.KtoVi = 0;
 HL.KtoD  = -20;
 HL.D22min = 0.1;
+HL.FS_ratio = 0;
 
-% last.D22(:) = 0.5;
-% last.D11 = last.D22/100;
+% HL.Nie_b = 1.5 * HL.Nie_b;
+% HL.Nii_b = 1.5 * HL.Nii_b;
+
+% last.D22(:) = 1; last.D11 = last.D22/100;
 % last.dVe(:) = -3;
 % last.dVi(:) = 0;
 
@@ -90,7 +94,7 @@ end
 for k = 1:K
      
     if true
-        source_drive = 3;
+        source_drive = 5;
     elseif k > 150 / T0
         source_drive = NaN;
     else
@@ -125,6 +129,9 @@ for k = 1:K
 
     if print_count
         fprintf(['RT ' num2str(toc) '\n']);
+        fprintf(['K at node8 ' num2str(last.K(8)) '\n']);
+        fprintf(['dVi at node8 ' num2str(last.dVi(8)) '\n']);
+        fprintf(['Vi at node8 ' num2str(last.Vi(8)) '\n']);
         % fprintf(['mean ' num2str(mean(last.Ve)) ' sd ' num2str(std(last.Ve)) '\n']);
         % fprintf(['K normal ' num2str(mean(last.K(zones.normal_zone))) ' K abnormal ' num2str(mean(last.K(lessihb_idx))) '\n']);
         % fprintf(['D2 ' num2str(mean(last.D22(lessihb_idx))) ' dVe ' num2str(mean(last.dVe(lessihb_idx))) '\n']);
