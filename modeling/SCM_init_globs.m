@@ -10,6 +10,8 @@ function H = SCM_init_globs(N)
 
     % noise factors
     H.noise = 0.5;
+    % H.noise = 1.7; % to generate spontaneous seizures, use this and set
+    % Qi-fs at focus to 0 and last.dVe(:) = 0.6;
     H.noise_sf = 0.2*20*H.noise;                    % noise scale-factor
     H.noise_sc = 0.2;                               % subcortical noise
     
@@ -29,7 +31,7 @@ function H = SCM_init_globs(N)
     [H.Nee_a, H.Nei_a] = deal(2000, 2000);			% cortico-cortical
     [H.Nee_b, H.Nei_b] = deal(800, 800);
     [H.Nie_b, H.Nii_b] = deal(600, 600);
-    [H.Nie_fs, H.Nii_fs] = deal(300, 300);
+    [H.Nie_fs, H.Nii_fs] = deal(300, 600);
     [H.Nee_sc,H.Nei_sc]= deal(50, 50);              % subcortical
 
     % parameters for proportion of extracellular potassium.

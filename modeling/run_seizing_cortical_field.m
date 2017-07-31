@@ -2,7 +2,7 @@ clear; close all;
 
 %% specify run type
 type = 'sphere';
-note = 'full_FSinhib';
+note = 'with_normal';
 save_output = false;
 visualize = true;
 print_count = true;
@@ -37,8 +37,13 @@ map = make_map(laplacian);
 %% initialize initial state
 last = make_IC(N);
 last.Qi_fs = last.Qi;
+last.Vi_fs = last.Vi;
+last.F_ii_fs = last.F_ii;
+last.Phi_ii_fs = last.Phi_ii;
+last.dVi_fs = last.dVi;
 
 %% define zones
+% lessihb_filter = locs(:,3) < -6;
 lessihb_filter = true(N, 1);
 
 zones.focus_zone = map == 1;
@@ -60,7 +65,9 @@ end
 global HL
 HL = SCM_init_globs(N);
 
-HL.kR = 2.5;
+HL.kR = 2.5 * ones(N,1);
+% HL.kR(zones.normal_zone) = 0;
+
 HL.KtoVe = 0;
 HL.KtoVi = 0;
 HL.KtoD  = -20;
@@ -141,5 +148,5 @@ end
 
 %% run analysis
 if save_output
-    main_plot_graphs(id, './data/', true, true);
+    main_plot_graphs(id, './data/', true, true, true);
 end
