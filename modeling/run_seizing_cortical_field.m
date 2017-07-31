@@ -2,8 +2,8 @@ clear; close all;
 
 %% specify run type
 type = 'sphere';
-note = 'with_normal';
-save_output = false;
+note = 'depolarization_2pops';
+save_output = true;
 visualize = true;
 print_count = true;
 
@@ -70,7 +70,8 @@ HL.kR = 2.5 * ones(N,1);
 
 HL.KtoVe = 0;
 HL.KtoVi = 0;
-HL.KtoD  = -20;
+HL.KtoVi_fs = 1000;
+HL.KtoD  = -10;
 HL.D22min = 0.1;
 HL.FS_ratio = 0;
 

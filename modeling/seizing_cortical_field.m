@@ -163,29 +163,29 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         Vi_fs_grid_1 = Vi_fs_grid + dt/HL.tau_i * ((HL.Vi_rest - Vi_fs_grid) + del_ViRest_fs ...
                                   + HL.ge .* Psi_ei(Vi_fs_grid) .* Phi_ei ...      %E-to-I
                                   + HL.gi * Psi_ii(Vi_fs_grid) .* Phi_ii_fs ...      %I-to-I
-                                  + D22 .* (laplacian * Vi_fs_grid));
+                                  + 0 .* (laplacian * Vi_fs_grid));
 
         % 4. update the firing rates
         Qe_grid = HL.Qe_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_e) .* (Ve_grid - HL.theta_e)))) ...     % The E voltage must be big enough,
                   - HL.Qe_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_e) .* (Ve_grid - (HL.theta_e+30)))));     % ... but not too big.
         Qi_grid = HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid - HL.theta_i)))) ...     % The I voltage must be big enough,
                   - HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid - (HL.theta_i+30)))));     % ... but not too big.
-        Qi_fs_grid = HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_fs_grid + 10*K - HL.theta_i)))) ...     % The I voltage must be big enough,
-                   - HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_fs_grid + 10*K - (HL.theta_i+10)))));
+        Qi_fs_grid = HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_fs_grid - HL.theta_i)))) ...     % The I voltage must be big enough,
+                   - HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_fs_grid - (HL.theta_i+10)))));
               
         % Qi_grid_fs(1:7) = 0;
               
         % 5. update extracellular ion
         joint_Q = Qe_grid + Qi_grid + Qi_grid_fs;
         K_1 = K + dt/HL.tau_K * (-HL.k_decay .* K ...   % decay term.
-                + HL.kR .* joint_Q ./ (1+exp(-(joint_Q - 15))) ... % reaction term.
+                + HL.kR .* joint_Q ./ (1+exp(-(joint_Q - 20))) ... % reaction term.
                 + HL.kD * (laplacian * K));          % diffusion term.
 
         % 6. update inhibitory gap junction strength, and resting voltages
         D22_1         = D22        + dt/HL.tau_dD  * (HL.KtoD*K);
         del_VeRest_1  = del_VeRest + dt/HL.tau_dVe * (HL.KtoVe*K);
         del_ViRest_1  = del_ViRest + dt/HL.tau_dVi * (HL.KtoVi*K);
-        del_ViRest_fs_1  = del_ViRest_fs + dt/HL.tau_dVi * (HL.KtoVi*K);
+        del_ViRest_fs_1  = del_ViRest_fs + dt/HL.tau_dVi * (HL.KtoVi_fs*K);
 
         % 7. update dynamic variables
         phi2_ee = phi2_ee_1;
