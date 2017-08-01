@@ -70,15 +70,15 @@ HL.kR = 2.5 * ones(N,1);
 
 HL.KtoVe = 0;
 HL.KtoVi = 0;
-HL.KtoVi_fs = 1000;
-HL.KtoD  = -5;
+HL.KtoVi_fs = 2000;
+HL.KtoD  = -2;
 HL.D22min = 0.1;
 HL.FS_ratio = 0;
 
 % HL.Nie_b = 1.5 * HL.Nie_b;
 % HL.Nii_b = 1.5 * HL.Nii_b;
 
-% last.D22(:) = 1; last.D11 = last.D22/100;
+last.D22(:) = 6; last.D11 = last.D22/100;
 % last.dVe(:) = -3;
 % last.dVi(:) = 0;
 
