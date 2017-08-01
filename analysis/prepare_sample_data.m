@@ -14,7 +14,8 @@ Ve_micro = NaN(K*T, size(micro_transform, 1));
 
 % single node
 node_id = 500;
-[Qe_1, Qi_1, Ve_1, Vi_1, D22_1, dVe_1, dVi_1, K_1] = deal(NaN(K, 1));
+[Qe_1, Qi_1, Ve_1, Vi_1, D22_1, dVe_1, dVi_1, K_1, ...
+    Qi_fs_1, Vi_fs_1, dVi_fs_1] = deal(NaN(K, 1));
 
 if flag_video
     % start movie
@@ -72,6 +73,10 @@ for k = 1:K
     dVi_1(k) = last.dVi(node_id);
     K_1(k) = last.K(node_id);
     
+    Qi_fs_1(k) = last.Qi_fs(node_id);
+    Vi_fs_1(k) = last.Vi_fs(node_id);
+    dVi_fs_1(k) = last.dVi_fs(node_id);
+    
     % plot frame for video and write frame
     if flag_video
         clf(f);
@@ -102,7 +107,7 @@ for k = 1:K
     end
 end
 
-single_node = [Qe_1, Qi_1, Ve_1, Vi_1, D22_1, dVe_1, dVi_1, K_1];
+single_node = [Qe_1, Qi_1, Ve_1, Vi_1, D22_1, dVe_1, dVi_1, K_1, Qi_fs_1, Vi_fs_1, dVi_fs_1];
 
 save(SAMPLE_DATA_FILE, ...
     'Qe_rand', 'Ve_rand', 'Qe_avg', 'Ve_avg', ...

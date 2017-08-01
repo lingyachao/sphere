@@ -134,7 +134,8 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
         %% *** PLOT *** single node dynamics
         figure(fg_single); axes('parent', tab_single);
         plot(sparse_time, single_node);
-        legend('Qe', 'Qi', 'Ve', 'Vi', 'D22', 'dVe', 'dVi', 'K');
+        legend('Qe', 'Qi', 'Ve', 'Vi', 'D22', 'dVe', 'dVi', 'K', ...
+            'Qi\_fs', 'Vi\_fs', 'dVi\_fs');
 
         %% *** PLOT *** coherence statistics
         central_t = int32(total_time * (1/P/2 : 1/P : 1-1/P/2));

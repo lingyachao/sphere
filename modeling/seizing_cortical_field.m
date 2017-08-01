@@ -178,7 +178,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         % 5. update extracellular ion
         joint_Q = Qe_grid + Qi_grid + Qi_grid_fs;
         K_1 = K + dt/HL.tau_K * (-HL.k_decay .* K ...   % decay term.
-                + HL.kR .* joint_Q ./ (1+exp(-(joint_Q - 20))) ... % reaction term.
+                + HL.kR .* joint_Q ./ (1+exp(-(joint_Q - 25))) ... % reaction term.
                 + HL.kD * (laplacian * K));          % diffusion term.
 
         % 6. update inhibitory gap junction strength, and resting voltages
