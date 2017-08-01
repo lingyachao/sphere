@@ -53,23 +53,27 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
         fg_joint = figure('Name', 'Joint');
         tgroup = uitabgroup(fg_joint);
 
-        tab_course = uitab(tgroup, 'Title', 'Course');
+        tab_course_neg = uitab(tgroup, 'Title', 'Course (neg)');
+        tab_course_pos = uitab(tgroup, 'Title', 'Course (pos)');
         tab_traces = uitab(tgroup, 'Title', 'Traces');
         tab_single = uitab(tgroup, 'Title', 'Single Node');
         tab_coh_macro = uitab(tgroup, 'Title', 'Coherence (macro)');
         tab_coh_micro = uitab(tgroup, 'Title', 'Coherence (micro)');
 
-        [fg_course, fg_traces, fg_single, fg_coh_macro, fg_coh_micro] = deal(fg_joint);
+        [fg_course_neg, fg_course_pos, fg_traces, ...
+            fg_single, fg_coh_macro, fg_coh_micro] = deal(fg_joint);
     
     elseif flag_plot
-        COURSE_FIG       = [ANALYSIS_DIR 'fig_course.fig'];
+        COURSE_NEG_FIG   = [ANALYSIS_DIR 'fig_course_neg.fig'];
+        COURSE_POS_FIG   = [ANALYSIS_DIR 'fig_course_pos.fig'];
         TRACES_FIG       = [ANALYSIS_DIR 'fig_traces.fig'];
         SINGLE_FIG       = [ANALYSIS_DIR 'fig_single.fig'];
         COH_MACRO_FIG    = [ANALYSIS_DIR 'fig_coh_summary_macro.fig'];
         COH_MICRO_FIG    = [ANALYSIS_DIR 'fig_coh_summary_micro.fig'];
 
         fg_joint = NaN;
-        fg_course = figure('Name', 'Course'); tab_course = gcf;
+        fg_course_neg = figure('Name', 'Course (neg)'); tab_course_neg = gcf;
+        fg_course_pos = figure('Name', 'Course (pos)'); tab_course_pos = gcf;
         fg_traces = figure('Name', 'Traces'); tab_traces = gcf;
         fg_single = figure('Name', 'Single Node'); tab_single = gcf;
         fg_coh_macro = figure('Name', 'Coherence (macro)'); tab_coh_macro = gcf;
@@ -173,7 +177,8 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
         if flag_tabbed
             saveas(fg_joint, JOINT_FIG);
         else
-            saveas(fg_course, COURSE_FIG);
+            saveas(fg_course_neg, COURSE_NEG_FIG);
+            saveas(fg_course_pos, COURSE_POS_FIG);
             saveas(fg_traces, TRACES_FIG);
             saveas(fg_single, SINGLE_FIG);
             saveas(fg_coh_macro, COH_MACRO_FIG);
