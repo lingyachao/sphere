@@ -2,7 +2,7 @@ clear; close all;
 
 %% specify run type
 type = 'sphere';
-note = 'depolarization_2pops_K25thres';
+note = 'depolarization_2pops_activation20';
 save_output = true;
 visualize = true;
 print_count = true;
@@ -29,7 +29,6 @@ if visualize
 end
 
 %% initialize parameters and map
-k = 0;
 K = 2000;
 T0 = 0.1;
 map = make_map(laplacian);
@@ -74,9 +73,6 @@ HL.KtoVi_fs = 2000;
 HL.KtoD  = -2;
 HL.D22min = 0.1;
 HL.FS_ratio = 0;
-
-% HL.Nie_b = 1.5 * HL.Nie_b;
-% HL.Nii_b = 1.5 * HL.Nii_b;
 
 last.D22(:) = 6; last.D11 = last.D22/100;
 % last.dVe(:) = -3;

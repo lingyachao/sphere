@@ -167,13 +167,13 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
 
         % 4. update the firing rates
         Qe_grid = HL.Qe_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_e) .* (Ve_grid - HL.theta_e)))) ...     % The E voltage must be big enough,
-                  - HL.Qe_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_e) .* (Ve_grid - (HL.theta_e+30)))));     % ... but not too big.
+                  - HL.Qe_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_e) .* (Ve_grid - (HL.theta_e+20)))));     % ... but not too big.
         Qi_grid = HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid - HL.theta_i)))) ...     % The I voltage must be big enough,
-                  - HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid - (HL.theta_i+30)))));     % ... but not too big.
+                  - HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid - (HL.theta_i+20)))));     % ... but not too big.
         Qi_fs_grid = HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_fs_grid - HL.theta_i)))) ...     % The I voltage must be big enough,
-                   - HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_fs_grid - (HL.theta_i+10)))));
+                   - HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_fs_grid - (HL.theta_i+20)))));
               
-        % Qi_grid_fs(1:7) = 0;
+        Qi_grid_fs(1:7) = 0;
               
         % 5. update extracellular ion
         joint_Q = Qe_grid + Qi_grid + Qi_grid_fs;
@@ -218,7 +218,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         end
   
         del_ViRest = min(del_ViRest_1, 30);           % the inhibitory population resting voltage cannot pass above a maximum value of 0.8.
-        del_ViRest_fs = min(del_ViRest_fs_1, 30);
+        del_ViRest_fs = min(del_ViRest_fs_1, 60);
         K = min(K_1, 14);                               % the extracellular ion cannot pass above a maximum value of 1.0.
 
         % sanity check!

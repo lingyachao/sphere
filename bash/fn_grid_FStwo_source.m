@@ -1,6 +1,6 @@
 function fn_grid_FStwo_source(source_arg)
 
-    DATA_ROOT_DIR = './data/grid_FStwo_source/';
+    DATA_ROOT_DIR = './data/grid_FStwo_focalshut_source/';
     mkdir(DATA_ROOT_DIR);
 
     %% load grid
@@ -53,7 +53,7 @@ function fn_grid_FStwo_source(source_arg)
     mkdir(OUTPUT_DIR);
 
     META_FILE = [DATA_ROOT_DIR folder_name '/vars.mat'];
-    save(META_FILE, 'HL', 'map', 'lessihb_idx', 'normal_sample_idx', 'last');
+    save(META_FILE, 'HL', 'map', 'fine_idx', 'normal_sample_idx', 'last');
 
     %% run simulation
     for k = 1:K
