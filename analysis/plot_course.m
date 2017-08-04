@@ -21,13 +21,13 @@ for i = 1:length(ks)
     figure(fg_course_pos); axes('parent', tab_course_pos);
     subplot(4, ncols, i);
     
-    if strcmp(type, 'sphere')
-        scatter(locs(pos_hemi,1), locs(pos_hemi,2), 15, last.Qe(pos_hemi), 'filled');
-        caxis([0,30]); axis off;
-    else
-        figure_wire(surf_sphere, last.Qe, false);
-        view(270, 0);
-    end
-    title(['t = ' num2str(ks(i) * T0)]);
+%     if strcmp(type, 'sphere')
+%         scatter(locs(pos_hemi,1), locs(pos_hemi,2), 15, last.Qe(pos_hemi), 'filled');
+%         caxis([0,30]); axis off;
+%     else
+%         figure_wire(surf_sphere, last.Qe, false);
+%         view(270, 0);
+%     end
+%     title(['t = ' num2str(ks(i) * T0)]);
     
 end

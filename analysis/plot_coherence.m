@@ -4,8 +4,8 @@ plot(freq, squeeze(t_coh(1,8,:,period_idx)));
 xlabel('frequency (Hz)');
 ylabel('coherence');
 
-period_start = central_t(period_idx) - 5;
-period_str = [num2str(period_start) '-' num2str(period_start+10) 's'];
+period_start = central_t(period_idx) - wind/2;
+period_str = [num2str(period_start) '-' num2str(period_start + wind) 's'];
 title(['coherence between two farthest electrodes during ' period_str]);
 
 %% average coherence through time

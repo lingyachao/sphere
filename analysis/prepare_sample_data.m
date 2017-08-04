@@ -30,7 +30,7 @@ end
 
 for k = 1:K
     
-    fprintf(['Read in ' num2str(k) '\n']);
+    % fprintf(['Read in ' num2str(k) '\n']);
     load([RAW_DIR 'seizing_cortical_field_k_'  num2str(k) '.mat']);
 
     % subset macro to keep only the ones close to electrodes

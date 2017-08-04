@@ -173,7 +173,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         Qi_fs_grid = HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_fs_grid - HL.theta_i)))) ...     % The I voltage must be big enough,
                    - HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_fs_grid - (HL.theta_i+20)))));
               
-        Qi_grid_fs(1:7) = 0;
+        Qi_grid_fs(map == 1) = 0;
               
         % 5. update extracellular ion
         joint_Q = Qe_grid + Qi_grid + Qi_grid_fs;

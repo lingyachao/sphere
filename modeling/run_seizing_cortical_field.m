@@ -1,8 +1,8 @@
 clear; close all;
 
 %% specify run type
-type = 'sphere';
-note = 'depolarization_2pops_activation20';
+type = 'brain';
+note = 'depolarization_2pops_activation20_focalshut_source3.5_D7_KtoD1.7';
 save_output = true;
 visualize = true;
 print_count = true;
@@ -11,7 +11,7 @@ print_count = true;
 if strcmp(type, 'sphere')
     load('N10242_R10.mat'); 
 elseif strcmp(type, 'brain')
-    load('N40962.mat');
+    load('N40962.mat'); avg_D = 0.3777;
     load('unitsphere.mat');
     
     surf.vertices = locs;
@@ -29,7 +29,7 @@ if visualize
 end
 
 %% initialize parameters and map
-K = 2000;
+K = 3000;
 T0 = 0.1;
 map = make_map(laplacian);
 
@@ -42,7 +42,6 @@ last.Phi_ii_fs = last.Phi_ii;
 last.dVi_fs = last.dVi;
 
 %% define zones
-% lessihb_filter = locs(:,3) < -6;
 lessihb_filter = true(N, 1);
 
 zones.focus_zone = map == 1;
@@ -57,7 +56,7 @@ if strcmp(type, 'sphere')
     micro_idx = [744 659 753 837 836 752 658 579 669 777 845 933 929 932 844 776 668 578 573];
     fine_idx = union(find(map), [macro_idx, micro_idx]);
 else
-    fine_idx = find(lessihb_filter);
+    fine_idx = find(coord(1,:)' > 0.5);
 end
  
 %% initialize constants and make modifications
@@ -70,11 +69,11 @@ HL.kR = 2.5 * ones(N,1);
 HL.KtoVe = 0;
 HL.KtoVi = 0;
 HL.KtoVi_fs = 2000;
-HL.KtoD  = -2;
+HL.KtoD  = -1.7;
 HL.D22min = 0.1;
 HL.FS_ratio = 0;
 
-last.D22(:) = 6; last.D11 = last.D22/100;
+last.D22(:) = 7; last.D11 = last.D22/100;
 % last.dVe(:) = -3;
 % last.dVi(:) = 0;
 
@@ -98,7 +97,7 @@ end
 for k = 1:K
      
     if true
-        source_drive = 5;
+        source_drive = 3.5;
     elseif k > 150 / T0
         source_drive = NaN;
     else
@@ -133,13 +132,9 @@ for k = 1:K
 
     if print_count
         fprintf(['RT ' num2str(toc) '\n']);
-        fprintf(['K at node8 ' num2str(last.K(8)) '\n']);
-        fprintf(['dVi at node8 ' num2str(last.dVi(8)) '\n']);
-        fprintf(['Vi at node8 ' num2str(last.Vi(8)) '\n']);
-        % fprintf(['mean ' num2str(mean(last.Ve)) ' sd ' num2str(std(last.Ve)) '\n']);
-        % fprintf(['K normal ' num2str(mean(last.K(zones.normal_zone))) ' K abnormal ' num2str(mean(last.K(lessihb_idx))) '\n']);
-        % fprintf(['D2 ' num2str(mean(last.D22(lessihb_idx))) ' dVe ' num2str(mean(last.dVe(lessihb_idx))) '\n']);
-        % fprintf(['Ve focus ' num2str(last.Ve(1)) '\n']);
+        % fprintf(['K at node8 ' num2str(last.K(8)) '\n']);
+        % fprintf(['dVi at node8 ' num2str(last.dVi(8)) '\n']);
+        % fprintf(['Vi at node8 ' num2str(last.Vi(8)) '\n']);
     end
 end
 

@@ -6,7 +6,7 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
     set(0, 'DefaultFigurePosition', [600, 50, 1000, 900]);
 
     % brain type only
-    NOTE = 'closest7_avg';
+    NOTE = 'closest7_avg_window15s';
     loc_grid_center = [64.41, -7.28, 21.48];        % center of the ECoG grid (mm)
     dist_grid = 12;                                 % distance between electrodes (mm)
 
@@ -90,7 +90,8 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
     fine_time = (1:K*T) * (T0/T);
 
     % for coherence split the entire course into P periods
-    P = total_time/10;
+    wind = 15;
+    P = total_time/wind;
     per_P = K*T/P;
 
     %% *** SPECIFY *** grid
@@ -160,8 +161,12 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
         end
 
         %% *** CALCULATE *** recruitment speed
-        [~, node_e] = min(macro_pos(:,3));
-        [~, node_l] = max(macro_pos(:,3));
+        
+        node_to_focus = dist([locs(focus_idx(1),:); macro_pos]');
+        node_to_focus = node_to_focus(1,2:end);
+        
+        [~, node_e] = min(node_to_focus);
+        [~, node_l] = max(node_to_focus);
 
         t_e = fine_time(find(Qe_macro(:,node_e) > 15, 1));
         t_l = fine_time(find(Qe_macro(:,node_l) > 15, 1));
