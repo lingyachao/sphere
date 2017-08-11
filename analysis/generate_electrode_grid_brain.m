@@ -6,8 +6,8 @@ function [focus_idx, macro_pos, macro_transform, macro_2d, ...
     load([RAW_DIR 'seizing_cortical_field_k_'  num2str(50) '.mat']);
 
     % get boundary of brain
-    k = boundary(locs, 0.3);
-    pt = trisurf(k, locs(:,1), locs(:,2), locs(:,3), last.Qe);
+    bounds = boundary(locs, 0.3);
+    pt = trisurf(bounds, locs(:,1), locs(:,2), locs(:,3), last.Qe);
     view(90, 0);
 
     % compute normal at all vertices
@@ -43,7 +43,7 @@ function [focus_idx, macro_pos, macro_transform, macro_2d, ...
     hold on;
     quiver3(loc_grid_center(1), loc_grid_center(2), loc_grid_center(3), n(1), n(2), n(3), 15, 'Color', 'red');
 
-    center = loc_grid_center + 2*n;
+    center = loc_grid_center + 1*n;
     perp = null(n)';
     macro_pos = ones(25, 1) * center + ...
         dist_grid * repelem(-2:2, 5)' * perp(1,:) + ...

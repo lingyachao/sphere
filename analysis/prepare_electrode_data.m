@@ -4,9 +4,7 @@ if strcmp(type, 'sphere')
         generate_electrode_grid_sphere(RAW_DIR);
 else
     find_electrode_grid_center(RAW_DIR, dist_grid);
-    flag_dipole = false;
-    closest_N = 7;
-    % keyboard;
+    keyboard;
     
     [focus_idx, macro_pos, macro_transform, macro_2d, ...
                 micro_pos, micro_transform, micro_2d] = ...

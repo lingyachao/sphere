@@ -52,7 +52,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
     K = IC.K;
         
     samp_rate = 10;
-    samp_time = (0:10:Nsteps-1)' * dt;
+    samp_time = (0:samp_rate:Nsteps-1)' * dt;
     N_samp = Nsteps/samp_rate;
 
     if save_output

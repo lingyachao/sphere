@@ -4,12 +4,16 @@ function find_electrode_grid_center(RAW_DIR, dist_grid)
     load([RAW_DIR 'seizing_cortical_field_k_'  num2str(50) '.mat'], 'last');
 
     % get boundary of brain
+    bounds = boundary(locs, 0.3);
+    pt = trisurf(bounds, locs(:,1), locs(:,2), locs(:,3), last.Qe);
     
     fig = figure;
     set(fig, 'Position', [200 300 800 400]);
-    bounds = boundary(locs, 0.3);
-    pt = trisurf(bounds, locs(:,1), locs(:,2), locs(:,3), last.Qe);
+    surf.vertices = locs;
+    surf.faces = tri;
+    figure_wire(surf, last.Qe, false);
     view(90, 0);
+    hold on;
 
     dcm_obj = datacursormode(fig);
     set(dcm_obj, 'UpdateFcn', @plot_grid);
@@ -45,15 +49,15 @@ function find_electrode_grid_center(RAW_DIR, dist_grid)
 
         % get electrode locations
 
-        s = subplot(1,2,2); cla(s);
-        surf.vertices = locs;
-        surf.faces = tri;
-        figure_wire(surf, last.Qe, false);
-        view(90, 0);
-        hold on;
+        % close(fig);
+        % s = subplot(1,2,2); cla(s);
+        % fig = figure;
+        % set(fig, 'Position', [200 300 800 400]);
+        % figure_wire(surf, last.Qe, false);
+        % view(90, 0);
         quiver3(loc_grid_center(1), loc_grid_center(2), loc_grid_center(3), n(1), n(2), n(3), 15, 'Color', 'red');
 
-        center = loc_grid_center + 2*n;
+        center = loc_grid_center + 1*n;
         perp = null(n)';
         macro_pos = ones(25, 1) * center + ...
             dist_grid * repelem(-2:2, 5)' * perp(1,:) + ...

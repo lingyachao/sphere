@@ -5,10 +5,16 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
     set(0, 'DefaultTextFontsize', 8);
     set(0, 'DefaultFigurePosition', [600, 50, 1000, 900]);
 
+    % window size
+    wind = 15;
+    
     % brain type only
-    NOTE = 'closest7_avg_window15s';
-    loc_grid_center = [64.41, -7.28, 21.48];        % center of the ECoG grid (mm)
-    dist_grid = 12;                                 % distance between electrodes (mm)
+    NOTE = 'closest7_dipoles_window15s';
+    loc_grid_center = [67.83, -28.99, 27.62];         % micro grid center
+    % loc_grid_center = [64.41, -7.28, 21.48];        % macro grid center
+    dist_grid = 0.5;                                 % distance between electrodes (mm)
+    flag_dipole = true;
+    closest_N = 7;
 
     %% *** SPECIFY *** input directory and file names
     folder_list = dir(DATA_ROOT_DIR);
@@ -90,7 +96,6 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
     fine_time = (1:K*T) * (T0/T);
 
     % for coherence split the entire course into P periods
-    wind = 15;
     P = total_time/wind;
     per_P = K*T/P;
 
