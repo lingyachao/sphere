@@ -56,7 +56,7 @@ if strcmp(type, 'sphere')
     micro_idx = [744 659 753 837 836 752 658 579 669 777 845 933 929 932 844 776 668 578 573];
     fine_idx = union(find(map), [macro_idx, micro_idx]);
 else
-    fine_idx = find(coord(1,:)' > 0.5);
+    fine_idx = union(find(map), find(coord(1,:)' > 0.5));
 end
  
 %% initialize constants and make modifications

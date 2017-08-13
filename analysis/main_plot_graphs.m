@@ -9,7 +9,7 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
     wind = 15;
     
     % brain type only
-    NOTE = 'closest7_dipoles_window15s';
+    NOTE = 'closest7_dipoles_window15s_r2dist';
     loc_grid_center = [67.83, -28.99, 27.62];         % micro grid center
     % loc_grid_center = [64.41, -7.28, 21.48];        % macro grid center
     dist_grid = 0.5;                                 % distance between electrodes (mm)
@@ -88,7 +88,7 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
 
     %% *** SPECIFY *** time sequences
     K = length(dir([RAW_DIR 'seizing_*.mat']));
-    T0 = 1 * (K<1000) + 0.1 * (K >= 1000);
+    T0 = 1 * (K < 1000) + 0.1 * (K >= 1000);
     T = 500 * T0;
 
     total_time = K*T0;
@@ -149,6 +149,11 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
 
         [t_coh,t_coh_conf,t_phi,electrode_2d] = deal( ...
             macro_t_coh, macro_t_coh_conf, macro_t_phi, macro_2d);
+        
+        if strcmp(type, 'brain')
+            electrode_2d = (dist_grid/12) * electrode_2d;
+        end
+        
         fprintf('macro electrodes ');
         figure(fg_coh_macro); axes('parent', tab_coh_macro);
         plot_coherence;

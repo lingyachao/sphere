@@ -3,7 +3,7 @@ function [focus_idx, macro_pos, macro_transform, macro_2d, ...
     loc_grid_center, dist_grid, RAW_DIR, flag_dipole, closest_N)
 
     load('N40962.mat');
-    load([RAW_DIR 'seizing_cortical_field_k_'  num2str(50) '.mat']);
+    load([RAW_DIR 'seizing_cortical_field_k_'  num2str(2000) '.mat']);
 
     % get boundary of brain
     bounds = boundary(locs, 0.3);
@@ -64,9 +64,11 @@ function [focus_idx, macro_pos, macro_transform, macro_2d, ...
         [~,I] = sort(dist);
         
         if flag_dipole
-            VN2 = vertexNormal(triangulation(tri, locs));
-            pot_coeff = sum(ur.*VN2, 2) ./ dist.^2;
-            macro_transform(k,I(1:closest_N)) = pot_coeff(I(1:closest_N));
+            % VN2 = vertexNormal(triangulation(tri, locs));
+            % pot_coeff = sum(ur.*VN2, 2) ./ dist.^2;
+            pot_coeff = ones(N, 1) ./ dist.^2;
+            top_coeff = pot_coeff(I(1:closest_N));
+            macro_transform(k,I(1:closest_N)) = top_coeff / sum(top_coeff);
         else
             macro_transform(k,I(1:closest_N)) = 1/closest_N;
         end
