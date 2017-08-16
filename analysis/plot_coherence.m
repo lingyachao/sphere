@@ -58,7 +58,7 @@ ylim([-pi pi]);
 
 yyaxis right;
 scatter(central_t, speeds, 10, 'd');
-ylabel('velocity (cm/s)');
+ylabel('velocity (mm/s)');
 
 xlabel('time (s)');
 xlim([0 total_time]);

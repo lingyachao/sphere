@@ -1,6 +1,6 @@
-function [focus_idx, macro_pos, macro_transform, macro_2d, ...
-                     micro_pos, micro_transform, micro_2d] = generate_electrode_grid_brain( ...
-    loc_grid_center, dist_grid, RAW_DIR, flag_dipole, closest_N)
+function [focus_idx,macro_pos,macro_transform,macro_2d, ...
+                    micro_pos,micro_transform,micro_2d] = generate_electrode_grid_brain( ...
+    loc_grid_center, dist_grid_macro, dist_grid_micro, RAW_DIR, flag_dipole, closest_N)
 
     load('N40962.mat');
     load([RAW_DIR 'seizing_cortical_field_k_'  num2str(2000) '.mat']);
@@ -43,24 +43,36 @@ function [focus_idx, macro_pos, macro_transform, macro_2d, ...
     hold on;
     quiver3(loc_grid_center(1), loc_grid_center(2), loc_grid_center(3), n(1), n(2), n(3), 15, 'Color', 'red');
 
-    center = loc_grid_center + 1*n;
-    perp = null(n)';
-    macro_pos = ones(25, 1) * center + ...
-        dist_grid * repelem(-2:2, 5)' * perp(1,:) + ...
-        dist_grid * repmat((-2:2)', 5, 1) * perp(2,:);
-    macro_2d = [repelem(-2:2, 5)' repmat((-2:2)', 5, 1)];
+    ctr_props.center = loc_grid_center + 1*n;
+    ctr_props.perp = null(n)';
+    ctr_props.grid_basis = [repelem(-2:2, 5)' repmat((-2:2)', 5, 1)];
+    
+    [macro_pos,macro_transform,macro_2d] = gain_matrix(N, locs, dist_grid_macro, ctr_props, flag_dipole, closest_N);
+    [micro_pos,micro_transform,micro_2d] = gain_matrix(N, locs, dist_grid_micro, ctr_props, flag_dipole, closest_N);
+    focus_idx = find(make_map(laplacian));
+    
+    % micro_pos = zeros(0, 3);
+    % micro_transform = zeros(0, N);
+    % micro_2d = zeros(0, 2);
+    
+end
 
-    scatter3(macro_pos(:,1), macro_pos(:,2), macro_pos(:,3), 40, ...
+function [pos,transform,pos_2d] = gain_matrix(N, locs, dist_grid, ctr_props, flag_dipole, closest_N)
+
+    pos = ones(25, 1) * ctr_props.center + ...
+        dist_grid * repelem(-2:2, 5)' * ctr_props.perp(1,:) + ...
+        dist_grid * repmat((-2:2)', 5, 1) * ctr_props.perp(2,:);
+    pos_2d =  dist_grid * ctr_props.grid_basis;
+
+    scatter3(pos(:,1), pos(:,2), pos(:,3), 40, ...
         'filled', 'MarkerFaceColor', 'y', 'MarkerEdgeColor', 'black');
 
-    %% compute gain matrix
+    transform = zeros(25, N);
 
-    macro_transform = zeros(25, N);
-    
     for k = 1:25
-        ur = ones(N, 1) * macro_pos(k,:) - locs;
+        ur = ones(N, 1) * pos(k,:) - locs;
         dist = sum(ur.^2, 2).^(1/2);
-        ur = ur ./ (dist * ones(1, 3));
+        % ur = ur ./ (dist * ones(1, 3));
         [~,I] = sort(dist);
         
         if flag_dipole
@@ -68,24 +80,17 @@ function [focus_idx, macro_pos, macro_transform, macro_2d, ...
             % pot_coeff = sum(ur.*VN2, 2) ./ dist.^2;
             pot_coeff = ones(N, 1) ./ dist.^2;
             top_coeff = pot_coeff(I(1:closest_N));
-            macro_transform(k,I(1:closest_N)) = top_coeff / sum(top_coeff);
+            transform(k,I(1:closest_N)) = top_coeff / sum(top_coeff);
         else
-            macro_transform(k,I(1:closest_N)) = 1/closest_N;
+            transform(k,I(1:closest_N)) = 1/closest_N;
         end
         
-        cols = {'r', 'm', 'g'};
-        for close = 1:3
-            scatter3(locs(I(close),1), locs(I(close),2), locs(I(close),3), 15, ...
-                'filled', 'MarkerFaceColor', cols{close}, 'MarkerEdgeColor', 'black');
-        end        
+%         cols = {'r', 'm', 'g'};
+%         for close = 1:3
+%             scatter3(locs(I(close),1), locs(I(close),2), locs(I(close),3), 15, ...
+%                 'filled', 'MarkerFaceColor', cols{close}, 'MarkerEdgeColor', 'black');
+%         end        
     end
-    
-    %% save focus, macro and micro data
-    focus_idx = find(make_map(laplacian));
-    micro_pos = zeros(0, 3);
-    micro_transform = zeros(0, N);
-    micro_2d = zeros(0, 2);
-    
 end
 
 

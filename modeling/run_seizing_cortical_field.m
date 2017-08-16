@@ -29,7 +29,7 @@ if visualize
 end
 
 %% initialize parameters and map
-K = 3000;
+K = 2000;
 T0 = 0.1;
 map = make_map(laplacian);
 
@@ -40,6 +40,7 @@ last.Vi_fs = last.Vi;
 last.F_ii_fs = last.F_ii;
 last.Phi_ii_fs = last.Phi_ii;
 last.dVi_fs = last.dVi;
+% load('./data/sphere_N10242_R10_08012157_depolarization_2pops_activation20/raw/seizing_cortical_field_k_900.mat', 'last');
 
 %% define zones
 lessihb_filter = true(N, 1);
@@ -73,6 +74,7 @@ HL.KtoD  = -1.7;
 HL.D22min = 0.1;
 HL.FS_ratio = 0;
 
+% [HL.Nee_a, HL.Nei_a] = deal(1000, 1000);
 last.D22(:) = 7; last.D11 = last.D22/100;
 % last.dVe(:) = -3;
 % last.dVi(:) = 0;
