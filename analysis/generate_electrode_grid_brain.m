@@ -6,6 +6,7 @@ function [focus_idx,macro_pos,macro_transform,macro_2d, ...
     load([RAW_DIR 'seizing_cortical_field_k_'  num2str(2000) '.mat']);
 
     % get boundary of brain
+    figure;
     bounds = boundary(locs, 0.3);
     pt = trisurf(bounds, locs(:,1), locs(:,2), locs(:,3), last.Qe);
     view(90, 0);
