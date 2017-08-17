@@ -173,7 +173,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         Qi_fs_grid = HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_fs_grid - HL.theta_i)))) ...     % The I voltage must be big enough,
                    - HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_fs_grid - (HL.theta_i+20)))));
               
-        Qi_grid_fs(map == 1) = 0;
+        Qi_grid_fs(map > 0) = 0;
               
         % 5. update extracellular ion
         % joint_Q = Qi_grid_fs;
@@ -215,7 +215,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         del_VeRest = min(del_VeRest_1, 1);            % the excitatory population resting voltage cannot pass above a maximum value of 1.5.    
         if ~isnan(source_del_VeRest)
             % Qe_grid(1:7) = source_del_VeRest;
-            del_VeRest(map == 1) = source_del_VeRest; % set the "source" locations' excitatory population resting voltage
+            del_VeRest(map > 0) = source_del_VeRest * map(map > 0);     % set the "source" locations' excitatory population resting voltage
         end
   
         del_ViRest = min(del_ViRest_1, 30);           % the inhibitory population resting voltage cannot pass above a maximum value of 0.8.

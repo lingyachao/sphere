@@ -78,7 +78,7 @@ function [pos,transform,pos_2d] = gain_matrix(N, locs, dist_grid, ctr_props, fla
         if flag_dipole
             % VN2 = vertexNormal(triangulation(tri, locs));
             % pot_coeff = sum(ur.*VN2, 2) ./ dist.^2;
-            pot_coeff = ones(N, 1) ./ dist.^2;
+            pot_coeff = ones(N, 1) ./ dist;
             top_coeff = pot_coeff(I(1:closest_N));
             transform(k,I(1:closest_N)) = top_coeff / sum(top_coeff);
         else

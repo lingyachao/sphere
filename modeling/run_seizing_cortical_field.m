@@ -29,7 +29,7 @@ if visualize
 end
 
 %% initialize parameters and map
-K = 2000;
+K = 3000;
 T0 = 0.1;
 map = make_map(laplacian);
 
@@ -142,5 +142,5 @@ end
 
 %% run analysis
 if save_output
-    main_plot_graphs(id, './data/', true, true, true);
+    main_plot_graphs(id, './data/', true, false, true);
 end
