@@ -2,7 +2,7 @@ clear; close all;
 
 %% specify run type
 type = 'sphere';
-note = 'depolarization_2pops_activation20_focalshut_source3.5_D7_KtoD1.7';
+note = 'depolarization_2pops_activation20_focalshut_source3.5_D7_KtoD1.7_realrest';
 save_output = true;
 visualize = true;
 print_count = true;
@@ -64,13 +64,13 @@ end
 global HL
 HL = SCM_init_globs(N);
 
-HL.kR = 2.5 * ones(N,1);
+HL.kR = 4 * ones(N,1);
 % HL.kR(zones.normal_zone) = 0;
 
 HL.KtoVe = 0;
 HL.KtoVi = 0;
 HL.KtoVi_fs = 2000;
-HL.KtoD  = -1.7;
+HL.KtoD  = -0.5;
 HL.D22min = 0.1;
 HL.FS_ratio = 0;
 

@@ -188,10 +188,10 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         del_ViRest_1  = del_ViRest + dt/HL.tau_dVi * (HL.KtoVi*K);
         
         PK = 0.5;
-        ghk = 26.7123 * log((PK*K + 11.75) ./ (PK*(150-K) + 50.25));
-        % del_ViRest_fs_1  = ghk - HL.Vi_rest;
+        ghk = 26.7123 * log((PK*K + 11.75) ./ (PK*(150 - 10*K) + 50.25));
+        del_ViRest_fs_1  = ghk - HL.Vi_rest;
         % del_ViRest_fs_1  = 6 * K;
-        del_ViRest_fs_1  = del_ViRest_fs + dt/HL.tau_dVi * (HL.KtoVi_fs*K);
+        % del_ViRest_fs_1  = del_ViRest_fs + dt/HL.tau_dVi * (HL.KtoVi_fs*K);
 
         % 7. update dynamic variables
         phi2_ee = phi2_ee_1;
