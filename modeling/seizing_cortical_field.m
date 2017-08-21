@@ -22,7 +22,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
     % use as initial conditions the "last" values of previous simulation.
     Qe_grid = IC.Qe;
     Qi_grid = IC.Qi;
-    Qi_grid_fs = IC.Qi_fs;
+    Qi_fs_grid = IC.Qi_fs;
     Ve_grid = IC.Ve;
     Vi_grid = IC.Vi;
     Vi_fs_grid = IC.Vi_fs;
@@ -136,7 +136,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         %%%% I-to-E %%%%
         F_ie_1   = F_ie + dt * HL.gamma_i^2 * (-2/HL.gamma_i*F_ie - Phi_ie ...
                         + HL.Nie_b .* Qi_grid ...
-                        + HL.Nie_fs .* Qi_grid_fs); % short range
+                        + HL.Nie_fs .* Qi_fs_grid); % short range
         Phi_ie_1 = Phi_ie + dt*F_ie;
 
         %%%% I-to-I %%%%
@@ -145,7 +145,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         Phi_ii_1 = Phi_ii + dt*F_ii;
         
         F_ii_fs_1   = F_ii_fs + dt * HL.gamma_i^2 * (-2/HL.gamma_i*F_ii_fs - Phi_ii_fs ...
-                        + HL.Nii_fs .* Qi_grid_fs); % short range
+                        + HL.Nii_fs .* Qi_fs_grid); % short range
         Phi_ii_fs_1 = Phi_ii_fs + dt*F_ii_fs;
 
         % 3. update the soma voltages
@@ -173,11 +173,11 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         Qi_fs_grid = HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_fs_grid - HL.theta_i)))) ...     % The I voltage must be big enough,
                    - HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_fs_grid - (HL.theta_i+20)))));
               
-        Qi_grid_fs(map > 0) = 0;
+        Qi_fs_grid(map > 0) = 0;
               
         % 5. update extracellular ion
-        % joint_Q = Qi_grid_fs;
-        joint_Q = Qe_grid + Qi_grid + Qi_grid_fs;
+        % joint_Q = Qi_fs_grid;
+        joint_Q = Qe_grid + Qi_grid + Qi_fs_grid;
         K_1 = K + dt/HL.tau_K * (-HL.k_decay .* K ...   % decay term.
                 + HL.kR .* joint_Q ./ (1+exp(-(joint_Q - 25))) ... % reaction term.
                 + HL.kD * (laplacian * K));          % diffusion term.
@@ -186,6 +186,11 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         D22_1         = D22        + dt/HL.tau_dD  * (HL.KtoD*K);
         del_VeRest_1  = del_VeRest + dt/HL.tau_dVe * (HL.KtoVe*K);
         del_ViRest_1  = del_ViRest + dt/HL.tau_dVi * (HL.KtoVi*K);
+        
+        PK = 0.5;
+        ghk = 26.7123 * log((PK*K + 11.75) ./ (PK*(150-K) + 50.25));
+        % del_ViRest_fs_1  = ghk - HL.Vi_rest;
+        % del_ViRest_fs_1  = 6 * K;
         del_ViRest_fs_1  = del_ViRest_fs + dt/HL.tau_dVi * (HL.KtoVi_fs*K);
 
         % 7. update dynamic variables

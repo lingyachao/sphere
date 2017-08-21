@@ -1,7 +1,7 @@
 clear; close all;
 
 %% specify run type
-type = 'brain';
+type = 'sphere';
 note = 'depolarization_2pops_activation20_focalshut_source3.5_D7_KtoD1.7';
 save_output = true;
 visualize = true;
@@ -57,7 +57,7 @@ if strcmp(type, 'sphere')
     micro_idx = [744 659 753 837 836 752 658 579 669 777 845 933 929 932 844 776 668 578 573];
     fine_idx = union(find(map), [macro_idx, micro_idx]);
 else
-    fine_idx = union(find(map), find(coord(1,:)' > 0.5));
+    fine_idx = union(find(map), find(coord(1,:)' > 0.95));
 end
  
 %% initialize constants and make modifications
@@ -98,10 +98,8 @@ end
 %% run simulation
 for k = 1:K
      
-    if true
+    if true % k < 2000
         source_drive = 3.5;
-    elseif k > 150 / T0
-        source_drive = NaN;
     else
         source_drive = NaN;
     end
