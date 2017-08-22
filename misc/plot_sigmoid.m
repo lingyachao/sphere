@@ -13,3 +13,9 @@ plot(Vi_grid, Qi_grid, 'k', 'LineWidth', 1);
 
 xlabel('Vi');
 ylabel('Qi');
+
+figure;
+K = 0:0.1:15;
+PK = 0.5;
+ghk = 26.7123 * log((PK*K + 11.75) ./ (PK*(150-10*K) + 50.25));
+plot(K, ghk)

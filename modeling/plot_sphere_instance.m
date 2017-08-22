@@ -4,7 +4,7 @@ function plot_sphere_instance(locs, last, macro_pos, micro_pos)
 
     subplot(1, 2, 1);
     scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, last.K(neg_hemi), 'filled');
-    caxis([0,15]); axis off;
+    caxis([min(last.K),15]); axis off;
 
     subplot(1, 2, 2);    
     scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, last.Qe(neg_hemi), 'filled');

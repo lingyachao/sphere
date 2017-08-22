@@ -2,8 +2,8 @@ clear; close all;
 
 %% specify run type
 type = 'sphere';
-note = 'depolarization_2pops_activation20_focalshut_source3.5_D7_KtoD1.7_realrest';
-save_output = true;
+note = 'depolarization_2pops_activation20_focalshut_source3.5_D7_KtoD1.7_realrest_maxK14_ghkE';
+save_output = false;
 visualize = true;
 print_count = true;
 
@@ -64,18 +64,19 @@ end
 global HL
 HL = SCM_init_globs(N);
 
-HL.kR = 4 * ones(N,1);
+HL.kR = 10 * ones(N,1);
 % HL.kR(zones.normal_zone) = 0;
 
 HL.KtoVe = 0;
 HL.KtoVi = 0;
-HL.KtoVi_fs = 2000;
-HL.KtoD  = -0.5;
+HL.KtoVi_fs = 0;
+HL.KtoD  = -1.5;
 HL.D22min = 0.1;
 HL.FS_ratio = 0;
 
 % [HL.Nee_a, HL.Nei_a] = deal(1000, 1000);
 last.D22(:) = 7; last.D11 = last.D22/100;
+last.K(:) = 5;
 % last.dVe(:) = -3;
 % last.dVi(:) = 0;
 
@@ -99,7 +100,7 @@ end
 for k = 1:K
      
     if true % k < 2000
-        source_drive = 3.5;
+        source_drive = 5;
     else
         source_drive = NaN;
     end
