@@ -161,7 +161,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
                             + D22 .* (laplacian * Vi_grid));
         
         Vi_fs_grid_1 = Vi_fs_grid + dt/HL.tau_i * ((HL.Vi_rest - Vi_fs_grid) + del_ViRest_fs ...
-                                  + 1.5 * HL.ge .* Psi_ei(Vi_fs_grid) .* Phi_ei ...      %E-to-I
+                                  + 1.7 * HL.ge .* Psi_ei(Vi_fs_grid) .* Phi_ei ...      %E-to-I
                                   + HL.gi * Psi_ii(Vi_fs_grid) .* Phi_ii_fs ...      %I-to-I
                                   + 0 .* (laplacian * Vi_fs_grid));
 
@@ -183,11 +183,11 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
                 + HL.kD * (laplacian * K));          % diffusion term.
 
         % 6. update inhibitory gap junction strength, and resting voltages
-        D22_1         = D22        + dt/HL.tau_dD  * (HL.KtoD*K);
+        D22_1         = D22        + dt/HL.tau_dD * (HL.KtoD * (K-5));
         
         PNa = 0.04; NaO = 145; NaI = 10;
         PCl = 0.45; ClO = 110; ClI = 6;
-        KI = 150; Kinit = 5;
+        KI = 155; Kinit = 5;
         
         ghk = 26.7123 * log((K + PNa*NaO + PCl*ClI) ./ (KI + PNa*NaI + PCl*ClO));
         del_VeRest_1  = ghk - HL.Ve_rest;
@@ -196,7 +196,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         % del_ViRest_1  = del_ViRest + dt/HL.tau_dVi * (HL.KtoVi*K);
         
         PK = 1.3;
-        ghk = 26.7123 * log((PK*K + PNa*NaO + PCl*ClI) ./ (PK*(KI - 18.5*(K-Kinit)) + PNa*NaI + PCl*ClO));
+        ghk = 26.7123 * log((PK*K + PNa*NaO + PCl*ClI) ./ (PK*(KI - 19.5*(K-Kinit)) + PNa*NaI + PCl*ClO));
         del_ViRest_fs_1  = ghk - HL.Vi_rest;
         % del_ViRest_fs_1  = 6 * K;
         % del_ViRest_fs_1  = del_ViRest_fs + dt/HL.tau_dVi * (HL.KtoVi_fs*K);
