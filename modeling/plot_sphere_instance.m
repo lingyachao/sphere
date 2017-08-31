@@ -1,11 +1,14 @@
 function plot_sphere_instance(locs, last, macro_pos, micro_pos)
     
     neg_hemi = locs(:,3) < 0;
+    pos_hemi = locs(:,3) >= 0;
 
     subplot(1, 2, 1);
-    scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, last.K(neg_hemi), 'filled');
-    caxis([min(last.K),15]); axis off;
-
+    % scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, last.K(neg_hemi), 'filled');
+    % caxis([min(last.K),15]); axis off;
+    scatter(locs(pos_hemi,1), locs(pos_hemi,2), 15, last.Qe(pos_hemi), 'filled');
+    caxis([0,30]); axis off;
+    
     subplot(1, 2, 2);    
     scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, last.Qe(neg_hemi), 'filled');
     caxis([0,30]); axis off;

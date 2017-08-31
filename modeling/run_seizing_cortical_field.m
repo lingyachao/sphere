@@ -2,7 +2,7 @@ clear; close all;
 
 %% specify run type
 type = 'sphere';
-note = 'depolarization_realrest_maxK12_onlyFSproduceK_nodecay';
+note = 'depolarization_realrest_maxK12_onlyFSproduceK_withdecay';
 save_output = true;
 visualize = true;
 print_count = true;
@@ -10,6 +10,7 @@ print_count = true;
 %% load grid
 if strcmp(type, 'sphere')
     load('N10242_R10.mat'); 
+    % avg_D = avg_D + 0.5 * (rand(N, 1));
 elseif strcmp(type, 'brain')
     load('N40962.mat'); avg_D = 0.3777;
     load('unitsphere.mat');
@@ -40,7 +41,7 @@ last.Vi_fs = last.Vi;
 last.F_ii_fs = last.F_ii;
 last.Phi_ii_fs = last.Phi_ii;
 last.dVi_fs = last.dVi;
-% load('./data/sphere_N10242_R10_08012157_depolarization_2pops_activation20/raw/seizing_cortical_field_k_900.mat', 'last');
+% load('./data/sphere_N10242_R10_08241954_depolarization_realrest_maxK12_onlyFSproduceK_termination/raw/seizing_cortical_field_k_2400.mat', 'last');
 
 %% define zones
 lessihb_filter = true(N, 1);
@@ -67,7 +68,7 @@ HL = SCM_init_globs(N);
 HL.kR = 15 * ones(N,1);
 % HL.kR(zones.normal_zone) = 0;
 
-HL.k_decay = 0;
+HL.k_decay = 1.7;
 
 HL.KtoVe = 0;
 HL.KtoVi = 0;
@@ -77,8 +78,10 @@ HL.D22min = 0.1;
 HL.FS_ratio = 0;
 
 % [HL.Nee_a, HL.Nei_a] = deal(1000, 1000);
+
 last.D22(:) = 7; last.D11 = last.D22/100;
 last.K(:) = 5;
+
 % last.dVe(:) = -3;
 % last.dVi(:) = 0;
 
@@ -135,7 +138,7 @@ for k = 1:K
 
     if print_count
         fprintf(['RT ' num2str(toc) '\n']);
-        % fprintf(['K at node8 ' num2str(last.K(8)) '\n']);
+        fprintf(['K at node500 ' num2str(last.K(500)) '\n']);
         % fprintf(['dVi at node8 ' num2str(last.dVi(8)) '\n']);
         % fprintf(['Vi at node8 ' num2str(last.Vi(8)) '\n']);
     end

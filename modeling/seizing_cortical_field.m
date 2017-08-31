@@ -106,13 +106,13 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         phi2_ee_1 = phi2_ee + dt * (-2 * HL.v * HL.Lambda * phi2_ee ...
                             - (HL.v * HL.Lambda)^2 * phi_ee ...
                             + (HL.v * HL.Lambda)^2 * Qe_grid)...
-                            + dt * (HL.v / avg_D)^2 * (laplacian * phi_ee);
+                            + dt * (HL.v ./ avg_D) .^2 .* (laplacian * phi_ee);
         phi_ee_1  = phi_ee + dt * phi2_ee;
 
         phi2_ei_1 = phi2_ei + dt * (-2 * HL.v * HL.Lambda * phi2_ei ...
                             - (HL.v * HL.Lambda)^2 * phi_ei ...
                             + (HL.v * HL.Lambda)^2 * Qe_grid) ...
-                            + dt * (HL.v / avg_D)^2 * (laplacian * phi_ei);
+                            + dt * (HL.v ./ avg_D) .^2 .* (laplacian * phi_ei);
         phi_ei_1  = phi_ei + dt * phi2_ei;
 
         % 2. update the 4 synaptic flux equations (include sc noise)
@@ -172,7 +172,11 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
                   - HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i/5) .* (Vi_grid - (HL.theta_i+20)))));     % ... but not too big.
         Qi_fs_grid = HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_fs_grid - HL.theta_i)))) ...     % The I voltage must be big enough,
                    - HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i/5) .* (Vi_fs_grid - (HL.theta_i+20)))));
-              
+        
+        Qe_grid = max(Qe_grid, 0);
+        Qi_grid = max(Qi_grid, 0);
+        Qi_fs_grid = max(Qi_fs_grid, 0);
+               
         % Qi_fs_grid(map > 0) = 0;
               
         % 5. update extracellular ion
