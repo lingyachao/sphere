@@ -5,6 +5,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
     save_output)
  
     global HL
+    global het
     
     % set no. of sampling points (must be even!) along each axis of cortical grid
     N = size(laplacian, 1);
@@ -117,11 +118,24 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
 
         % 2. update the 4 synaptic flux equations (include sc noise)
 
+        het.history = [het.history; Qe_grid(het.idx1) Qe_grid(het.idx2)];
+        
+        [phi_ee_het, phi_ei_het] = deal(zeros(N, 1));
+        if ~isnan(het.history(1,1))
+            phi_ee_het(laplacian(:,het.idx1) ~= 0) = het.mu * het.history(1,2);
+            phi_ee_het(laplacian(:,het.idx2) ~= 0) = het.mu * het.history(1,1);
+            phi_ei_het(laplacian(:,het.idx1) ~= 0) = het.mu * het.history(1,2);
+            phi_ei_het(laplacian(:,het.idx2) ~= 0) = het.mu * het.history(1,1);
+        end
+        
+        het.history = het.history(2:end,:);
+        
         %%%% E-to-E %%%%
         F_ee_1   = F_ee + dt * HL.gamma_e^2 * (-2/HL.gamma_e*F_ee - Phi_ee ...
                         + HL.Nee_a * phi_ee ...             % long range
                         + HL.Nee_b * Qe_grid ...            % short range
                         + HL.noise_sc * HL.phi_ee_sc ...    % subcortical (tonic)
+                        + phi_ee_het ...
                         + B_ee .* randn(N, 1));              % subcortical (random)
         Phi_ee_1 = Phi_ee + dt*F_ee;
 
@@ -130,6 +144,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
                         + HL.Nei_a * phi_ei ...             % long range
                         + HL.Nei_b * Qe_grid ...            % short range
                         + HL.noise_sc * HL.phi_ei_sc ...    % subcortical (tonic)
+                        + phi_ei_het ...
                         + B_ei * randn(N, 1));              % subcortical (random)
         Phi_ei_1 = Phi_ei + dt*F_ei;
 
@@ -232,7 +247,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         del_VeRest = min(del_VeRest_1, 30);            % the excitatory population resting voltage cannot pass above a maximum value of 1.5.    
         if ~isnan(source_del_VeRest)
             % Qe_grid(map > 0) = source_del_VeRest;
-            del_VeRest(map > 0) = source_del_VeRest * map(map > 0); % + del_VeRest(map > 0);     % set the "source" locations' excitatory population resting voltage
+            del_VeRest(map > 0) = source_del_VeRest * map(map > 0) + del_VeRest(map > 0);     % set the "source" locations' excitatory population resting voltage
         end
   
         del_ViRest = min(del_ViRest_1, 30);           % the inhibitory population resting voltage cannot pass above a maximum value of 0.8.

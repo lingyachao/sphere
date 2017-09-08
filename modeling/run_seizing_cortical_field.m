@@ -2,7 +2,7 @@ clear; close all;
 
 %% specify run type
 type = 'sphere';
-note = 'depolarization_realrest_maxK12_onlyFSproduceK_withdecay';
+note = 'depolarization_realrest_maxK12_FSmajorityK_withdecay_het1000_source8';
 save_output = true;
 visualize = true;
 print_count = true;
@@ -85,6 +85,16 @@ last.K(:) = 5;
 % last.dVe(:) = -3;
 % last.dVi(:) = 0;
 
+%% heterogeneous connections
+global het
+het.idx1 = 1;
+het.idx2 = 1500;
+het.mu = 1000;
+
+cosTheta = dot(locs(het.idx1,:), locs(het.idx2,:)) / R^2;
+het.delay_dt = round(R * acos(cosTheta) / HL.v / (0.2 * 1e-3));
+het.history = NaN(het.delay_dt, 2);
+
 %% set the output directory and save meta file
 if save_output
     id = datestr(now, 'mmddHHMM');
@@ -98,14 +108,14 @@ if save_output
     mkdir(OUTPUT_DIR);
     
     META_FILE = ['./data/' folder_name '/vars.mat'];
-    save(META_FILE, 'HL', 'map', 'fine_idx', 'normal_sample_idx', 'last');
+    save(META_FILE, 'HL', 'map', 'fine_idx', 'normal_sample_idx', 'last', 'het');
 end
 
 %% run simulation
 for k = 1:K
      
     if true % k < 2000
-        source_drive = 5;
+        source_drive = 8;
     else
         source_drive = NaN;
     end
@@ -146,5 +156,5 @@ end
 
 %% run analysis
 if save_output
-    main_plot_graphs(id, './data/', true, false, true);
+    main_plot_graphs(id, './data/', true, true, true);
 end
