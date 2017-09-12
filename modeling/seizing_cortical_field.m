@@ -122,9 +122,9 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         
         [phi_ee_het, phi_ei_het] = deal(zeros(N, 1));
         if ~isnan(het.history(1,1))
-            phi_ee_het(laplacian(:,het.idx1) ~= 0) = het.mu * het.history(1,2);
+            % phi_ee_het(laplacian(:,het.idx1) ~= 0) = het.mu * het.history(1,2);
             phi_ee_het(laplacian(:,het.idx2) ~= 0) = het.mu * het.history(1,1);
-            phi_ei_het(laplacian(:,het.idx1) ~= 0) = het.mu * het.history(1,2);
+            % phi_ei_het(laplacian(:,het.idx1) ~= 0) = het.mu * het.history(1,2);
             phi_ei_het(laplacian(:,het.idx2) ~= 0) = het.mu * het.history(1,1);
         end
         
@@ -247,7 +247,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         del_VeRest = min(del_VeRest_1, 30);            % the excitatory population resting voltage cannot pass above a maximum value of 1.5.    
         if ~isnan(source_del_VeRest)
             % Qe_grid(map > 0) = source_del_VeRest;
-            del_VeRest(map > 0) = source_del_VeRest * map(map > 0) + del_VeRest(map > 0);     % set the "source" locations' excitatory population resting voltage
+            del_VeRest(map > 0) = max(del_VeRest(map > 0), source_del_VeRest * map(map > 0)); % + del_VeRest(map > 0);     % set the "source" locations' excitatory population resting voltage
         end
   
         del_ViRest = min(del_ViRest_1, 30);           % the inhibitory population resting voltage cannot pass above a maximum value of 0.8.

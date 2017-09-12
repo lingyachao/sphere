@@ -3,7 +3,7 @@ clear; close all;
 %% specify run type
 type = 'sphere';
 note = 'depolarization_realrest_maxK12_FSmajorityK_withdecay_het1000_source8';
-save_output = true;
+save_output = false;
 visualize = true;
 print_count = true;
 
@@ -87,7 +87,7 @@ last.K(:) = 5;
 
 %% heterogeneous connections
 global het
-het.idx1 = 1;
+het.idx1 = 100;
 het.idx2 = 1500;
 het.mu = 1000;
 
@@ -115,7 +115,7 @@ end
 for k = 1:K
      
     if true % k < 2000
-        source_drive = 8;
+        source_drive = 2.5;
     else
         source_drive = NaN;
     end
