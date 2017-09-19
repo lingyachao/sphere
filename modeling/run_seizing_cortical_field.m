@@ -2,7 +2,7 @@ clear; close all;
 
 %% specify run type
 type = 'sphere';
-note = 'depolarization_realrest_maxK12_onlyFSproduceK_withdecay';
+note = 'depolarization_realrest_maxK12_withnormal_centerK12_randomarea_slowKR_slowDecay_slowKtoD';
 save_output = true;
 visualize = true;
 print_count = true;
@@ -44,7 +44,9 @@ last.dVi_fs = last.dVi;
 % load('./data/sphere_N10242_R10_08241954_depolarization_realrest_maxK12_onlyFSproduceK_termination/raw/seizing_cortical_field_k_2400.mat', 'last');
 
 %% define zones
-lessihb_filter = true(N, 1);
+lessihb_filter = lessihb_area;
+% lessihb_filter = locs(:,3) < -0.6;
+% lessihb_filter = true(N, 1);
 
 zones.focus_zone = map == 1;
 zones.lessihb_zone = lessihb_filter & map ~= 1;
@@ -65,15 +67,15 @@ end
 global HL
 HL = SCM_init_globs(N);
 
-HL.kR = 15 * ones(N,1);
-% HL.kR(zones.normal_zone) = 0;
+HL.kR = 7 * ones(N,1);
+HL.kR(zones.normal_zone) = 0;
 
-HL.k_decay = 1.7;
+HL.k_decay = 0.7;
 
 HL.KtoVe = 0;
 HL.KtoVi = 0;
 HL.KtoVi_fs = 0;
-HL.KtoD  = -5;
+HL.KtoD  = -2.5;
 HL.D22min = 0.1;
 HL.FS_ratio = 0;
 
@@ -81,6 +83,7 @@ HL.FS_ratio = 0;
 
 last.D22(:) = 7; last.D11 = last.D22/100;
 last.K(:) = 5;
+last.K(map == 1) = 12;
 
 % last.dVe(:) = -3;
 % last.dVi(:) = 0;
@@ -105,7 +108,7 @@ end
 for k = 1:K
      
     if true % k < 2000
-        source_drive = 5;
+        source_drive = NaN;
     else
         source_drive = NaN;
     end
