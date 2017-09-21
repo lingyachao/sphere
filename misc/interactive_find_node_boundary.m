@@ -1,7 +1,7 @@
 function selected = find_node_pos_ihb_boundary
     clear; close all;
 
-    load('./computed_sphere_grid/N10242_R10_wideNodes.mat', 'N', 'locs', 'macro_idx');
+    load('./computed_sphere_grid/N10242_R10.mat', 'N', 'locs');
     [lat,~] = GridSphere(10242);
 
     p = lat < 0;
@@ -10,7 +10,7 @@ function selected = find_node_pos_ihb_boundary
     idxs = 1:N;
     idxs = idxs(p);
     colors = ones(N, 1);
-    colors(macro_idx) = 0;
+    % colors(macro_idx) = 0;
     s = scatter(locs(p,1),locs(p,2), 15, colors(p), 'filled');
     hold on;
     

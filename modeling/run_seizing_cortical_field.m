@@ -2,7 +2,7 @@ clear; close all;
 
 %% specify run type
 type = 'sphere';
-note = 'depolarization_realrest_maxK12_withnormal_centerK12_randomarea_slowKR_slowDecay_slowKtoD';
+note = 'depolarization_realrest_maxK12_withnormal_centerK12_randomarea_slowKR_slowDecay_slowKtoD_largeBound';
 save_output = true;
 visualize = true;
 print_count = true;
@@ -75,7 +75,7 @@ HL.k_decay = 0.7;
 HL.KtoVe = 0;
 HL.KtoVi = 0;
 HL.KtoVi_fs = 0;
-HL.KtoD  = -2.5;
+HL.KtoD  = -2;
 HL.D22min = 0.1;
 HL.FS_ratio = 0;
 
