@@ -166,12 +166,13 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
                                   + 0 .* (laplacian * Vi_fs_grid));
 
         % 4. update the firing rates
+        sig_offset = 18;
         Qe_grid = HL.Qe_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_e) .* (Ve_grid - HL.theta_e)))) ...     % The E voltage must be big enough,
-                  - HL.Qe_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_e/5) .* (Ve_grid - (HL.theta_e+20)))));     % ... but not too big.
+                  - HL.Qe_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_e/5) .* (Ve_grid - (HL.theta_e + sig_offset)))));     % ... but not too big.
         Qi_grid = HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_grid - HL.theta_i)))) ...     % The I voltage must be big enough,
-                  - HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i/5) .* (Vi_grid - (HL.theta_i+20)))));     % ... but not too big.
+                  - HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i/5) .* (Vi_grid - (HL.theta_i + sig_offset)))));     % ... but not too big.
         Qi_fs_grid = HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i) .* (Vi_fs_grid - HL.theta_i)))) ...     % The I voltage must be big enough,
-                   - HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i/5) .* (Vi_fs_grid - (HL.theta_i+20)))));
+                   - HL.Qi_max * (1./(1+exp(-pi/(sqrt(3)*HL.sigma_i/5) .* (Vi_fs_grid - (HL.theta_i + sig_offset)))));
         
         Qe_grid = max(Qe_grid, 0);
         Qi_grid = max(Qi_grid, 0);
@@ -200,7 +201,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         % del_ViRest_1  = del_ViRest + dt/HL.tau_dVi * (HL.KtoVi*K);
         
         PK = 1.3;
-        ghk = 26.7123 * log((PK*K + PNa*NaO + PCl*ClI) ./ (PK*(KI - 19.5*(K-Kinit)) + PNa*NaI + PCl*ClO));
+        ghk = 26.7123 * log((PK*K + PNa*NaO + PCl*ClI) ./ (PK*(KI - 18*(K-Kinit)) + PNa*NaI + PCl*ClO));
         del_ViRest_fs_1  = ghk - HL.Vi_rest;
         % del_ViRest_fs_1  = 6 * K;
         % del_ViRest_fs_1  = del_ViRest_fs + dt/HL.tau_dVi * (HL.KtoVi_fs*K);
