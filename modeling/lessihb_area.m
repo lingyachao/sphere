@@ -11,12 +11,12 @@ function lessihb_idx = lessihb_area
     
     p = locs(:,3) < 0;
     
-    scatter(locs(p,1), locs(p,2), 15, 'y', 'filled');
-    hold on;
-    plot(locs(boundary_idx,1), locs(boundary_idx,2)');
+    % scatter(locs(p,1), locs(p,2), 15, 'y', 'filled');
+    % hold on;
+    % plot(locs(boundary_idx,1), locs(boundary_idx,2)');
     
     [in, on] = inpolygon(locs(:,1), locs(:,2), locs(boundary_idx,1), locs(boundary_idx,2));
     lessihb_idx = (in | on) & p;
-    scatter(locs(lessihb_idx,1), locs(lessihb_idx,2), 15, 'g', 'filled');
+    % scatter(locs(lessihb_idx,1), locs(lessihb_idx,2), 15, 'g', 'filled');
     
 end

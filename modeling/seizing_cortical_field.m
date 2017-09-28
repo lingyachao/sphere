@@ -181,7 +181,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         % Qi_fs_grid(map > 0) = 0;
               
         % 5. update extracellular ion
-        joint_Q = Qi_fs_grid + 0.1 * (Qe_grid + Qi_grid);
+        joint_Q = Qi_fs_grid + HL.prodRatio * (Qe_grid + Qi_grid);
         % joint_Q = Qe_grid + Qi_grid + Qi_fs_grid;
         K_1 = K + dt/HL.tau_K * (-HL.k_decay .* K ...   % decay term.
                 + HL.kR .* joint_Q ./ (1+exp(-(joint_Q - 3))) ... % reaction term.
