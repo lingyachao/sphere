@@ -1,7 +1,7 @@
 clear; close all;
 
 %% specify run type
-type = 'sphere';
+type = 'brain';
 note = 'depolarization_realrest_maxK12_withnormal_centerK12_randomarea_slowKR_slowDecay_slowKtoD_Vratio18';
 save_output = false;
 visualize = true;
@@ -46,9 +46,11 @@ last.dVi_fs = last.dVi;
 % load([DATA_DIR 'raw/seizing_cortical_field_k_1500.mat'], 'last');
 
 %% define zones
-lessihb_filter = lessihb_area;
-% lessihb_filter = locs(:,3) < -0.6;
-% lessihb_filter = true(N, 1);
+if strcmp(type, 'sphere')
+    lessihb_filter = lessihb_area;
+else
+    lessihb_filter = lessihb_area_brain;
+end
 
 zones.focus_zone = map == 1;
 zones.lessihb_zone = lessihb_filter & map ~= 1;
@@ -62,7 +64,7 @@ if strcmp(type, 'sphere')
     micro_idx = [744 659 753 837 836 752 658 579 669 777 845 933 929 932 844 776 668 578 573];
     fine_idx = union(find(map), [macro_idx, micro_idx]);
 else
-    fine_idx = union(find(map), find(coord(1,:)' > 0.95));
+    fine_idx = union(find(map), find(coord(1,:)' > 0.7));
 end
  
 %% initialize constants and make modifications
@@ -72,8 +74,8 @@ HL = SCM_init_globs(N);
 HL.kR = 7 * ones(N,1);
 HL.kR(zones.normal_zone) = 0;
 
-HL.prodRatio = 0.1; % 0.05;
-HL.k_decay = 0.7; % 0.3;
+HL.prodRatio = 0.1;
+HL.k_decay = 0.7;
 
 HL.KtoVe = 0;
 HL.KtoVi = 0;
