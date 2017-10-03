@@ -1,13 +1,13 @@
 function [samp_time,last,fine] = seizing_cortical_field( ...
     source_del_VeRest, map, time_end, IC, ...
-    ~, laplacian, avg_D, ...
+    lap_synap, lap_diff, avg_D, ...
     zones, fine_idx, normal_sample_idx, ...
     save_output)
  
     global HL
     
     % set no. of sampling points (must be even!) along each axis of cortical grid
-    N = size(laplacian, 1);
+    N = size(lap_diff, 1);
     
     % initialize random number generator (from input argument)
     rand_state = sum(100*clock);
@@ -106,13 +106,13 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         phi2_ee_1 = phi2_ee + dt * (-2 * HL.v * HL.Lambda * phi2_ee ...
                             - (HL.v * HL.Lambda)^2 * phi_ee ...
                             + (HL.v * HL.Lambda)^2 * Qe_grid)...
-                            + dt * (HL.v ./ avg_D) .^2 .* (laplacian * phi_ee);
+                            + dt * (HL.v ./ avg_D) .^2 .* (lap_synap * phi_ee);
         phi_ee_1  = phi_ee + dt * phi2_ee;
 
         phi2_ei_1 = phi2_ei + dt * (-2 * HL.v * HL.Lambda * phi2_ei ...
                             - (HL.v * HL.Lambda)^2 * phi_ei ...
                             + (HL.v * HL.Lambda)^2 * Qe_grid) ...
-                            + dt * (HL.v ./ avg_D) .^2 .* (laplacian * phi_ei);
+                            + dt * (HL.v ./ avg_D) .^2 .* (lap_synap * phi_ei);
         phi_ei_1  = phi_ei + dt * phi2_ei;
 
         % 2. update the 4 synaptic flux equations (include sc noise)
@@ -153,17 +153,17 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         Ve_grid_1 = Ve_grid + dt/HL.tau_e * ((HL.Ve_rest - Ve_grid) + del_VeRest ...
                             + HL.ge .* Psi_ee(Ve_grid) .* Phi_ee ...      %E-to-E
                             + HL.gi * Psi_ie(Ve_grid) .* Phi_ie ...      %I-to-E
-                            + D11 .* (laplacian * Ve_grid));
+                            + D11 .* (lap_synap * Ve_grid));
 
         Vi_grid_1 = Vi_grid + dt/HL.tau_i * ((HL.Vi_rest - Vi_grid) + del_ViRest ...
                             + HL.ge .* Psi_ei(Vi_grid) .* Phi_ei ...      %E-to-I
                             + HL.gi * Psi_ii(Vi_grid) .* Phi_ii ...      %I-to-I
-                            + D22 .* (laplacian * Vi_grid));
+                            + D22 .* (lap_synap * Vi_grid));
         
         Vi_fs_grid_1 = Vi_fs_grid + dt/HL.tau_i * ((HL.Vi_rest - Vi_fs_grid) + del_ViRest_fs ...
                                   + HL.ge .* Psi_ei(Vi_fs_grid) .* Phi_ei ...      %E-to-I
                                   + HL.gi * Psi_ii(Vi_fs_grid) .* Phi_ii_fs ...      %I-to-I
-                                  + 0 .* (laplacian * Vi_fs_grid));
+                                  + 0 .* (lap_synap * Vi_fs_grid));
 
         % 4. update the firing rates
         sig_offset = 18;
@@ -185,7 +185,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         % joint_Q = Qe_grid + Qi_grid + Qi_fs_grid;
         K_1 = K + dt/HL.tau_K * (-HL.k_decay .* K ...   % decay term.
                 + HL.kR .* joint_Q ./ (1+exp(-(joint_Q - 3))) ... % reaction term.
-                + HL.kD * (laplacian * K));          % diffusion term.
+                + HL.kD * (lap_diff * K));          % diffusion term.
 
         % 6. update inhibitory gap junction strength, and resting voltages
         D22_1         = D22        + dt/HL.tau_dD * (HL.KtoD * (K-5));
