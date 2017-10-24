@@ -1,8 +1,8 @@
 clear; close all;
 
 %% specify run type
-type = 'brain';
-note = 'depolarization_realrest_maxK12_withnormal_centerK12_randomarea_slowKR_slowDecay_slowKtoD_Vratio18';
+type = 'sphere';
+note = 'depolarization_realrest_maxK12_withnormal_centerK12_randomarea_cut_circle';
 save_output = false;
 visualize = true;
 print_count = true;
@@ -71,16 +71,24 @@ end
 global HL
 HL = SCM_init_globs(N);
 
-HL.kR = 7 * ones(N,1);
+if strcmp(type, 'sphere')
+    HL.kR = 7;
+    HL.k_decay = 0.7;
+    HL.KtoD  = -2;    
+else
+    HL.kR = 10;
+    HL.k_decay = 1;
+    HL.KtoD  = -2.5;
+end
+
+HL.kR = HL.kR * ones(N,1);
 HL.kR(zones.normal_zone) = 0;
 
 HL.prodRatio = 0.1;
-HL.k_decay = 0.7;
 
 HL.KtoVe = 0;
 HL.KtoVi = 0;
 HL.KtoVi_fs = 0;
-HL.KtoD  = -2;
 HL.D22min = 0.1;
 HL.FS_ratio = 0;
 
@@ -118,9 +126,11 @@ for k = 1:K
     end
     tic;
 
+        % get_weak_laplacian(locs, laplacian), laplacian, avg_D
+    
     [samp_time,last,fine] = seizing_cortical_field(...
         source_drive, map, T0, last, ...
-        laplacian, laplacian, avg_D, ...
+        locs, laplacian, laplacian, avg_D, ...
         zones, fine_idx, normal_sample_idx, ...
         save_output);
     

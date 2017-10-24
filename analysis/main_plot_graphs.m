@@ -6,13 +6,13 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
     set(0, 'DefaultFigurePosition', [600, 50, 1000, 900]);
 
     % window size
-    wind = 15;
+    wind = 10;
     
     % brain type only
     NOTE = 'closest7_dipoles_window15s_r1dist';
     % loc_grid_center = [67.83, -28.99, 27.62];
     loc_grid_center = [64.41, -7.28, 21.48];
-    dist_grid_macro = 12;                                  % distance between macro-electrodes (mm)
+    dist_grid_macro = 9;                                  % distance between macro-electrodes (mm)
     dist_grid_micro = 0.5;                                 % distance between micro-electrodes (mm)
     flag_dipole = true;
     closest_N = 7;
