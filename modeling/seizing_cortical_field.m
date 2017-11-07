@@ -160,9 +160,9 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
                             + HL.gi * Psi_ii(Vi_grid) .* Phi_ii ...      %I-to-I
                             + D22 .* (lap_synap * Vi_grid));
         
-        Vi_fs_grid_1 = Vi_fs_grid + dt/HL.tau_i * ((HL.Vi_rest - Vi_fs_grid) + del_ViRest_fs ...
-                                  + HL.ge .* Psi_ei(Vi_fs_grid) .* Phi_ei ...      %E-to-I
-                                  + HL.gi * Psi_ii(Vi_fs_grid) .* Phi_ii_fs ...      %I-to-I
+        Vi_fs_grid_1 = Vi_fs_grid + dt/HL.tau_i * ((HL.Vi_rest_fs - Vi_fs_grid) + del_ViRest_fs ...
+                                  + HL.ge .* Psi_ei_fs(Vi_fs_grid) .* Phi_ei ...      %E-to-I
+                                  + HL.gi * Psi_ii_fs(Vi_fs_grid) .* Phi_ii_fs ...      %I-to-I
                                   + 0 .* (lap_synap * Vi_fs_grid));
 
         % 4. update the firing rates
@@ -196,14 +196,17 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         KI = 155; Kinit = 5;
         
         ghk = 26.7123 * log((K + PNa*NaO + PCl*ClI) ./ (KI + PNa*NaI + PCl*ClO));
-        del_VeRest_1  = ghk - HL.Ve_rest;
-        del_ViRest_1  = ghk - HL.Vi_rest;
+        HL.Ve_rest = ghk;
+        HL.Vi_rest = ghk;
+        % del_VeRest_1  = ghk - HL.Ve_rest;
+        % del_ViRest_1  = ghk - HL.Vi_rest;
         % del_VeRest_1  = del_VeRest + dt/HL.tau_dVe * (HL.KtoVe*K);
         % del_ViRest_1  = del_ViRest + dt/HL.tau_dVi * (HL.KtoVi*K);
         
         PK = 1.3;
         ghk = 26.7123 * log((PK*K + PNa*NaO + PCl*ClI) ./ (PK*(KI - 18*(K-Kinit)) + PNa*NaI + PCl*ClO));
-        del_ViRest_fs_1  = ghk - HL.Vi_rest;
+        HL.Vi_rest_fs = ghk;
+        % del_ViRest_fs_1  = ghk - HL.Vi_rest;
         % del_ViRest_fs_1  = 6 * K;
         % del_ViRest_fs_1  = del_ViRest_fs + dt/HL.tau_dVi * (HL.KtoVi_fs*K);
 
@@ -231,14 +234,14 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         D22 = max(D22_1, HL.D22min);                  % the inhibitory gap junctions cannot pass below a minimum value of 0.1.
         D11 = D22 / 100;                              % see definition in [Steyn-Ross et al PRX 2013, Table I].
         
-        del_VeRest = min(del_VeRest_1, 30);            % the excitatory population resting voltage cannot pass above a maximum value of 1.5.    
+        % del_VeRest = min(del_VeRest_1, 30);            % the excitatory population resting voltage cannot pass above a maximum value of 1.5.    
         if ~isnan(source_del_VeRest)
             % Qe_grid(map > 0) = source_del_VeRest;
-            del_VeRest(map > 0) = source_del_VeRest * map(map > 0); % + del_VeRest(map > 0);     % set the "source" locations' excitatory population resting voltage
+            % del_VeRest(map > 0) = source_del_VeRest * map(map > 0); % + del_VeRest(map > 0);     % set the "source" locations' excitatory population resting voltage
         end
   
-        del_ViRest = min(del_ViRest_1, 30);           % the inhibitory population resting voltage cannot pass above a maximum value of 0.8.
-        del_ViRest_fs = min(del_ViRest_fs_1, 60);
+        % del_ViRest = min(del_ViRest_1, 30);           % the inhibitory population resting voltage cannot pass above a maximum value of 0.8.
+        % del_ViRest_fs = min(del_ViRest_fs_1, 60);
         K = max(min(K_1, 12), 5);                               % the extracellular ion cannot pass above a maximum value of 1.0.
 
         % sanity check!
@@ -285,7 +288,7 @@ function weight = Psi_ee(V)
     % e-to-e reversal-potential weighting function
 
     global HL
-    weight = (HL.Ve_rev - V)/(HL.Ve_rev - HL.Ve_rest);
+    weight = (HL.Ve_rev - V)./(HL.Ve_rev - HL.Ve_rest);
 end
 
 %------------------------------------------------------------------------
@@ -295,13 +298,19 @@ function weight = Psi_ei(V)
     global HL
     weight = (HL.Ve_rev - V)./(HL.Ve_rev - HL.Vi_rest);
 end
+function weight = Psi_ei_fs(V)
+    % e-to-i reversal-potential weighting function
+
+    global HL
+    weight = (HL.Ve_rev - V)./(HL.Ve_rev - HL.Vi_rest_fs);
+end
 
 %------------------------------------------------------------------------
 function weight = Psi_ie(V)
     % i-to-e reversal-potential weighting function
 
     global HL
-    weight = (HL.Vi_rev - V)/(HL.Vi_rev - HL.Ve_rest);
+    weight = (HL.Vi_rev - V)./(HL.Vi_rev - HL.Ve_rest);
 end
 
 %------------------------------------------------------------------------
@@ -310,4 +319,10 @@ function weight = Psi_ii(V)
 
     global HL
     weight = (HL.Vi_rev - V)./(HL.Vi_rev - HL.Vi_rest);
+end
+function weight = Psi_ii_fs(V)
+    % i-to-i reversal potential weighting function
+
+    global HL
+    weight = (HL.Vi_rev - V)./(HL.Vi_rev - HL.Vi_rest_fs);
 end

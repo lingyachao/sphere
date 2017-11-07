@@ -2,7 +2,7 @@ clear; close all;
 
 %% specify run type
 type = 'sphere';
-note = 'depolarization_realrest_maxK12_withnormal_centerK12_randomarea_cut_circle';
+note = 'depolarization_realrest_maxK12_withnormal_centerK12_randomarea_better_weight_func';
 save_output = false;
 visualize = true;
 print_count = true;
@@ -91,6 +91,13 @@ HL.KtoVi = 0;
 HL.KtoVi_fs = 0;
 HL.D22min = 0.1;
 HL.FS_ratio = 0;
+
+HL.Ve_rest = -72.7;
+HL.Vi_rest = -72.7;
+HL.Vi_rest_fs = -75.3;
+last.dVe = zeros(N, 1);
+last.dVi = zeros(N, 1);
+last.dVi_fs = zeros(N, 1);
 
 last.D22(:) = 7; last.D11 = last.D22/100;
 last.K(:) = 5;

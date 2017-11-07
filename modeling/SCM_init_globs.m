@@ -28,7 +28,7 @@ function H = SCM_init_globs(N)
     [H.Ve_rest, H.Vi_rest] = deal(-64, -64);        % resting potential (mV)
 
     % connectivities: j-->k convention (dimensionless)
-    [H.Nee_a, H.Nei_a] = deal(2000, 2000);			% cortico-cortical
+    [H.Nee_a, H.Nei_a] = deal(2000, 2500);			% cortico-cortical
     [H.Nee_b, H.Nei_b] = deal(800, 800);
     [H.Nie_b, H.Nii_b] = deal(600, 600);
     [H.Nie_fs, H.Nii_fs] = deal(300, 20);
