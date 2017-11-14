@@ -2,7 +2,7 @@ clear; close all;
 
 %% specify run type
 type = 'sphere';
-note = 'depolarization_realrest_maxK12_withnormal_centerK12_randomarea_cut_circle';
+note = 'depolarization_realrest_maxK12_withnormal_centerK12_randomarea_fluc';
 save_output = false;
 visualize = true;
 print_count = true;
@@ -73,7 +73,7 @@ HL = SCM_init_globs(N);
 
 if strcmp(type, 'sphere')
     HL.kR = 7;
-    HL.k_decay = 0.7;
+    HL.k_decay = 1.2;
     HL.KtoD  = -2;    
 else
     HL.kR = 10;
@@ -81,11 +81,13 @@ else
     HL.KtoD  = -2.5;
 end
 
-HL.kR = HL.kR * ones(N,1);
-HL.kR(zones.normal_zone) = 0;
+HL.kR = HL.kR * ones(N, 1);
+% HL.kR(zones.normal_zone) = 0;
+
+HL.k_decay = HL.k_decay * ones(N,1);
+HL.k_decay(zones.normal_zone) = 100;
 
 HL.prodRatio = 0.1;
-
 HL.KtoVe = 0;
 HL.KtoVi = 0;
 HL.KtoVi_fs = 0;
@@ -94,7 +96,11 @@ HL.FS_ratio = 0;
 
 last.D22(:) = 7; last.D11 = last.D22/100;
 last.K(:) = 5;
-last.K(map == 1) = 12;
+% last.K(map == 1) = 12;
+
+HL.Nie_fs = HL.Nie_fs * ones(N, 1);
+HL.Nie_fs(map == 1) = 0;
+phi_ee_sc_base = HL.phi_ee_sc(1);
 
 %% set the output directory and save meta file
 if save_output
@@ -112,6 +118,10 @@ if save_output
     save(META_FILE, 'HL', 'map', 'fine_idx', 'normal_sample_idx', 'last');
 end
 
+%% tail of normal distribution
+tail_discrete = (23:0.1:50)';
+pdfs = normpdf(tail_discrete, 5, 5);
+
 %% run simulation
 for k = 1:K
      
@@ -125,8 +135,22 @@ for k = 1:K
         fprintf(['Running simulation , ' num2str(k) ' ... ']);
     end
     tic;
-
-        % get_weak_laplacian(locs, laplacian), laplacian, avg_D
+     
+%     if k < 5
+%         HL.phi_ee_sc(laplacian(:,200) ~= 0) = 30 * phi_ee_sc_base;
+%     else
+%         HL.phi_ee_sc(laplacian(:,200) ~= 0) = phi_ee_sc_base;
+%     end
+    
+    HL.phi_ee_sc = randn(N, 1)*5 + 5;
+    HL.phi_ee_sc = max(HL.phi_ee_sc, 0);
+    
+    if all(last.Qe(map == 1) < 3 & last.K(map == 1) < 6)
+        HL.phi_ee_sc(map == 1) = datasample(tail_discrete, 7, 'Weight', pdfs);
+        HL.phi_ee_sc(map == 1)'
+    end
+    
+    HL.phi_ee_sc = HL.phi_ee_sc * phi_ee_sc_base;
     
     [samp_time,last,fine] = seizing_cortical_field(...
         source_drive, map, T0, last, ...
@@ -151,6 +175,7 @@ for k = 1:K
 
     if print_count
         fprintf(['RT ' num2str(toc) '\n']);
+        fprintf(['K at node2 ' num2str(last.K(2)) '\n']);
         fprintf(['K at node500 ' num2str(last.K(500)) '\n']);
         % fprintf(['dVi at node8 ' num2str(last.dVi(8)) '\n']);
         % fprintf(['Vi at node8 ' num2str(last.Vi(8)) '\n']);

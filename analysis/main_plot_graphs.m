@@ -169,7 +169,7 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
         else
             recruitment_speed = NaN;
         end
-        fprintf(['recruitment speed is ' num2str(recruitment_speed) ' mm/s \n']);
+        fprintf(['recruitment speed is ' num2str(recruitment_speed) ' cm/s \n']);
 
         %% *** SAVE *** figures
         if flag_tabbed
