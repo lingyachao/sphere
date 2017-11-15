@@ -189,11 +189,11 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
                 + HL.kD * (lap_diff * K));          % diffusion term.
 
         % 6. update inhibitory gap junction strength, and resting voltages
-        D22_1         = D22        + dt/HL.tau_dD * (HL.KtoD * (K-5));
+        D22_1         = D22        + dt/HL.tau_dD * (HL.KtoD * (K-6));
         
         PNa = 0.04; NaO = 145; NaI = 10;
         PCl = 0.45; ClO = 110; ClI = 6;
-        KI = 155; Kinit = 5;
+        KI = 155; Kinit = 6;
         
         ghk = 26.7123 * log((K + PNa*NaO + PCl*ClI) ./ (KI + PNa*NaI + PCl*ClO));
         del_VeRest_1  = ghk - HL.Ve_rest;
@@ -202,7 +202,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         % del_ViRest_1  = del_ViRest + dt/HL.tau_dVi * (HL.KtoVi*K);
         
         PK = 1.3;
-        ghk = 26.7123 * log((PK*K + PNa*NaO + PCl*ClI) ./ (PK*(KI - 18*(K-Kinit)) + PNa*NaI + PCl*ClO));
+        ghk = 26.7123 * log((PK*K + PNa*NaO + PCl*ClI) ./ (PK*(KI - 21*(K-Kinit)) + PNa*NaI + PCl*ClO));
         del_ViRest_fs_1  = ghk - HL.Vi_rest;
         % del_ViRest_fs_1  = 6 * K;
         % del_ViRest_fs_1  = del_ViRest_fs + dt/HL.tau_dVi * (HL.KtoVi_fs*K);
@@ -239,7 +239,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
   
         del_ViRest = min(del_ViRest_1, 30);           % the inhibitory population resting voltage cannot pass above a maximum value of 0.8.
         del_ViRest_fs = min(del_ViRest_fs_1, 60);
-        K = max(min(K_1, 12), 5);                               % the extracellular ion cannot pass above a maximum value of 1.0.
+        K = max(min(K_1, 12), Kinit);                               % the extracellular ion cannot pass above a maximum value of 1.0.
 
         % sanity check!
         if any(any(isnan(Qe_grid)))
