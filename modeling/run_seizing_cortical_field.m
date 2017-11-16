@@ -94,7 +94,7 @@ HL.KtoVi_fs = 0;
 HL.D22min = 0.1;
 HL.FS_ratio = 0;
 
-last.D22(:) = 7; last.D11 = last.D22/100;
+last.D22(:) = 6; last.D11 = last.D22/100;
 last.K(:) = 6;
 last.K(map == 1) = 12;
 

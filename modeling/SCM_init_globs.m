@@ -30,7 +30,7 @@ function H = SCM_init_globs(N)
     % connectivities: j-->k convention (dimensionless)
     [H.Nee_a, H.Nei_a] = deal(2000, 2000);			% cortico-cortical
     [H.Nee_b, H.Nei_b] = deal(800, 800);
-    [H.Nie_b, H.Nii_b] = deal(665, 600);
+    [H.Nie_b, H.Nii_b] = deal(660, 600);
     [H.Nie_fs, H.Nii_fs] = deal(300, 20);
     [H.Nee_sc,H.Nei_sc]= deal(50, 50);              % subcortical
 
