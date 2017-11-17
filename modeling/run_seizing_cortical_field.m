@@ -72,7 +72,7 @@ global HL
 HL = SCM_init_globs(N);
 
 if strcmp(type, 'sphere')
-    HL.kR = 5;
+    HL.kR = 4.5;
     HL.k_decay = 0;
     HL.KtoD = -2;    
 else
@@ -94,7 +94,7 @@ HL.KtoVi_fs = 0;
 HL.D22min = 0.1;
 HL.FS_ratio = 0;
 
-last.D22(:) = 6; last.D11 = last.D22/100;
+last.D22(:) = 5; last.D11 = last.D22/100;
 last.K(:) = 6;
 last.K(map == 1) = 12;
 
