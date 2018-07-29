@@ -2,10 +2,12 @@ clear; close all;
 
 %% specify run type
 type = 'sphere';
-note = 'depolarization_realrest_maxK12_withnormal_centerK12_randomarea_changerev_changeNa_Nie665';
-save_output = true;
+note = 'Nie670';
+save_output = false;
 visualize = true;
 print_count = true;
+
+use_fluc = false;
 
 %% load grid
 if strcmp(type, 'sphere')
@@ -96,11 +98,14 @@ HL.FS_ratio = 0;
 
 last.D22(:) = 5; last.D11 = last.D22/100;
 last.K(:) = 5;
-last.K(map == 1) = 12;
 
-% HL.Nie_fs = HL.Nie_fs * ones(N, 1);
-% HL.Nie_fs(map == 1) = 0;
-phi_ee_sc_base = HL.phi_ee_sc(1);
+if ~use_fluc
+    last.K(map == 1) = 12;
+else
+    HL.Nie_fs = HL.Nie_fs * ones(N, 1);
+    HL.Nie_fs(map == 1) = 0;
+    phi_ee_sc_base = HL.phi_ee_sc(1);
+end
 
 %% set the output directory and save meta file
 if save_output
@@ -119,8 +124,8 @@ if save_output
 end
 
 %% tail of normal distribution
-tail_discrete = (18:0.1:50)';
-pdfs = normpdf(tail_discrete, 1, 1);
+tail_discrete = (23:0.1:50)';
+pdfs = normpdf(tail_discrete, 3, 2);
 
 %% run simulation
 for k = 1:K
@@ -142,15 +147,17 @@ for k = 1:K
 %         HL.phi_ee_sc(laplacian(:,200) ~= 0) = phi_ee_sc_base;
 %     end
     
-%     HL.phi_ee_sc = randn(N, 1)*1 + 1;
-%     HL.phi_ee_sc = max(HL.phi_ee_sc, 0);
-%     
-%     if all(last.Qe(map == 1) < 3 & last.K(map == 1) < 7)
-%         HL.phi_ee_sc(map == 1) = datasample(tail_discrete, 7, 'Weight', pdfs);
-%         HL.phi_ee_sc(map == 1)'
-%     end
-    
-%     HL.phi_ee_sc = HL.phi_ee_sc * phi_ee_sc_base;
+    if use_fluc
+        HL.phi_ee_sc = 3 + randn(N, 1)*2;
+        HL.phi_ee_sc = max(HL.phi_ee_sc, 0);
+
+        if all(last.Qe(map == 1) < 3 & last.K(map == 1) < 7)
+            HL.phi_ee_sc(map == 1) = datasample(tail_discrete, 7, 'Weight', pdfs);
+            HL.phi_ee_sc(map == 1)'
+        end
+        
+        HL.phi_ee_sc = HL.phi_ee_sc * phi_ee_sc_base;
+    end
     
     [samp_time,last,fine] = seizing_cortical_field(...
         source_drive, map, T0, last, ...
