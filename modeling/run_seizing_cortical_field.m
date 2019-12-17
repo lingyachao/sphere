@@ -2,8 +2,8 @@ clear; close all;
 
 %% specify run type
 type = 'sphere';
-note = 'Nie670';
-save_output = false;
+note = 'Nie665';
+save_output = true;
 visualize = true;
 print_count = true;
 
@@ -75,7 +75,7 @@ HL = SCM_init_globs(N);
 
 if strcmp(type, 'sphere')
     HL.kR = 5;
-    HL.k_decay = 0;
+    HL.k_decay = 0.01;
     HL.KtoD = -1.5;    
 else
     HL.kR = 10;
