@@ -234,7 +234,7 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         del_VeRest = min(del_VeRest_1, 30);  
         if ~isnan(source_del_VeRest)
             % Qe_grid(map > 0) = source_del_VeRest;
-            del_VeRest(map > 0) = source_del_VeRest * map(map > 0) + del_VeRest(map > 0);     % set the "source" locations' excitatory population resting voltage
+            del_VeRest(map > 0) = source_del_VeRest * map(map > 0); % + del_VeRest(map > 0);     % set the "source" locations' excitatory population resting voltage
         end
   
         del_ViRest = min(del_ViRest_1, 30);
