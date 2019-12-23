@@ -146,7 +146,7 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
 
         %% *** PLOT *** coherence statistics
         central_t = int32(total_time * (1/P/2 : 1/P : 1-1/P/2));
-        period_idx = length(central_t) - 2; % estimate wave for this period
+        [~,period_idx] = min(abs(central_t - 250)); % estimate wave for this period
 
         [t_coh,t_coh_conf,t_phi,electrode_2d] = deal( ...
             macro_t_coh, macro_t_coh_conf, macro_t_phi, macro_2d);

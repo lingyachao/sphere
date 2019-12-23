@@ -2,7 +2,7 @@ clear; close all;
 
 %% specify run type
 type = 'sphere';
-note = 'Nie665';
+note = 'Nie670_source10for200s';
 save_output = true;
 visualize = true;
 print_count = true;
@@ -100,10 +100,12 @@ last.D22(:) = 5; last.D11 = last.D22/100;
 last.K(:) = 5;
 
 if ~use_fluc
-    last.K(map == 1) = 12;
+    % last.K(map == 1) = 12;
+    source_drive_amp = 10;
+    source_drive_duration = 200; 
 else
-    HL.Nie_fs = HL.Nie_fs * ones(N, 1);
-    HL.Nie_fs(map == 1) = 0;
+    % HL.Nie_fs = HL.Nie_fs * ones(N, 1);
+    % HL.Nie_fs(map == 1) = 0;
     phi_ee_sc_base = HL.phi_ee_sc(1);
 end
 
@@ -130,8 +132,8 @@ pdfs = normpdf(tail_discrete, 3, 2);
 %% run simulation
 for k = 1:K
      
-    if true % k < 2000
-        source_drive = NaN;
+    if ~use_fluc && k < source_drive_duration/T0
+        source_drive = source_drive_amp;
     else
         source_drive = NaN;
     end
