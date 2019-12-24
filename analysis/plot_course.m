@@ -1,5 +1,5 @@
 % specify time points to plot
-ks = int32(K * (1/P:1/P:1));
+ks = int32((10:10:total_time) / T0);
 ncols = ceil(length(ks) / 4);
 
 for i = 1:length(ks)                                         

@@ -5,9 +5,6 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
     set(0, 'DefaultTextFontsize', 8);
     set(0, 'DefaultFigurePosition', [600, 50, 1000, 900]);
 
-    % window size
-    wind = 10;
-    
     % brain type only
     NOTE = 'closest7_dipoles_window15s_r1dist';
     % loc_grid_center = [67.83, -28.99, 27.62];
@@ -37,7 +34,7 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
 
     VIDEO_FILE = [ANALYSIS_DIR 'movie.mp4'];
     SAMPLE_DATA_FILE = [ANALYSIS_DIR 'data_sample.mat'];
-    COHERENCE_FILE   = [ANALYSIS_DIR 'data_coherence.mat'];
+    COHERENCE_FILE   = [ANALYSIS_DIR 'data_coherence_dense.mat'];
     ELEC_FILE        = [ANALYSIS_DIR 'data_electrode.mat'];
 
     %% *** SPECIFY *** figure names
@@ -83,8 +80,9 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
     fine_time = (1:K*T) * (T0/T);
 
     % for coherence split the entire course into P periods
-    P = total_time/wind;
-    per_P = K*T/P;
+    wind = 10; % seconds
+    P = total_time - (wind - 1);
+    per_P = wind * 500;
 
     %% *** SPECIFY *** grid
     if strcmp(type, 'sphere')
@@ -145,9 +143,11 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
         ylabel('firing rate (Hz)');
 
         %% *** PLOT *** coherence statistics
-        central_t = int32(total_time * (1/P/2 : 1/P : 1-1/P/2));
-        [~,period_idx] = min(abs(central_t - 250)); % estimate wave for this period
+        central_t = (wind/2) : (wind/2 + P - 1);
+        [~,period_idx] = min(abs(central_t - 240)); % estimate wave for this period
 
+        warning('off', 'stats:statrobustfit:IterationLimit');
+        
         [t_coh,t_coh_conf,t_phi,electrode_2d] = deal( ...
             macro_t_coh, macro_t_coh_conf, macro_t_phi, macro_2d);
         fprintf('macro electrodes ');
