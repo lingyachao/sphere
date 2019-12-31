@@ -13,7 +13,12 @@ Qe_micro = NaN(K*T, size(micro_transform, 1));
 Ve_micro = NaN(K*T, size(micro_transform, 1));
 
 % single node
-node_id = 500;
+if strcmp(type, 'sphere')
+    node_id = 500;
+else
+    node_id = 29033;
+end
+
 [Qe_1, Qi_1, Ve_1, Vi_1, D22_1, dVe_1, dVi_1, K_1, ...
     Qi_fs_1, Vi_fs_1, dVi_fs_1] = deal(NaN(K, 1));
 

@@ -13,7 +13,7 @@ for i = 1:length(ks)
         caxis([0,30]); axis off; hold on;
         scatter(macro_pos(:,1), macro_pos(:,2), 10, 'filled', 'MarkerFaceColor', 'm');
     else
-        figure_wire(surf_sphere, last.Qe, false);
+        figure_wire(surf, last.Qe, false);
         view(90, 0);
     end
     title(['t = ' num2str(ks(i) * T0)]);

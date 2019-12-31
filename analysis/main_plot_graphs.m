@@ -100,7 +100,7 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
     end
 
     %% *** LOAD/GENERATE *** sample data
-    if exist(SAMPLE_DATA_FILE, 'file') == 2
+    if exist(SAMPLE_DATA_FILE, 'file') == 2 && exist(ELEC_FILE, 'file') == 2
         load(ELEC_FILE);
         load(SAMPLE_DATA_FILE);
     else
@@ -129,15 +129,15 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
         %     'Qi\_fs', 'Vi\_fs', 'dVi\_fs');
         
         subplot(2,2,1);
-        plot(sparse_time, single_node(:,[2,1,9]));
-        legend('Qi', 'Qe', 'Qi\_fs');
+        plot(sparse_time, single_node(:,[2,1,9,8]));
+        legend('Qi', 'Qe', 'Qi\_fs', 'K');
         xlim([25,300]);
         xlabel('time (s)');
         ylabel('firing rate (Hz)');
         
         subplot(2,2,2);
-        plot(sparse_time, single_node(:,[2,1,9]));
-        legend('Qi', 'Qe', 'Qi\_fs');
+        plot(sparse_time, single_node(:,[2,1,9,8]));
+        legend('Qi', 'Qe', 'Qi\_fs', 'K');
         xlim([270,300]);
         xlabel('time (s)');
         ylabel('firing rate (Hz)');
