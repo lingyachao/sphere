@@ -2,7 +2,7 @@ clear; close all;
 
 %% specify run type
 type = 'sphere';
-note = 'Nie670_source10for200s';
+note = 'Nie670_source8for10s';
 save_output = true;
 visualize = true;
 print_count = true;
@@ -83,7 +83,7 @@ else
     HL.KtoD  = -2.5;
 end
 
-HL.kR = HL.kR * ones(N, 1);
+% HL.kR = HL.kR * ones(N, 1);
 % HL.kR(zones.normal_zone) = 0;
 
 HL.k_decay = HL.k_decay * ones(N,1);
@@ -101,8 +101,8 @@ last.K(:) = 5;
 
 if ~use_fluc
     % last.K(map == 1) = 12;
-    source_drive_amp = 10;
-    source_drive_duration = 200; 
+    source_drive_amp = 8;
+    source_drive_duration = 10; 
 else
     % HL.Nie_fs = HL.Nie_fs * ones(N, 1);
     % HL.Nie_fs(map == 1) = 0;
@@ -193,5 +193,5 @@ end
 
 %% run analysis
 if save_output
-    main_plot_graphs(id, './data/', true, false, true);
+    main_plot_graphs(id, './data/', true, false, true, false);
 end

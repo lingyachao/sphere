@@ -24,8 +24,11 @@ micro_t_phi = NaN(N_micro, N_micro, N_freq, P);
 
 for p = 1:P
     fprintf(['Computing coherence for period ' num2str(p) '\n']);
-    % range = ((p-1) * per_P / 2) + 1 : ((p+1) * per_P / 2);
-    range = ((p-1) * 500) + 1 : ((p-1) * 500) + per_P;
+    if flag_dense_coh
+        range = ((p-1) * 500) + 1 : ((p-1) * 500) + per_P;
+    else
+        range = ((p-1) * per_P) + 1 : (p * per_P);
+    end
     [coh,phi,~,coh_conf] = compute_coherence(Qe_macro(range,:), params);
     macro_t_coh(:,:,:,p) = coh;
     macro_t_coh_conf(:,:,:,p) = coh_conf;

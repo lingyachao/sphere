@@ -1,5 +1,5 @@
 function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
-    main_plot_graphs(id, DATA_ROOT_DIR, flag_plot, flag_video, flag_tabbed)
+    main_plot_graphs(id, DATA_ROOT_DIR, flag_plot, flag_video, flag_tabbed, flag_dense_coh)
 
     %% figure properties
     set(0, 'DefaultTextFontsize', 8);
@@ -34,7 +34,11 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
 
     VIDEO_FILE = [ANALYSIS_DIR 'movie.mp4'];
     SAMPLE_DATA_FILE = [ANALYSIS_DIR 'data_sample.mat'];
-    COHERENCE_FILE   = [ANALYSIS_DIR 'data_coherence_dense.mat'];
+    if flag_dense_coh
+        COHERENCE_FILE   = [ANALYSIS_DIR 'data_coherence_dense.mat'];
+    else
+        COHERENCE_FILE   = [ANALYSIS_DIR 'data_coherence.mat'];
+    end
     ELEC_FILE        = [ANALYSIS_DIR 'data_electrode.mat'];
 
     %% *** SPECIFY *** figure names
@@ -81,7 +85,11 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
 
     % for coherence split the entire course into P periods
     wind = 10; % seconds
-    P = total_time - (wind - 1);
+    if flag_dense_coh
+        P = total_time - (wind - 1);
+    else
+        P = total_time/wind;
+    end
     per_P = wind * 500;
 
     %% *** SPECIFY *** grid
@@ -143,7 +151,11 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
         ylabel('firing rate (Hz)');
 
         %% *** PLOT *** coherence statistics
-        central_t = (wind/2) : (wind/2 + P - 1);
+        if flag_dense_coh
+        	central_t = int32((wind/2) : (wind/2 + P - 1));
+        else
+            central_t = int32(total_time * (1/P/2 : 1/P : 1-1/P/2));
+        end
         [~,period_idx] = min(abs(central_t - 240)); % estimate wave for this period
 
         warning('off', 'stats:statrobustfit:IterationLimit');
