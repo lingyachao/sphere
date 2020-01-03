@@ -125,6 +125,11 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
 
     if flag_plot
         %% *** PLOT *** seizure course
+        if total_time > 300
+            plot_course_times = 310:10:900;
+        else
+            plot_course_times = 10:10:total_time;
+        end
         plot_course;
 
         %% *** PLOT *** firing rate and voltage traces
@@ -137,15 +142,17 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
         %     'Qi\_fs', 'Vi\_fs', 'dVi\_fs');
         
         subplot(2,2,1);
-        plot(sparse_time, single_node(:,[2,1,9,8]));
-        legend('Qi', 'Qe', 'Qi\_fs', 'K');
-        xlim([25,300]);
+        plot(sparse_time, single_node(:,[2,9,8]));
+        hold on;
+        plot(fine_time, Qe_macro(:,1));
+        legend('Qi', 'Qi\_fs', 'K', 'Qe');
+        xlim([25,total_time]);
         xlabel('time (s)');
         ylabel('firing rate (Hz)');
         
         subplot(2,2,2);
         plot(sparse_time, single_node(:,[2,1,9,8]));
-        legend('Qi', 'Qe', 'Qi\_fs', 'K');
+        % legend('Qi', 'Qe', 'Qi\_fs', 'K');
         xlim([270,300]);
         xlabel('time (s)');
         ylabel('firing rate (Hz)');

@@ -1,5 +1,5 @@
 % specify time points to plot
-ks = int32((10:10:total_time) / T0);
+ks = int32(plot_course_times / T0);
 ncols = ceil(length(ks) / 4);
 
 for i = 1:length(ks)                                         
@@ -18,14 +18,12 @@ for i = 1:length(ks)
     end
     title(['t = ' num2str(ks(i) * T0)]);
     
-    figure(fg_course_pos); axes('parent', tab_course_pos);
-    subplot(4, ncols, i);
-    
-    if strcmp(type, 'sphere')
-        scatter(locs(pos_hemi,1), locs(pos_hemi,2), 15, last.Qe(pos_hemi), 'filled');
-        caxis([0,30]); axis off;
-        title(['t = ' num2str(ks(i) * T0)]);
-    end
-    
+%     if strcmp(type, 'sphere')
+%         figure(fg_course_pos); axes('parent', tab_course_pos);
+%         subplot(4, ncols, i);
+%         scatter(locs(pos_hemi,1), locs(pos_hemi,2), 15, last.Qe(pos_hemi), 'filled');
+%         caxis([0,30]); axis off;
+%         title(['t = ' num2str(ks(i) * T0)]);
+%     end
     
 end

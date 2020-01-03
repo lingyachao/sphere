@@ -2,12 +2,12 @@ clear; close all;
 
 %% specify run type
 type = 'sphere';
-note = 'Nie670_source8for10s';
+note = 'Nie670_fluc';
 save_output = true;
 visualize = true;
 print_count = true;
 
-use_fluc = false;
+use_fluc = true;
 
 %% load grid
 if strcmp(type, 'sphere')
@@ -32,7 +32,7 @@ if visualize
 end
 
 %% initialize parameters and map
-K = 3000;
+K = ~use_fluc * 3000 + use_fluc * 20000;
 T0 = 0.1;
 map = make_map(laplacian);
 
@@ -98,36 +98,44 @@ HL.FS_ratio = 0;
 
 last.D22(:) = 5; last.D11 = last.D22/100;
 last.K(:) = 5;
+if use_fluc
+    last.K(zones.focus_zone | zones.lessihb_zone) = 5.4;
+end
 
 if ~use_fluc
     % last.K(map == 1) = 12;
     source_drive_amp = 8;
-    source_drive_duration = 10; 
+    source_drive_duration = 10; % seconds
 else
     % HL.Nie_fs = HL.Nie_fs * ones(N, 1);
     % HL.Nie_fs(map == 1) = 0;
     phi_ee_sc_base = HL.phi_ee_sc(1);
 end
 
+% distributions for fluctuations
+sc_basal = 1;
+sc_rand_width = 1;
+sc_high_diff = 28;
+sc_high_prob = 0.002;
+pd = makedist('Binomial', 'N', 1, 'p', sc_high_prob);
+
 %% set the output directory and save meta file
 if save_output
-    id = datestr(now, 'mmddHHMM');
+    id = datestr(now, 'yy_mmdd_HHMM');
     if strcmp(type, 'sphere')
         folder_name = ['sphere_N' num2str(N) '_R' num2str(R) '_' id '_' note];
     elseif strcmp(type, 'brain')
         folder_name = ['brain_N' num2str(N) '_' id '_' note];
     end
-
-    OUTPUT_DIR = ['./data/' folder_name '/raw/'];
+    
+    DATA_STORAGE = 'C:/Users/monica/simulation_data/';
+    
+    OUTPUT_DIR = [DATA_STORAGE folder_name '/raw/'];
     mkdir(OUTPUT_DIR);
     
-    META_FILE = ['./data/' folder_name '/vars.mat'];
+    META_FILE = [DATA_STORAGE folder_name '/vars.mat'];
     save(META_FILE, 'HL', 'map', 'fine_idx', 'normal_sample_idx', 'last');
 end
-
-%% tail of normal distribution
-tail_discrete = (23:0.1:50)';
-pdfs = normpdf(tail_discrete, 3, 2);
 
 %% run simulation
 for k = 1:K
@@ -142,21 +150,17 @@ for k = 1:K
         fprintf(['Running simulation , ' num2str(k) ' ... ']);
     end
     tic;
-     
-%     if k < 5
-%         HL.phi_ee_sc(laplacian(:,200) ~= 0) = 30 * phi_ee_sc_base;
-%     else
-%         HL.phi_ee_sc(laplacian(:,200) ~= 0) = phi_ee_sc_base;
-%     end
-    
-    if use_fluc
-        HL.phi_ee_sc = 3 + randn(N, 1)*2;
+  
+    if use_fluc && rem(k, 2) == 1
+        
+        HL.phi_ee_sc = sc_basal + sc_rand_width * randn(N, 1) + ...
+            sc_high_diff * random(pd, N, 1);
         HL.phi_ee_sc = max(HL.phi_ee_sc, 0);
 
-        if all(last.Qe(map == 1) < 3 & last.K(map == 1) < 7)
-            HL.phi_ee_sc(map == 1) = datasample(tail_discrete, 7, 'Weight', pdfs);
-            HL.phi_ee_sc(map == 1)'
-        end
+        % if all(last.Qe(map == 1) < 3 & last.K(map == 1) < 7)
+        %    HL.phi_ee_sc(map == 1) = datasample(tail_discrete, 7, 'Weight', pdfs);
+        %    HL.phi_ee_sc(map == 1)'
+        % end
         
         HL.phi_ee_sc = HL.phi_ee_sc * phi_ee_sc_base;
     end
@@ -184,8 +188,8 @@ for k = 1:K
 
     if print_count
         fprintf(['RT ' num2str(toc) '\n']);
-        fprintf(['K at node2 ' num2str(last.K(2)) '\n']);
-        fprintf(['K at node500 ' num2str(last.K(500)) '\n']);
+        % fprintf(['K at node2 ' num2str(last.K(2)) '\n']);
+        % fprintf(['K at node500 ' num2str(last.K(500)) '\n']);
         % fprintf(['dVi at node8 ' num2str(last.dVi(8)) '\n']);
         % fprintf(['Vi at node8 ' num2str(last.Vi(8)) '\n']);
     end
@@ -193,5 +197,5 @@ end
 
 %% run analysis
 if save_output
-    main_plot_graphs(id, './data/', true, false, true, false);
+    main_plot_graphs(id, DATA_STORAGE, true, false, true, false);
 end

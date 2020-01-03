@@ -14,9 +14,9 @@ Ve_micro = NaN(K*T, size(micro_transform, 1));
 
 % single node
 if strcmp(type, 'sphere')
-    node_id = 500;
+    node_id = 744;
 else
-    node_id = 29033;
+    node_id = 29584;
 end
 
 [Qe_1, Qi_1, Ve_1, Vi_1, D22_1, dVe_1, dVi_1, K_1, ...
@@ -49,11 +49,11 @@ for k = 1:K
     % fill in data 
     Qe_rand(1+(k-1)*T : k*T,1) = fine.Qe_focus(:,1);
     Qe_rand(1+(k-1)*T : k*T,2) = fine.Qe_macro(:,1);
-    Qe_rand(1+(k-1)*T : k*T,3) = fine.Qe_macro(:,8);
+    Qe_rand(1+(k-1)*T : k*T,3) = fine.Qe_macro(:,13);
     % Qe_rand(1+(k-1)*T : k*T,4) = fine.Qe_normal(:,1);
     Ve_rand(1+(k-1)*T : k*T,1) = fine.Ve_focus(:,1);
     Ve_rand(1+(k-1)*T : k*T,2) = fine.Ve_macro(:,1);
-    Ve_rand(1+(k-1)*T : k*T,3) = fine.Ve_macro(:,8);
+    Ve_rand(1+(k-1)*T : k*T,3) = fine.Ve_macro(:,13);
     % Ve_rand(1+(k-1)*T : k*T,4) = fine.Ve_normal(:,1);
 
     Qe_avg(1+(k-1)*T : k*T,1) = fine.Qe_focus_avg;
