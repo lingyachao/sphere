@@ -1,7 +1,7 @@
 function [samp_time,last,fine] = seizing_cortical_field( ...
     source_del_VeRest, map, time_end, IC, ...
     locs, lap_synap, lap_diff, avg_D, ...
-    zones, fine_idx, normal_sample_idx, ...
+    zones, fine_idx, single_node_idx, ...
     save_output)
  
     global HL
@@ -57,21 +57,23 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
 
     if save_output
         % allocate matrices for recording Qe/Ve (fine time scale) at micro/macro
-        % nodes, focus nodes, normal nodes
+        % nodes, focus nodes, single node
     
         fine.Qe_lessihb = zeros(N_samp, length(fine_idx));
-        fine.Qe_normal = zeros(N_samp, length(normal_sample_idx));
-
         fine.Qe_focus_avg = zeros(N_samp, 1);
         fine.Qe_lessihb_avg = zeros(N_samp, 1);
         fine.Qe_normal_avg = zeros(N_samp, 1);
 
         fine.Ve_lessihb = zeros(N_samp, length(fine_idx));
-        fine.Ve_normal = zeros(N_samp, length(normal_sample_idx));
-
         fine.Ve_focus_avg = zeros(N_samp, 1);
         fine.Ve_lessihb_avg = zeros(N_samp, 1);
         fine.Ve_normal_avg = zeros(N_samp, 1);
+        
+        [fine.sn_Qe, fine.sn_Ve, fine.sn_dVe, ...
+            fine.sn_Qi, fine.sn_Vi, fine.sn_dVi, ...
+            fine.sn_Qi_fs, fine.sn_Vi_fs, fine.sn_dVi_fs, ...
+            fine.sn_D22, fine.sn_K] = ...
+            deal(zeros(N_samp, 1));
     
     else
         fine = NaN;
@@ -88,18 +90,26 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
             idx = i/samp_rate + 1;
             
             fine.Qe_lessihb(idx,:) = Qe_grid(fine_idx);
-            fine.Qe_normal(idx,:) = Qe_grid(normal_sample_idx);
-
             fine.Qe_focus_avg(idx,:) = mean(Qe_grid(zones.focus_zone));
             fine.Qe_lessihb_avg(idx,:) = mean(Qe_grid(zones.lessihb_zone));
             fine.Qe_normal_avg(idx,:) = mean(Qe_grid(zones.normal_zone));
 
             fine.Ve_lessihb(idx,:) = Ve_grid(fine_idx);
-            fine.Ve_normal(idx,:) = Ve_grid(normal_sample_idx);
-
             fine.Ve_focus_avg(idx,:) = mean(Ve_grid(zones.focus_zone));
             fine.Ve_lessihb_avg(idx,:) = mean(Ve_grid(zones.lessihb_zone));
             fine.Ve_normal_avg(idx,:) = mean(Ve_grid(zones.normal_zone));
+            
+            fine.sn_Qe(idx) = Qe_grid(single_node_idx);
+            fine.sn_Ve(idx) = Ve_grid(single_node_idx);
+            fine.sn_dVe(idx) = del_VeRest(single_node_idx);
+            fine.sn_Qi(idx) = Qi_grid(single_node_idx);
+            fine.sn_Vi(idx) = Vi_grid(single_node_idx);
+            fine.sn_dVi(idx) = del_ViRest(single_node_idx);
+            fine.sn_Qi_fs(idx) = Qi_fs_grid(single_node_idx);
+            fine.sn_Vi_fs(idx) = Vi_fs_grid(single_node_idx);
+            fine.sn_dVi_fs(idx) = del_ViRest_fs(single_node_idx);
+            fine.sn_D22(idx) = D22(single_node_idx);
+            fine.sn_K(idx) = K(single_node_idx);
         end
         
         % 1. update wave equations
@@ -178,9 +188,6 @@ function [samp_time,last,fine] = seizing_cortical_field( ...
         Qi_grid = max(Qi_grid, 0);
         Qi_fs_grid = max(Qi_fs_grid, 0);
         
-        % Qe_grid(locs(:,3) > -9.5 & locs(:,3) < -9.3) = 0;
-        % Qi_fs_grid(map > 0) = 0;
-              
         % 5. update extracellular ion
         joint_Q = Qi_fs_grid + HL.prodRatio * (Qe_grid + Qi_grid);
         % joint_Q = Qe_grid + Qi_grid + Qi_fs_grid;

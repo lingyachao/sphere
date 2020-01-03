@@ -137,22 +137,21 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
 
         %% *** PLOT *** single node dynamics
         figure(fg_single); axes('parent', tab_single);
-        
-        % legend('Qe', 'Qi', 'Ve', 'Vi', 'D22', 'dVe', 'dVi', 'K', ...
-        %     'Qi\_fs', 'Vi\_fs', 'dVi\_fs');
-        
-        subplot(2,2,1);
-        plot(sparse_time, single_node(:,[2,9,8]));
-        hold on;
-        plot(fine_time, Qe_macro(:,1));
-        legend('Qi', 'Qi\_fs', 'K', 'Qe');
+                
+        subplot(2,1,1);
+        if exist('sn', 'var') && length(fine_time) == length(sn.Qe)
+            sn_hdl = plot(fine_time, [sn.Qe, sn.Qi, sn.Qi_fs, sn.K]);
+        elseif exist('sn', 'var')
+            sn_hdl = plot(sparse_time, [sn.Qe, sn.Qi, sn.Qi_fs, sn.K]);
+        else
+            sn_hdl = plot(sparse_time, single_node(:,[1,2,9,8]));
+        end
+        legend('Qe', 'Qi', 'Qi\_fs', 'K');
         xlim([25,total_time]);
-        xlabel('time (s)');
         ylabel('firing rate (Hz)');
         
-        subplot(2,2,2);
-        plot(sparse_time, single_node(:,[2,1,9,8]));
-        % legend('Qi', 'Qe', 'Qi\_fs', 'K');
+        copyobj(sn_hdl, subplot(2,1,2));
+        legend('Qe', 'Qi', 'Qi\_fs', 'K');
         xlim([270,300]);
         xlabel('time (s)');
         ylabel('firing rate (Hz)');

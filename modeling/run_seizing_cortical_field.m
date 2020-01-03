@@ -12,7 +12,6 @@ use_fluc = true;
 %% load grid
 if strcmp(type, 'sphere')
     load('N10242_R10.mat'); 
-    % avg_D = avg_D + 0.5 * (rand(N, 1));
 elseif strcmp(type, 'brain')
     load('N40962.mat'); avg_D = 0.3777;
     load('unitsphere.mat');
@@ -58,15 +57,19 @@ zones.focus_zone = map == 1;
 zones.lessihb_zone = lessihb_filter & map ~= 1;
 zones.normal_zone = ~lessihb_filter;
 
-% indices of normal-zone nodes to be recorded at fine time-scale
-normal_sample_idx = []; % randsample(find(zones.normal_zone),3);
-
 if strcmp(type, 'sphere')
     macro_idx = [744 437 821 1141 1140 820 436 251 555 981 1253 1585 1537 1584 1252 980 554 250 187];
     micro_idx = [744 659 753 837 836 752 658 579 669 777 845 933 929 932 844 776 668 578 573];
     fine_idx = union(find(map), [macro_idx, micro_idx]);
 else
     fine_idx = union(find(map), find(coord(1,:)' > 0.7));
+end
+
+% single node index
+if strcmp(type, 'sphere')
+    single_node_idx = 744;
+else
+    single_node_idx = 29584;
 end
  
 %% initialize constants and make modifications
@@ -134,7 +137,7 @@ if save_output
     mkdir(OUTPUT_DIR);
     
     META_FILE = [DATA_STORAGE folder_name '/vars.mat'];
-    save(META_FILE, 'HL', 'map', 'fine_idx', 'normal_sample_idx', 'last');
+    save(META_FILE, 'HL', 'map', 'fine_idx', 'single_node_idx', 'last');
 end
 
 %% run simulation
@@ -168,7 +171,7 @@ for k = 1:K
     [samp_time,last,fine] = seizing_cortical_field(...
         source_drive, map, T0, last, ...
         locs, laplacian, laplacian, avg_D, ...
-        zones, fine_idx, normal_sample_idx, ...
+        zones, fine_idx, single_node_idx, ...
         save_output);
     
     if visualize
@@ -188,10 +191,6 @@ for k = 1:K
 
     if print_count
         fprintf(['RT ' num2str(toc) '\n']);
-        % fprintf(['K at node2 ' num2str(last.K(2)) '\n']);
-        % fprintf(['K at node500 ' num2str(last.K(500)) '\n']);
-        % fprintf(['dVi at node8 ' num2str(last.dVi(8)) '\n']);
-        % fprintf(['Vi at node8 ' num2str(last.Vi(8)) '\n']);
     end
 end
 

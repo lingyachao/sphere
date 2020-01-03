@@ -2,8 +2,8 @@
 [~,focus_filter] = ismember(focus_idx, fine_idx);
 
 % allocate storing space
-Qe_rand  = NaN(K*T, 4);
-Ve_rand  = NaN(K*T, 4);
+Qe_rand  = NaN(K*T, 3);
+Ve_rand  = NaN(K*T, 3);
 Qe_avg   = NaN(K*T, 3);
 Ve_avg   = NaN(K*T, 3);
 
@@ -12,15 +12,17 @@ Ve_macro = NaN(K*T, size(macro_transform, 1));
 Qe_micro = NaN(K*T, size(micro_transform, 1));
 Ve_micro = NaN(K*T, size(micro_transform, 1));
 
-% single node
-if strcmp(type, 'sphere')
-    node_id = 744;
+if exist('fine.sn_Qe', 'var')
+    [sn.Qe, sn.Ve, sn.dVe, ...
+        sn.Qi, sn.Vi, sn.dVi, ...
+        sn.Qi_fs, sn.Vi_fs, sn.dVi_fs, ...
+        sn.D22, sn.K] = deal(NaN(K*T, 1));
 else
-    node_id = 29584;
+    [sn.Qe, sn.Ve, sn.dVe, ...
+        sn.Qi, sn.Vi, sn.dVi, ...
+        sn.Qi_fs, sn.Vi_fs, sn.dVi_fs, ...
+        sn.D22, sn.K] = deal(NaN(K, 1));
 end
-
-[Qe_1, Qi_1, Ve_1, Vi_1, D22_1, dVe_1, dVi_1, K_1, ...
-    Qi_fs_1, Vi_fs_1, dVi_fs_1] = deal(NaN(K, 1));
 
 if flag_video
     % start movie
@@ -50,11 +52,9 @@ for k = 1:K
     Qe_rand(1+(k-1)*T : k*T,1) = fine.Qe_focus(:,1);
     Qe_rand(1+(k-1)*T : k*T,2) = fine.Qe_macro(:,1);
     Qe_rand(1+(k-1)*T : k*T,3) = fine.Qe_macro(:,13);
-    % Qe_rand(1+(k-1)*T : k*T,4) = fine.Qe_normal(:,1);
     Ve_rand(1+(k-1)*T : k*T,1) = fine.Ve_focus(:,1);
     Ve_rand(1+(k-1)*T : k*T,2) = fine.Ve_macro(:,1);
     Ve_rand(1+(k-1)*T : k*T,3) = fine.Ve_macro(:,13);
-    % Ve_rand(1+(k-1)*T : k*T,4) = fine.Ve_normal(:,1);
 
     Qe_avg(1+(k-1)*T : k*T,1) = fine.Qe_focus_avg;
     Qe_avg(1+(k-1)*T : k*T,2) = fine.Qe_lessihb_avg;
@@ -69,19 +69,37 @@ for k = 1:K
     Ve_micro(1+(k-1)*T : k*T,:) = fine.Ve_micro;
     
     % single node
-    Qe_1(k) = last.Qe(node_id);
-    Qi_1(k) = last.Qi(node_id);
-    Ve_1(k) = last.Ve(node_id);
-    Vi_1(k) = last.Vi(node_id);
-    D22_1(k) = last.D22(node_id);
-    dVe_1(k) = last.dVe(node_id);
-    dVi_1(k) = last.dVi(node_id);
-    K_1(k) = last.K(node_id);
-    
-    Qi_fs_1(k) = last.Qi_fs(node_id);
-    Vi_fs_1(k) = last.Vi_fs(node_id);
-    dVi_fs_1(k) = last.dVi_fs(node_id);
-    
+    if exist('fine.sn_Qe', 'var')
+        sn.Qe(1+(k-1)*T : k*T,:) = fine.sn_Qe;
+        sn.Ve(1+(k-1)*T : k*T,:) = fine.sn_Ve;
+        sn.dVe(1+(k-1)*T : k*T,:) = fine.sn_dVe;
+        sn.Qi(1+(k-1)*T : k*T,:) = fine.sn_Qi;
+        sn.Vi(1+(k-1)*T : k*T,:) = fine.sn_Vi;
+        sn.dVi(1+(k-1)*T : k*T,:) = fine.sn_dVi;
+        sn.Qi_fs(1+(k-1)*T : k*T,:) = fine.sn_Qi_fs;
+        sn.Vi_fs(1+(k-1)*T : k*T,:) = fine.sn_Vi_fs;
+        sn.dVi_fs(1+(k-1)*T : k*T,:) = fine.sn_dVi_fs;
+        sn.D22(1+(k-1)*T : k*T,:) = fine.sn_D22;
+        sn.K(1+(k-1)*T : k*T,:) = fine.sn_K;
+    else
+        if strcmp(type, 'sphere')
+            single_node_idx = 744;
+        else
+            single_node_idx = 29584;
+        end
+        sn.Qe(k,:) = last.Qe(single_node_idx);
+        sn.Ve(k,:) = last.Ve(single_node_idx);
+        sn.dVe(k,:) = last.dVe(single_node_idx);
+        sn.Qi(k,:) = last.Qi(single_node_idx);
+        sn.Vi(k,:) = last.Vi(single_node_idx);
+        sn.dVi(k,:) = last.dVi(single_node_idx);
+        sn.Qi_fs(k,:) = last.Qi_fs(single_node_idx);
+        sn.Vi_fs(k,:) = last.Vi_fs(single_node_idx);
+        sn.dVi_fs(k,:) = last.dVi_fs(single_node_idx);
+        sn.D22(k,:) = last.D22(single_node_idx);
+        sn.K(k,:) = last.K(single_node_idx);
+    end
+
     % plot frame for video and write frame
     if flag_video
         clf(f);
@@ -93,30 +111,12 @@ for k = 1:K
         drawnow;
         im = getframe(f);
         writeVideo(vidObj,im);
-
-%         for i = 1:T
-%             clf(f);
-%             
-%             subplot(1, 2, 1);
-%             scatter(locs(pos_hemi,1), locs(pos_hemi,2), 15, fine.Qe_lessihb(i, pos_hemi)', 'filled');
-%             caxis([0,30]); axis off;
-%     
-%             subplot(1, 2, 2);    
-%             scatter(locs(neg_hemi,1), locs(neg_hemi,2), 15, fine.Qe_lessihb(i, neg_hemi)', 'filled');
-%             caxis([0,30]); axis off;
-%             
-%             drawnow;
-%             im = getframe(f);
-%             writeVideo(vidObj,im);
-%         end
     end
 end
 
-single_node = [Qe_1, Qi_1, Ve_1, Vi_1, D22_1, dVe_1, dVi_1, K_1, Qi_fs_1, Vi_fs_1, dVi_fs_1];
-
 save(SAMPLE_DATA_FILE, ...
     'Qe_rand', 'Ve_rand', 'Qe_avg', 'Ve_avg', ...
-    'Qe_macro', 'Ve_macro', 'Qe_micro', 'Ve_micro', 'single_node');
+    'Qe_macro', 'Ve_macro', 'Qe_micro', 'Ve_micro', 'sn');
 
 if flag_video
     close(vidObj);
