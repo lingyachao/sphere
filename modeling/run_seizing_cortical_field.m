@@ -1,13 +1,18 @@
 clear; close all;
+clearvars -global;
 
 %% specify run type
+DATA_STORAGE = 'C:/Users/monica/simulation_data/';
 type = 'sphere';
-note = 'Nie670_fluc';
+note = 'Nie670_kdecay0.1';
+
 save_output = true;
 visualize = true;
 print_count = true;
+use_fluc = false;
+flag_dense_coh = true;
 
-use_fluc = true;
+K = ~use_fluc * 3000 + use_fluc * 20000;
 
 %% load grid
 if strcmp(type, 'sphere')
@@ -30,11 +35,6 @@ if visualize
     set(f, 'Position', [200 300 900 400]);
 end
 
-%% initialize parameters and map
-K = ~use_fluc * 3000 + use_fluc * 20000;
-T0 = 0.1;
-map = make_map(laplacian);
-
 %% initialize initial state
 last = make_IC(N);
 last.Qi_fs = last.Qi;
@@ -47,6 +47,8 @@ last.dVi_fs = last.dVi;
 % load([DATA_DIR 'raw/seizing_cortical_field_k_1500.mat'], 'last');
 
 %% define zones
+map = make_map(laplacian);
+
 if strcmp(type, 'sphere')
     lessihb_filter = lessihb_area;
 else
@@ -73,12 +75,14 @@ else
 end
  
 %% initialize constants and make modifications
+T0 = 0.1;
+
 global HL
 HL = SCM_init_globs(N);
 
 if strcmp(type, 'sphere')
     HL.kR = 5;
-    HL.k_decay = 0.01;
+    HL.k_decay = 0.1;
     HL.KtoD = -1.5;    
 else
     HL.kR = 10;
@@ -119,7 +123,7 @@ end
 sc_basal = 1;
 sc_rand_width = 1;
 sc_high_diff = 28;
-sc_high_prob = 0.002;
+sc_high_prob = 0.001;
 pd = makedist('Binomial', 'N', 1, 'p', sc_high_prob);
 
 %% set the output directory and save meta file
@@ -130,9 +134,7 @@ if save_output
     elseif strcmp(type, 'brain')
         folder_name = ['brain_N' num2str(N) '_' id '_' note];
     end
-    
-    DATA_STORAGE = 'C:/Users/monica/simulation_data/';
-    
+
     OUTPUT_DIR = [DATA_STORAGE folder_name '/raw/'];
     mkdir(OUTPUT_DIR);
     
@@ -196,5 +198,5 @@ end
 
 %% run analysis
 if save_output
-    main_plot_graphs(id, DATA_STORAGE, true, false, true, false);
+    main_plot_graphs(id, DATA_STORAGE, true, false, true, flag_dense_coh);
 end

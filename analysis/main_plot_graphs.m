@@ -126,7 +126,7 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
     if flag_plot
         %% *** PLOT *** seizure course
         if total_time > 300
-            plot_course_times = 310:10:900;
+            plot_course_times = 310:10:min(total_time, 900);
         else
             plot_course_times = 10:10:total_time;
         end

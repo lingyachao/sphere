@@ -12,7 +12,9 @@ Ve_macro = NaN(K*T, size(macro_transform, 1));
 Qe_micro = NaN(K*T, size(micro_transform, 1));
 Ve_micro = NaN(K*T, size(micro_transform, 1));
 
-if exist('fine.sn_Qe', 'var')
+load([RAW_DIR 'seizing_cortical_field_k_1.mat']);
+
+if isfield(fine, 'sn_Qe')
     [sn.Qe, sn.Ve, sn.dVe, ...
         sn.Qi, sn.Vi, sn.dVi, ...
         sn.Qi_fs, sn.Vi_fs, sn.dVi_fs, ...
@@ -69,7 +71,7 @@ for k = 1:K
     Ve_micro(1+(k-1)*T : k*T,:) = fine.Ve_micro;
     
     % single node
-    if exist('fine.sn_Qe', 'var')
+    if isfield(fine, 'sn_Qe')
         sn.Qe(1+(k-1)*T : k*T,:) = fine.sn_Qe;
         sn.Ve(1+(k-1)*T : k*T,:) = fine.sn_Ve;
         sn.dVe(1+(k-1)*T : k*T,:) = fine.sn_dVe;
