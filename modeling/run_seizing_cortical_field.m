@@ -6,7 +6,7 @@ DATA_STORAGE = 'C:/Users/monica/simulation_data/';
 type = 'sphere';
 note = 'Nie670';
 
-save_output = true;
+save_output = false;
 visualize = true;
 print_count = true;
 use_fluc = false;
@@ -18,6 +18,12 @@ K = ~use_fluc * 4000 + use_fluc * 10000;
 setup;
 
 %% make modifications to constants
+
+% HL.Nie_fs = 10;
+% HL.theta_e = -58.8;
+% HL.sigma_e = 3.0;
+% HL.Qe_max = 35;
+
 if strcmp(type, 'sphere')
     HL.kR = 5;
     HL.k_decay = 0.01;
@@ -65,6 +71,8 @@ if save_output
     save(META_FILE, 'HL', 'map', 'fine_idx', 'single_node_idx', 'last');
 end
 
+[trace.t, trace.Qe, trace.Qi, trace.Qi_fs, trace.K, trace.Ve] = deal(NaN);
+
 %% run simulation
 for k = 1:K
      
@@ -100,7 +108,13 @@ for k = 1:K
     if visualize
         clf(f);
         if strcmp(type, 'sphere')
-            plot_sphere_instance(locs, last, NaN, NaN);
+            trace.t = [trace.t k*T0];
+            trace.Qe = [trace.Qe last.Qe(100)];
+            trace.Qi = [trace.Qi last.Qi(100)];
+            trace.Qi_fs = [trace.Qi_fs last.Qi_fs(100)];
+            trace.K = [trace.K last.K(100)];
+            trace.Ve = [trace.Ve last.Ve(100)];
+            plot_sphere_instance(locs, last, NaN, NaN, trace);
         elseif strcmp(type, 'brain')
             plot_brain_instance(surf, surf_sphere, last, NaN, NaN);
         end
