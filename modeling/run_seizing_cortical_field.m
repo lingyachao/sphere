@@ -4,13 +4,13 @@ clearvars -global;
 %% specify run type
 DATA_STORAGE = 'C:/Users/monica/simulation_data/';
 type = 'sphere';
-note = 'Nie670_kdecay0.1';
+note = 'Nie670';
 
 save_output = true;
 visualize = true;
 print_count = true;
 use_fluc = false;
-flag_dense_coh = true;
+flag_dense_coh = false;
 
 K = ~use_fluc * 4000 + use_fluc * 10000;
 
@@ -20,7 +20,7 @@ setup;
 %% make modifications to constants
 if strcmp(type, 'sphere')
     HL.kR = 5;
-    HL.k_decay = 0.1;
+    HL.k_decay = 0.01;
     HL.KtoD = -1.5;
 else
     HL.kR = 10;
@@ -29,6 +29,12 @@ else
 end
 
 HL.k_decay = HL.k_decay * ones(N,1);
+% HL.k_decay = HL.k_decay * max((1 + 0.5*randn(N,1)), 0);
+% HL.k_decay = HL.k_decay / 2 + (laplacian .* (laplacian > 0)) * HL.k_decay / 12;
+% HL.k_decay(zones.focus_zone) = 0.001;
+
+% low_kdecay_idx = randsample(find(zones.lessihb_zone), 20);
+% HL.k_decay(sum(abs(laplacian(:,low_kdecay_idx)), 2) > 0) = 0.01;
 HL.k_decay(zones.normal_zone) = 100;
 
 HL.prodRatio = 0.1;
@@ -38,7 +44,7 @@ HL.D22min = 0.1;
 last.D22(:) = 5; last.D11 = last.D22/100;
 last.K(:) = 5;
 if use_fluc
-    last.K(zones.focus_zone | zones.lessihb_zone) = 5.4;
+    last.K(zones.focus_zone | zones.lessihb_zone) = 5.5;
 end
 
 % seizure initiation source
@@ -50,7 +56,7 @@ else
     sc_basal = 1;
     sc_rand_width = 1;
     sc_high_diff_max = 28;
-    sc_high_prob = 0.001;
+    sc_high_prob = 0.0005;
     pd = makedist('Binomial', 'N', 1, 'p', sc_high_prob);
     phi_ee_sc_base = HL.phi_ee_sc(1);
 end
@@ -75,8 +81,8 @@ for k = 1:K
   
     if use_fluc && rem(k, 2) == 1
         
-        sc_high_diff = sc_high_diff_max;
-        % sc_high_diff = sc_high_diff_max * exp(-3 * mean(last.Qe));
+        % sc_high_diff = sc_high_diff_max;
+        sc_high_diff = sc_high_diff_max * exp(-4 * mean(last.Qe));
         
         HL.phi_ee_sc = sc_basal + sc_rand_width * randn(N, 1) + ...
             sc_high_diff * random(pd, N, 1);
@@ -108,7 +114,6 @@ for k = 1:K
 
     if print_count
         fprintf(['RT ' num2str(toc) '\n']);
-        % fprintf(['RT ' num2str(toc) ' sc_high_diff ' num2str(sc_high_diff) '\n']);
     end
 end
 

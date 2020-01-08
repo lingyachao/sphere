@@ -151,7 +151,6 @@ function [fg_joint,macro_speed,micro_speed,recruitment_speed] = ...
         ylabel('firing rate (Hz)');
         
         copyobj(sn_hdl, subplot(2,1,2));
-        legend('Qe', 'Qi', 'Qi\_fs', 'K');
         xlim([270,300]);
         xlabel('time (s)');
         ylabel('firing rate (Hz)');
